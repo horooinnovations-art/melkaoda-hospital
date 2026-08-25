@@ -1,0 +1,12 @@
+Database backup (production)
+
+Hospital data must not rely on Render ephemeral disks.
+
+Recommended:
+1. Enable automated daily backups on your MySQL provider (Aiven, PlanetScale, cPanel, etc.).
+2. Keep at least 7–30 days of retention.
+3. Quarterly: restore a backup into a staging DB and verify admin login + one CMS page.
+4. Store backup credentials outside the git repo.
+5. After schema changes, run `npm run migrate` in backend, then take a fresh backup.
+
+Never commit dump files containing patient or admin PII to git.

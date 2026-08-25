@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.next/
+out/
+build/
+uploads/
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+coverage/
+.turbo/
+*.tsbuildinfo
+.vscode/
+.idea/
+
+# Reference Laravel upload — do not commit into the Loke monorepo
+deder.horooinnovations.com/
+backend/*.json
+

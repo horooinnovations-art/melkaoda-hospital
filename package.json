@@ -1,0 +1,14 @@
+{
+  "name": "loke-general-hospital",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Loke General Hospital — Next.js + Express + MySQL",
+  "scripts": {
+    "dev:api": "npm --prefix backend run dev",
+    "dev:web": "npm --prefix frontend run dev",
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "build:web": "npm --prefix frontend run build",
+    "start:api": "npm --prefix backend start",
+    "start:web": "npm --prefix frontend start"
+  }
+}
