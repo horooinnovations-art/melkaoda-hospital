@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+# Isolated build dirs used to verify a build without disturbing a running dev server.
+/.next-verify*/
+/.nvtmp/
 
 # production
 /build
