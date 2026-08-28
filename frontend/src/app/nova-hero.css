@@ -1,0 +1,439 @@
+/* ==========================================================================
+   NOVA — hero
+   ========================================================================== */
+
+.nv-hero {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(112px, 15vh, 168px);
+  padding-bottom: clamp(48px, 7vw, 88px);
+  overflow: clip;
+}
+
+/* ── Photographic backdrop ──────────────────────────────────────────────────
+   The hospital's own photographs cross-fading behind the headline, full-bleed
+   across the hero box. Painted by NovaHeroBackdrop; only the geometry, the
+   light and the scrim live here.
+
+   `.nv-hero` is already `position: relative` with `overflow: clip`, so the
+   backdrop fills exactly the hero and the slow zoom cannot spill onto the page
+   below. `z-index: 0` on the backdrop plus `z-index: 1` on the grid is what
+   keeps the copy in front: without it the absolutely-positioned backdrop would
+   paint over the grid, which is not positioned.
+   ------------------------------------------------------------------------- */
+.nv-hero__back {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nv-hero__shot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  /* Long enough that a visitor reading the headline never sees a change begin
+     and end — they look up and the photograph is simply a different one. */
+  transition: opacity 2.2s var(--nv-ease-lux);
+}
+
+.nv-hero__shot[data-on] { opacity: 1; }
+
+/* Depth by light, as everywhere else on the page: the photograph is darkened
+   and desaturated rather than blurred, so it still reads as a photograph of
+   this hospital and not as texture. */
+.nv-hero__shot-img {
+  object-fit: cover;
+  object-position: center 38%;
+  filter: brightness(0.46) saturate(0.68);
+  transform: scale(1.07);
+  /* Settles over the whole dwell, so the movement is felt and never watched.
+     A transition rather than a keyframe: the layers stay mounted, so an
+     animation would only ever run on a photograph's first turn. */
+  transition: transform 9s linear;
+}
+
+.nv-hero__shot[data-on] .nv-hero__shot-img { transform: scale(1); }
+
+.nv-hero__shot-fallback {
+  position: absolute;
+  inset: 0;
+  background: var(--nv-plate-well);
+}
+
+/* ── Scrim ──────────────────────────────────────────────────────────────────
+   Three gradients on one layer, each doing one job:
+
+     1. horizontal — near-solid charcoal under the copy column, thinning toward
+        the reel so the photograph is actually visible on the right
+     2. vertical   — darkens the very top under the fixed header, then lands on
+        --nv-paper at the bottom so the hero dissolves into the page instead of
+        ending on a photograph's edge
+     3. champagne  — the same warm wash the rest of the page is lit by, so the
+        photographs belong to this material and not to a stock hero
+
+   Charcoal, not black: the same rgba(9,10,13) family the plates use.
+   ------------------------------------------------------------------------- */
+.nv-hero__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      86% 58% at 50% -8%,
+      rgba(217, 195, 154, 0.11),
+      transparent 64%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(9, 10, 13, 0.72) 0%,
+      rgba(9, 10, 13, 0.22) 22%,
+      rgba(9, 10, 13, 0.42) 62%,
+      rgba(16, 18, 22, 0.9) 88%,
+      var(--nv-paper) 100%
+    ),
+    linear-gradient(
+      98deg,
+      rgba(9, 10, 13, 0.95) 0%,
+      rgba(9, 10, 13, 0.86) 34%,
+      rgba(9, 10, 13, 0.56) 62%,
+      rgba(9, 10, 13, 0.34) 100%
+    );
+}
+
+/* Below 1080px the columns stack, so the copy no longer sits on the left half —
+   the horizontal gradient stops helping and an even wash is what keeps the
+   headline readable wherever it lands. */
+@media (max-width: 1079px) {
+  .nv-hero__veil {
+    background:
+      radial-gradient(
+        96% 46% at 50% -6%,
+        rgba(217, 195, 154, 0.1),
+        transparent 62%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(9, 10, 13, 0.86) 0%,
+        rgba(9, 10, 13, 0.72) 34%,
+        rgba(9, 10, 13, 0.8) 70%,
+        var(--nv-paper) 100%
+      );
+  }
+}
+
+.nv-hero__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(40px, 5vw, 72px);
+  align-items: center;
+}
+
+@media (min-width: 1080px) {
+  .nv-hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
+    gap: 5vw;
+  }
+}
+
+/* ── Copy column ────────────────────────────────────────────────────────── */
+.nv-hero__copy {
+  position: relative;
+  max-width: 640px;
+}
+
+.nv-hero__place {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+  font-family: var(--nv-font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+}
+
+.nv-hero__place i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--nv-mint);
+  box-shadow: 0 0 10px var(--nv-mint);
+  animation: nv-blink 2.2s var(--nv-ease-io) infinite;
+}
+
+.nv-hero__title {
+  margin-top: 22px;
+  font-family: var(--nv-font-display);
+  font-weight: 700;
+  font-size: clamp(2.7rem, 6.6vw, 5.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+
+.nv-hero__title-sub {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--nv-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 3.1vw, 2.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  color: var(--nv-text-dim);
+}
+
+.nv-hero__lede {
+  margin-top: 24px;
+  max-width: 52ch;
+  font-size: clamp(0.96rem, 1.1vw, 1.08rem);
+  line-height: 1.75;
+  color: var(--nv-muted);
+}
+
+.nv-hero__lede b {
+  color: var(--nv-text-dim);
+  font-weight: 600;
+}
+
+.nv-hero__cta {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Inline trust strip under the CTAs */
+.nv-hero__trust {
+  margin-top: 34px;
+  padding-top: 24px;
+  border-top: 1px solid var(--nv-line-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 30px;
+}
+
+.nv-hero__trust-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nv-hero__trust-value {
+  font-family: var(--nv-font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.nv-hero__trust-label {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+/* ── Service reel ───────────────────────────────────────────────────────────
+   A vertical marquee: the track holds the service list twice and travels
+   exactly -50%, so the second copy lands where the first began and the loop
+   is seamless. The mask fades cards in at the bottom and out at the top.
+   ------------------------------------------------------------------------- */
+.nv-reel {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nv-reel__viewport {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 72vh;
+  max-height: 620px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent,
+    #000 14%,
+    #000 86%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent,
+    #000 14%,
+    #000 86%,
+    transparent
+  );
+}
+
+.nv-reel__track {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: nv-reel-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.nv-reel__viewport:hover .nv-reel__track {
+  animation-play-state: paused;
+}
+
+@keyframes nv-reel-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -50%, 0); }
+}
+
+.nv-reel__card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    180deg,
+    rgba(23, 27, 39, 0.66),
+    rgba(11, 13, 19, 0.72)
+  );
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.8);
+  color: inherit;
+  transition:
+    border-color 0.3s var(--nv-ease),
+    transform 0.3s var(--nv-ease);
+}
+
+a.nv-reel__card:hover {
+  border-color: rgba(45, 212, 167, 0.4);
+  transform: translateX(4px);
+}
+
+.nv-reel__ic {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: rgba(45, 212, 167, 0.12);
+  border: 1px solid rgba(45, 212, 167, 0.28);
+  color: #7fe8d6;
+}
+
+.nv-reel__card--gold .nv-reel__ic {
+  background: rgba(232, 154, 60, 0.14);
+  border-color: rgba(232, 154, 60, 0.32);
+  color: #f5c062;
+}
+
+.nv-reel__ic svg { width: 21px; height: 21px; }
+
+.nv-reel__body { min-width: 0; }
+
+.nv-reel__title {
+  display: block;
+  font-family: var(--nv-font-display);
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 1px 0 4px;
+  color: var(--nv-text);
+}
+
+.nv-reel__desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--nv-muted);
+}
+
+/* Below the two-column breakpoint the reel becomes a plain static list —
+   no marquee, nothing clipped, and the duplicate copy stays hidden. */
+@media (max-width: 1079px) {
+  .nv-reel { display: block; }
+
+  .nv-reel__viewport {
+    height: auto;
+    max-height: none;
+    max-width: 100%;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .nv-reel__track { animation: none; }
+  .nv-reel__track > [data-clone="true"] { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-reel__track { animation: none !important; }
+
+  /* The backdrop holds on its first photograph — NovaHeroBackdrop stops
+     advancing, so the cross-fade and the zoom have nothing left to do. */
+  .nv-hero__shot { transition: none; }
+  .nv-hero__shot-img { transform: none; transition: none; }
+}
+
+/* ── Open-services ticker under the hero ────────────────────────────────── */
+.nv-ticker {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(36px, 5vw, 60px);
+  border-block: 1px solid var(--nv-line-soft);
+  background: linear-gradient(
+    180deg,
+    rgba(124, 108, 255, 0.05),
+    rgba(4, 5, 10, 0)
+  );
+  padding-block: 16px;
+}
+
+.nv-ticker__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(0.92rem, 1.5vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--nv-text-dim);
+  white-space: nowrap;
+  transition: color 0.3s var(--nv-ease);
+}
+
+.nv-ticker__item:hover { color: #fff; }
+
+.nv-ticker__item svg {
+  width: 15px;
+  height: 15px;
+  color: var(--nv-iris-hi);
+  flex: none;
+}
+
+.nv-ticker__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(148, 163, 255, 0.4);
+  flex: none;
+}
+
+
+
+
+
+

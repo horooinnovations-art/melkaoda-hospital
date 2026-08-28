@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
-import { Source_Sans_3 } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Serif, Source_Sans_3 } from "next/font/google";
 import { Toaster } from "sonner";
 import NextTopLoader from "nextjs-toploader";
 import StoreProvider from "@/components/providers/StoreProvider";
@@ -10,10 +10,32 @@ import DynamicFavicon from "@/components/layout/DynamicFavicon";
 import { API_BASE, SITE_NAME, DEFAULT_TAGLINE } from "@/lib/api";
 import "./globals.css";
 import "./atlas.css";
+// Nova design system — loaded last so it wins over the legacy sheets above.
+import "./nova-core.css";
+import "./nova-atmosphere.css";
+import "./nova-nav.css";
+import "./nova-hero.css";
+import "./nova-stack.css";
+import "./nova-cards.css";
+import "./nova-sections.css";
+import "./nova-footer.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-source",
+  display: "swap",
+});
+
+const novaDisplay = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-nv-display",
+  display: "swap",
+});
+
+const novaSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-nv-serif",
   display: "swap",
 });
 
@@ -68,17 +90,22 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={sourceSans.variable}
+      className={`${sourceSans.variable} ${novaDisplay.variable} ${novaSerif.variable}`}
       style={
         {
-          ["--font-syne" as string]: "var(--font-source)",
-          ["--font-literata" as string]: "var(--font-source)",
+          ["--font-syne" as string]: "var(--font-nv-display)",
+          ["--font-literata" as string]: "var(--font-nv-serif)",
           ["--font-figtree" as string]: "var(--font-source)",
         } as CSSProperties
       }
     >
       <head>
         <FaviconLinks />
+        <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700,900&display=swap"
+        />
         <link rel="dns-prefetch" href={apiOrigin} />
         <link rel="preconnect" href={apiOrigin} crossOrigin="anonymous" />
         <link rel="dns-prefetch" href={mediaHost} />
@@ -93,15 +120,15 @@ export default function RootLayout({
       <body
         className="site-canvas flex min-h-screen flex-col antialiased"
         style={{
-          backgroundColor: "#f8fafc",
-          color: "#0f172a",
+          backgroundColor: "#04050a",
+          color: "#eceffb",
         }}
       >
         <NextTopLoader
-          color="#0369a1"
+          color="#7c6cff"
           height={2}
           showSpinner={false}
-          shadow={false}
+          shadow="0 0 12px rgba(124,108,255,0.7)"
         />
         <StoreProvider>
           <DynamicFavicon />

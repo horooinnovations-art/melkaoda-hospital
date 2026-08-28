@@ -167,116 +167,12 @@ export default function HomeHero({
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="sgate__atmosphere" aria-hidden>
-        <div className="sgate__wash" />
-        <div className="sgate__dual sgate__dual--light" />
-        <div className="sgate__dual sgate__dual--dark" />
-        <div className="sgate__horizon" />
-        <div className="sgate__aurora sgate__aurora--a" />
-        <div className="sgate__aurora sgate__aurora--b" />
-        <div className="sgate__sunburst" />
-        <div className="sgate__shafts">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="sgate__beams">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="sgate__orb sgate__orb--a" />
-        <div className="sgate__orb sgate__orb--b" />
-        <div className="sgate__orb sgate__orb--c" />
-        <div className="sgate__ring sgate__ring--1" />
-        <div className="sgate__ring sgate__ring--2" />
-        <div className="sgate__ring sgate__ring--3" />
-        <div className="sgate__medals">
-          <i className="sgate__medal sgate__medal--1" />
-          <i className="sgate__medal sgate__medal--2" />
-          <i className="sgate__medal sgate__medal--3" />
-          <i className="sgate__medal sgate__medal--4" />
-        </div>
-        <div className="sgate__ribbons">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="sgate__mesh" />
-        <div className="sgate__mosaic" />
-        <div className="sgate__sparkles">
-          {Array.from({ length: 24 }).map((_, i) => (
-            <i
-              key={i}
-              style={{
-                top: `${5 + ((i * 19) % 88)}%`,
-                left: `${3 + ((i * 27) % 94)}%`,
-                animationDelay: `${(i * 0.32).toFixed(2)}s`,
-                ["--s" as string]: `${0.55 + ((i * 13) % 10) / 12}`,
-              }}
-            />
-          ))}
-        </div>
-        <svg className="sgate__arcs" viewBox="0 0 1200 800" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="sgFilA" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#0284c8" stopOpacity="0" />
-              <stop offset="45%" stopColor="#38bdf8" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#0284c8" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="sgFilB" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#0369a1" stopOpacity="0" />
-              <stop offset="50%" stopColor="#7dd3fc" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#0369a1" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="sgFilC" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#0c4a6e" stopOpacity="0" />
-              <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#0c4a6e" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path d="M40 180C260 80 480 260 720 140S1040 90 1180 200" stroke="url(#sgFilA)" />
-          <path d="M20 640C250 520 500 720 760 580S1060 520 1180 680" stroke="url(#sgFilB)" />
-          <path d="M80 400C300 300 500 520 740 380S1040 300 1140 460" stroke="url(#sgFilC)" />
-          <path d="M120 220C200 280 280 200 360 260S520 220 600 300" />
-          <path d="M720 500C820 440 900 560 1000 500S1120 460 1170 540" />
-          <circle className="sgate__arc-dot" cx="180" cy="160" r="3" />
-          <circle className="sgate__arc-dot sgate__arc-dot--rose" cx="720" cy="140" r="2.5" />
-          <circle className="sgate__arc-dot sgate__arc-dot--teal" cx="760" cy="580" r="3" />
-          <circle className="sgate__arc-dot sgate__arc-dot--amber" cx="1040" cy="500" r="2.5" />
-        </svg>
-        <div className="sgate__corners">
-          <svg className="sgate__corner sgate__corner--tl" viewBox="0 0 120 120">
-            <path d="M8 88V28Q8 8 28 8h60" />
-            <path d="M8 58h34M58 8v34" />
-            <circle cx="28" cy="28" r="3.5" />
-          </svg>
-          <svg className="sgate__corner sgate__corner--tr" viewBox="0 0 120 120">
-            <path d="M112 88V28Q112 8 92 8H32" />
-            <path d="M112 58H78M62 8v34" />
-            <circle cx="92" cy="28" r="3.5" />
-          </svg>
-          <svg className="sgate__corner sgate__corner--bl" viewBox="0 0 120 120">
-            <path d="M8 32v60q0 20 20 20h60" />
-            <path d="M8 62h34M58 112V78" />
-            <circle cx="28" cy="92" r="3.5" />
-          </svg>
-          <svg className="sgate__corner sgate__corner--br" viewBox="0 0 120 120">
-            <path d="M112 32v60q0 20-20 20H32" />
-            <path d="M112 62H78M62 112V78" />
-            <circle cx="92" cy="92" r="3.5" />
-          </svg>
-        </div>
-        <div className="sgate__vignette" />
-        <div className="sgate__frame" />
-        <div className="sgate__grain" />
-      </div>
+      {/* Old atmosphere removed — replaced by TronGrid component */}
 
       <div className="sgate__shell">
         {/* Text plane */}
         <div className="sgate__copy">
-          <div className="sgate__copy-glow" aria-hidden />
+
 
           <motion.p
             className="sgate__place"

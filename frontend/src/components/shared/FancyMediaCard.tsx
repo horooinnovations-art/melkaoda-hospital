@@ -41,7 +41,12 @@ export default function FancyMediaCard({
     >
       <Link
         href={href}
-        className={cn("g-tile group", `g-tile--tone-${tone}`, className)}
+        className={cn("g-tile group g-glow-card", `g-tile--tone-${tone}`, className)}
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+          e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
+        }}
       >
         <span className="g-tile__rim" aria-hidden />
         <div className="g-tile__aura" aria-hidden />

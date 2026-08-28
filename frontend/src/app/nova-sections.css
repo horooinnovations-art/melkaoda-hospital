@@ -1,0 +1,736 @@
+/* ==========================================================================
+   NOVA — home page sections
+
+   The page below the hero used to be nine identically padded sections floating
+   on one endless dark field, so nothing signalled where you were. This sheet
+   gives the scroll an architecture instead:
+
+     · three banded moments (assurance strip, figures, visit) sit on a slightly
+       raised surface between hairlines; everything else sits on the flat base
+     · one section-head pattern, numbered, so each section announces itself
+     · hairlines and column rules carry the structure — no glows, no animated
+       gradients, no coloured washes below the hero
+   ========================================================================== */
+
+/* ── Bands ──────────────────────────────────────────────────────────────── */
+.nv-band {
+  position: relative;
+  z-index: 1;
+  border-block: 1px solid var(--nv-hairline);
+  background: var(--nv-plate);
+  box-shadow: inset 0 1px 0 var(--nv-edge);
+}
+
+/* Flush strip — no vertical section padding of its own. */
+.nv-band--strip { padding-block: clamp(22px, 3vw, 34px); }
+
+/* ── Section head ─────────────────────────────────────────────────────────
+   Number, eyebrow, headline, lede, and a right-aligned action on wide
+   viewports. The number is what makes a long page feel indexed rather than
+   infinite.
+   ----------------------------------------------------------------------- */
+.nv-head {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+@media (min-width: 940px) {
+  .nv-head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 72px;
+  }
+}
+
+.nv-head__copy { max-width: 720px; }
+
+.nv-head__tag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nv-head__num {
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--nv-champagne);
+  padding: 5px 10px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  border-radius: 999px;
+}
+
+.nv-head__count {
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--nv-faint);
+}
+
+.nv-head__title { margin-top: 26px; }
+
+.nv-head__lede {
+  margin-top: 22px;
+  max-width: 60ch;
+}
+
+/* ── Assurance strip (directly under the hero) ──────────────────────────── */
+.nv-assure {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 900px) {
+  .nv-assure { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+}
+
+.nv-assure__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+@media (min-width: 900px) {
+  .nv-assure__item { padding-inline: clamp(16px, 2vw, 30px); }
+  .nv-assure__item + .nv-assure__item { border-left: 1px solid var(--nv-hairline); }
+  .nv-assure__item:first-child { padding-left: 0; }
+  .nv-assure__item:last-child { padding-right: 0; }
+}
+
+.nv-assure__ico {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne);
+}
+
+.nv-assure__ico svg { width: 16px; height: 16px; }
+
+.nv-assure__label {
+  font-family: var(--nv-font-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-assure__value {
+  margin-top: 7px;
+  font-family: var(--nv-font-display);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.36;
+  letter-spacing: -0.016em;
+  color: var(--nv-text);
+}
+
+/* ── Welcome / editorial lead ───────────────────────────────────────────── */
+.nv-lead {
+  display: grid;
+  gap: clamp(40px, 5vw, 72px);
+  align-items: start;
+}
+
+@media (min-width: 1040px) {
+  .nv-lead { grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr); }
+}
+
+.nv-lead__title {
+  margin-top: 20px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.15rem, 4.5vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.036em;
+  color: #fff !important;
+}
+
+/* First sentence of the hospital's own description, set in the serif so the
+   institution speaks in its own voice before the body copy starts. */
+.nv-lead__quote {
+  margin-top: 34px;
+  padding-left: 26px;
+  border-left: 1px solid var(--nv-champagne);
+  font-family: var(--nv-font-serif);
+  font-style: italic;
+  font-size: clamp(1.1rem, 1.85vw, 1.46rem);
+  line-height: 1.54;
+  color: var(--nv-text);
+}
+
+.nv-lead__body {
+  margin-top: 22px;
+  font-size: clamp(0.93rem, 1.05vw, 1.02rem);
+  line-height: 1.8;
+  color: var(--nv-muted);
+  max-width: 64ch;
+}
+
+.nv-lead__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.nv-lead__aside {
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-lead__aside-cap {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  padding-top: 18px;
+}
+
+/* ── Department index ───────────────────────────────────────────────────────
+   A directory, set like one: number, unit, description, thumbnail, arrow. The
+   row no longer slides its own padding or paints a coloured wash on hover —
+   the name brightening and the arrow moving is enough feedback.
+   ------------------------------------------------------------------------- */
+.nv-index { border-top: 1px solid var(--nv-hairline); }
+
+.nv-index__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(18px, 2.4vw, 32px);
+  padding: clamp(24px, 2.8vw, 34px) 4px clamp(24px, 2.8vw, 34px) 22px;
+  border-bottom: 1px solid var(--nv-hairline);
+  transition: background 0.7s var(--nv-ease-lux);
+}
+
+.nv-index__row:hover { background: rgba(255, 255, 255, 0.016); }
+
+/* Champagne bar in the left margin, scaling out from the vertical centre —
+   the same hover mark the news list uses, so the two read as one system. */
+.nv-index__row::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 14%;
+  bottom: 14%;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--nv-champagne);
+  transform: scaleY(0);
+  transition: transform 0.7s var(--nv-ease-lux);
+  pointer-events: none;
+}
+
+.nv-index__row:hover::before { transform: scaleY(1); }
+
+.nv-index__num {
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--nv-faint);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-index__row:hover .nv-index__num { color: var(--nv-champagne); }
+
+.nv-index__copy { min-width: 0; }
+
+.nv-index__name {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.3rem, 2.5vw, 1.95rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.032em;
+  color: var(--nv-text-dim);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-index__row:hover .nv-index__name { color: #fff; }
+
+.nv-index__desc {
+  margin-top: 11px;
+  font-size: 0.86rem;
+  line-height: 1.7;
+  color: var(--nv-faint);
+  max-width: 58ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.4s var(--nv-ease);
+}
+
+.nv-index__row:hover .nv-index__desc { color: var(--nv-muted); }
+
+.nv-index__tail {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.nv-index__thumb {
+  position: relative;
+  width: 92px;
+  height: 62px;
+  flex: none;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate-well);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+}
+
+.nv-index__thumb img {
+  object-fit: cover;
+  filter: saturate(0.8) brightness(0.88);
+  transition: filter 0.5s var(--nv-ease), transform 0.7s var(--nv-ease);
+}
+
+.nv-index__row:hover .nv-index__thumb img { filter: none; transform: scale(1.06); }
+
+@media (max-width: 560px) { .nv-index__thumb { display: none; } }
+
+.nv-index__go {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--nv-faint);
+  transition:
+    transform 0.7s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-index__go svg { width: 16px; height: 16px; }
+
+.nv-index__row:hover .nv-index__go {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  transform: translate(3px, -3px);
+}
+
+/* Cursor-tracked preview. Kept — it is genuinely useful on a directory of
+   places — but it is now a plain framed photograph with a caption, not a
+   tilted card with a colour wash over it. */
+.nv-peek {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 262px;
+  pointer-events: none;
+  transform: translate3d(var(--nv-x, 0px), var(--nv-y, 0px), 0);
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.nv-peek__inner {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-plate-well);
+  box-shadow: 0 34px 78px -34px rgba(0, 0, 0, 1);
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 0.3s var(--nv-ease), transform 0.36s var(--nv-ease);
+}
+
+.nv-peek[data-on="true"] .nv-peek__inner { opacity: 1; transform: scale(1); }
+.nv-peek__inner img { object-fit: cover; }
+
+/* A neutral inner vignette: it darkens the corners of whatever photograph lands
+   here so the frame's hairline stays visible against a bright image, and adds a
+   top catch-light to match every other plate. No colour, so it cannot tint the
+   picture. */
+.nv-peek__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 0%,
+    rgba(255, 255, 255, 0.06),
+    transparent 58%
+  );
+  box-shadow:
+    inset 0 1px 0 var(--nv-edge),
+    inset 0 0 46px rgba(0, 0, 0, 0.55);
+}
+
+.nv-peek__tag {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 11px 13px;
+  background: linear-gradient(180deg, transparent, rgba(5, 6, 9, 0.94));
+  font-family: var(--nv-font-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(236, 239, 251, 0.9);
+}
+
+@media (max-width: 1023px) { .nv-peek { display: none; } }
+
+/* ── Figures band ───────────────────────────────────────────────────────────
+   Four numbers, separated by hairlines rather than boxed in cards. Stats do
+   not need containers; they need alignment and room.
+   ------------------------------------------------------------------------- */
+.nv-figs {
+  display: grid;
+  gap: 40px;
+  margin-top: clamp(40px, 5vw, 64px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1080px) {
+  .nv-figs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .nv-figs > * { padding-inline: clamp(26px, 3vw, 46px); }
+  .nv-figs > * + * { border-left: 1px solid var(--nv-hairline); }
+  .nv-figs > :first-child { padding-left: 0; }
+  .nv-figs > :last-child { padding-right: 0; }
+}
+
+/* ── Figures band wrapper ───────────────────────────────────────────────────
+   The "at a glance" block: one plate holding a heading and the hairline-ruled
+   figures row. It had no styles at all, so the numbers were rendering as bare
+   text on the page surface — that is what made the section look unfinished.
+   ------------------------------------------------------------------------- */
+.nv-metrics {
+  position: relative;
+  padding: clamp(34px, 4.4vw, 64px) clamp(26px, 3.6vw, 56px)
+    clamp(38px, 4.6vw, 66px);
+  border-radius: var(--nv-r-xl);
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  overflow: hidden;
+}
+
+/* Champagne letterhead rule along the top edge, as on the quote plate. */
+.nv-metrics::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 20%,
+    rgba(217, 195, 154, 0.45) 50%,
+    var(--nv-champagne-line) 80%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ── Doctors rail ───────────────────────────────────────────────────────────
+   Horizontal scroller with snap points and real buttons. Native scrolling
+   keeps touch and trackpad behaviour correct; the buttons are for mouse users
+   and disable themselves at each end.
+   ------------------------------------------------------------------------- */
+.nv-rail-wrap { position: relative; }
+
+.nv-rail-scroll {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+
+.nv-rail-scroll::-webkit-scrollbar { display: none; }
+
+.nv-rail-scroll > * {
+  flex: none;
+  width: 214px;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) { .nv-rail-scroll > * { width: 236px; } }
+
+.nv-rail-ctrl { display: flex; gap: 8px; }
+
+.nv-rail-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-hairline);
+  background: transparent;
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-text-dim);
+  cursor: pointer;
+  transition:
+    border-color 0.6s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-rail-btn:hover:not(:disabled) {
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne-hi);
+}
+
+.nv-rail-btn:disabled { opacity: 0.28; cursor: default; }
+.nv-rail-btn svg { width: 16px; height: 16px; }
+
+/* ── Layout primitives ──────────────────────────────────────────────────────
+   The grids the home page hangs its sections on. They were being emitted by
+   the markup with no rules behind them, so every "grid" was rendering as a
+   single stacked column of full-width plates — which is most of why the page
+   read as heavy. Gaps are deliberately large: on charcoal plates, whitespace
+   is the only thing separating one unit from the next.
+   ------------------------------------------------------------------------- */
+.nv-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(20px, 2.4vw, 34px);
+}
+
+@media (min-width: 640px) {
+  .nv-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .nv-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* An asymmetric pair: one wide feature and a narrow column of pledges beside
+   it. 1.62fr is close enough to the golden ratio to look intentional and far
+   enough from 2fr that the aside does not become a footnote. */
+.nv-quote-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(24px, 3vw, 44px);
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .nv-quote-split { grid-template-columns: 1.62fr 1fr; }
+}
+
+/* The list opens on a hairline so the first row has a top edge like every
+   other row, and closes without one so it does not look truncated. */
+.nv-news-list { border-top: 1px solid var(--nv-hairline); }
+
+/* ── Welcome ────────────────────────────────────────────────────────────────
+   The hospital introduction: a wide column of prose beside a narrow list of
+   pledges. No plate around either — this is the one section that sits directly
+   on the paper, which gives the eye somewhere to rest between the banded
+   sections above and below it.
+   ------------------------------------------------------------------------- */
+.nv-welcome {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(38px, 4.6vw, 76px);
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .nv-welcome { grid-template-columns: 1.34fr 1fr; }
+}
+
+.nv-welcome__title {
+  margin-top: 22px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.15rem, 4.5vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.034em;
+  color: var(--nv-text);
+  text-wrap: balance;
+}
+
+/* The opening paragraph is set one step up from body copy — a printed lede.
+   Everything after it drops back to the reading size. */
+.nv-welcome__lead {
+  margin-top: 26px;
+  max-width: 62ch;
+  font-size: clamp(1rem, 1.25vw, 1.1rem);
+  line-height: 1.78;
+  color: var(--nv-text-dim);
+}
+
+.nv-welcome__rest {
+  margin-top: 18px;
+  max-width: 66ch;
+  font-size: 0.925rem;
+  line-height: 1.84;
+  color: var(--nv-muted);
+}
+
+.nv-welcome__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 38px;
+}
+
+/* The pledge list closes on a hairline so the column reads as a finished
+   block rather than as three rows that ran out. */
+.nv-welcome__facts { border-bottom: 1px solid var(--nv-hairline); }
+
+/* ── Visit / closing call to action ─────────────────────────────────────────
+   The last thing on the page, and the only unit given the full plate treatment
+   at section scale: deep padding, the champagne letterhead rule along the top,
+   and the practical details set below a hairline like the foot of a printed
+   letter.
+   ------------------------------------------------------------------------- */
+.nv-visit {
+  position: relative;
+  padding: clamp(34px, 4.6vw, 74px);
+  border-radius: var(--nv-r-xl);
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  overflow: hidden;
+}
+
+.nv-visit::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 20%,
+    rgba(217, 195, 154, 0.5) 50%,
+    var(--nv-champagne-line) 80%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.nv-visit__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(30px, 3.4vw, 56px);
+  align-items: end;
+}
+
+@media (min-width: 1024px) {
+  .nv-visit__grid { grid-template-columns: 1.5fr 1fr; }
+}
+
+.nv-visit__title {
+  margin-top: 22px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2rem, 3.9vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.032em;
+  color: var(--nv-text);
+  text-wrap: balance;
+}
+
+.nv-visit__lede {
+  margin-top: 22px;
+  max-width: 54ch;
+  font-size: clamp(0.95rem, 1.15vw, 1.06rem);
+  line-height: 1.8;
+  color: var(--nv-text-dim);
+}
+
+/* The buttons stack on the narrow layout and stay left-aligned on the wide one:
+   a right-aligned button column beside left-aligned prose leaves a ragged
+   channel down the middle of the plate. */
+.nv-visit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+@media (min-width: 1024px) {
+  .nv-visit__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── Visit details ──────────────────────────────────────────────────────── */
+.nv-visit__meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(22px, 2.4vw, 34px);
+  margin-top: clamp(40px, 4.4vw, 66px);
+  padding-top: clamp(30px, 3.2vw, 44px);
+  border-top: 1px solid var(--nv-hairline);
+}
+
+@media (min-width: 760px) {
+  .nv-visit__meta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-visit__meta-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.nv-visit__meta-ico {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  border: 1px solid var(--nv-hairline);
+  background: rgba(255, 255, 255, 0.022);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne-dim);
+}
+
+.nv-visit__meta-ico svg { width: 16px; height: 16px; }
+
+.nv-visit__meta-label {
+  font-family: var(--nv-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-visit__meta-value {
+  margin-top: 9px;
+  font-size: 0.875rem;
+  line-height: 1.66;
+  color: var(--nv-text-dim);
+}

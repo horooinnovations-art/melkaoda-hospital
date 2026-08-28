@@ -1,0 +1,146 @@
+/* ============================================================
+ *  TronGrid — Tron-style infinite perspective grid background
+ *  Pure CSS grid + animation. GPU-accelerated via will-change
+ *  and transform. No canvas/WebGL overhead.
+ * ============================================================ */
+
+/* ---- Container ---- */
+.tron-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Clip any overflow from 3D transform */
+  contain: strict;
+}
+
+/* ---- Deep-space base colour ---- */
+.tron-grid__base {
+  position: absolute;
+  inset: 0;
+  background: #07080c;
+}
+
+
+/* ---- Perspective wrapper ---- */
+.tron-grid__perspective {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Start the grid from the vertical midpoint downward */
+  top: 30%;
+  bottom: 0;
+  perspective: 500px;
+  perspective-origin: 50% 0%;
+}
+
+/* ---- The grid floor ---- */
+.tron-grid__floor {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(65deg);
+  transform-origin: 50% 0%;
+  /* Extend below viewport so grid never runs out */
+  height: 300%;
+}
+
+/* ---- Grid lines (CSS repeating-linear-gradient) ---- */
+.tron-grid__lines {
+  position: absolute;
+  inset: 0;
+}
+
+/* Primary grid — larger squares, brighter */
+.tron-grid__lines--primary {
+  background-image:
+    /* Vertical lines */
+    repeating-linear-gradient(
+      90deg,
+      rgba(34, 211, 238, 0.18) 0px,
+      rgba(34, 211, 238, 0.18) 1px,
+      transparent 1px,
+      transparent 80px
+    ),
+    /* Horizontal lines */
+    repeating-linear-gradient(
+      0deg,
+      rgba(34, 211, 238, 0.18) 0px,
+      rgba(34, 211, 238, 0.18) 1px,
+      transparent 1px,
+      transparent 80px
+    );
+  background-size: 80px 80px;
+  animation: tron-scroll 4s linear infinite;
+  will-change: background-position;
+}
+
+/* Secondary grid — finer subdivisions, dimmer */
+.tron-grid__lines--secondary {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(139, 92, 246, 0.07) 0px,
+      rgba(139, 92, 246, 0.07) 1px,
+      transparent 1px,
+      transparent 20px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(139, 92, 246, 0.07) 0px,
+      rgba(139, 92, 246, 0.07) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  background-size: 20px 20px;
+  animation: tron-scroll 4s linear infinite;
+  will-change: background-position;
+}
+
+/* Forward-motion keyframe — scrolls vertical axis seamlessly.
+   The background-size vertical = 80px, so we scroll exactly that
+   distance for a perfect loop. */
+@keyframes tron-scroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 80px;
+  }
+}
+
+/* ---- Depth fade — gradient mask over the grid ---- */
+.tron-grid__fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    #07080c 0%,
+    #07080c 18%,
+    transparent 35%,
+    transparent 70%,
+    rgba(7, 8, 12, 0.7) 90%,
+    #07080c 100%
+  );
+}
+
+/* ---- Vignette overlay ---- */
+.tron-grid__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 40%,
+    rgba(7, 8, 12, 0.55) 75%,
+    rgba(7, 8, 12, 0.9) 100%
+  );
+}
+
+/* ---- Reduced motion preference ---- */
+@media (prefers-reduced-motion: reduce) {
+  .tron-grid__lines--primary,
+  .tron-grid__lines--secondary {
+    animation: none;
+  }
+}
+

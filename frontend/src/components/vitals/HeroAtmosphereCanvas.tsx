@@ -120,7 +120,7 @@ export default function HeroAtmosphereCanvas() {
 
     // Cool night palette — blue / indigo / soft violet on deep black
     // Broader, richer palette
-    const hues = [162, 168, 174, 180, 42, 38, 155];
+    const hues = [162, 172, 178, 168, 42, 38, 160];
     const orbCount = reduceRef.current ? 6 : 20;
     const orbs: Orb[] = [];
 
@@ -315,8 +315,8 @@ export default function HeroAtmosphereCanvas() {
         cy,
         Math.max(width, height) * 0.55
       );
-      washA.addColorStop(0, "rgba(70, 120, 220, 0.1)");
-      washA.addColorStop(0.4, "rgba(90, 80, 180, 0.05)");
+      washA.addColorStop(0, "rgba(45, 212, 167, 0.1)");
+      washA.addColorStop(0.4, "rgba(31, 191, 214, 0.05)");
       washA.addColorStop(1, "transparent");
       ctx.fillStyle = washA;
       ctx.fillRect(0, 0, width, height);
@@ -329,7 +329,7 @@ export default function HeroAtmosphereCanvas() {
         height * 0.28,
         Math.min(width, height) * 0.4
       );
-      washB.addColorStop(0, "rgba(100, 90, 200, 0.08)");
+      washB.addColorStop(0, "rgba(31, 191, 214, 0.08)");
       washB.addColorStop(1, "transparent");
       ctx.fillStyle = washB;
       ctx.fillRect(0, 0, width, height);
@@ -342,7 +342,7 @@ export default function HeroAtmosphereCanvas() {
         height * 0.75,
         Math.min(width, height) * 0.35
       );
-      washC.addColorStop(0, "rgba(40, 140, 190, 0.07)");
+      washC.addColorStop(0, "rgba(45, 212, 167, 0.07)");
       washC.addColorStop(1, "transparent");
       ctx.fillStyle = washC;
       ctx.fillRect(0, 0, width, height);

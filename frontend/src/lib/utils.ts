@@ -20,9 +20,17 @@ export function formatYear(date?: string | null) {
   return new Date(date).getFullYear().toString();
 }
 
+/**
+ * Cut to `length`, then back up to the last word boundary so the ellipsis never
+ * lands mid-word ("…without bei…"). If the cut leaves no whitespace to fall back
+ * to — a single very long token — the hard slice stands.
+ */
 export function truncate(text: string, length = 120) {
   if (text.length <= length) return text;
-  return `${text.slice(0, length).trim()}…`;
+  const cut = text.slice(0, length);
+  const lastSpace = cut.lastIndexOf(" ");
+  const kept = lastSpace > length * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${kept.replace(/[\s,;:.!?-]+$/, "").trim()}…`;
 }
 
 export function stripHtml(html: string) {

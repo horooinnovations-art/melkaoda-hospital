@@ -1,0 +1,413 @@
+/* ==========================================================================
+   NOVA — stacked gallery carousel
+
+   Charcoal & champagne. A coverflow deck with no surface of its own: it sits
+   directly on the page's own backdrop. The focused card is full size, at full
+   colour, lit along its top edge and warmed to champagne at the border; its
+   neighbours are turned away and dimmed rather than blurred or faded, so they
+   still read as photographs receding from the light.
+
+   Ring geometry (offset, scale, rotation, brightness, saturation) is set inline
+   by NovaGalleryStack because it needs signed arithmetic per card. Everything
+   that does not depend on the active index lives here.
+   ========================================================================== */
+
+.nv-stack {
+  /* A fixed editorial aspect ratio, so the card keeps the same proportions at
+     every breakpoint instead of drifting from letterbox to nearly square. */
+  --nvs-card-w: min(620px, 64vw);
+  --nvs-card-h: calc(var(--nvs-card-w) / 1.6);
+
+  position: relative;
+  z-index: 1;
+}
+
+/* Transparent — `overflow: hidden` is only here so the outer cards cannot push
+   the page into horizontal scroll. */
+.nv-stack__stage {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 2.6vw, 40px) 0 clamp(10px, 1.2vw, 18px);
+  background: none;
+}
+
+/* ── Deck ───────────────────────────────────────────────────────────────────
+   `perspective` without `transform-style: preserve-3d` is deliberate. With
+   preserve-3d the cards become planes in a shared 3D space and the browser
+   sorts them by depth, so a neighbour's rotated inner edge tilts toward the
+   viewer and bleeds over the focused card. Flattening each card into the
+   deck's own plane keeps the perspective projection but makes z-index
+   authoritative, so the focused card is never covered.
+   ------------------------------------------------------------------------- */
+.nv-stack__deck {
+  position: relative;
+  z-index: 1;
+  height: var(--nvs-card-h);
+  perspective: 1800px;
+}
+
+/* The slot carries the depth transform. Transform runs longer than light does:
+   the card arrives, and then settles into full colour just after — which is
+   what makes the movement read as heavy rather than snappy. */
+.nv-stack__slot {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--nvs-card-w);
+  height: 100%;
+  margin-left: calc(var(--nvs-card-w) / -2);
+  transform-origin: 50% 50%;
+  transition:
+    transform 1.15s var(--nv-ease-lux),
+    opacity 0.9s var(--nv-ease-lux),
+    filter 1.35s var(--nv-ease-lux);
+  will-change: transform, filter;
+}
+
+/* Shared by the focused card's <a> and the neighbours' <button>, so the button
+   needs the usual reset before it can look identical. */
+.nv-stack__card {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--nv-plate-well);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: clamp(16px, 1.7vw, 24px);
+  box-shadow:
+    0 24px 60px -30px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1px var(--nv-hairline);
+  transition: box-shadow 1s var(--nv-ease-lux);
+}
+
+/* The focused card gets the full plate treatment: a long shadow that puts it
+   clearly in front of its neighbours, a champagne hairline around it, and the
+   1px catch-light along the top edge that every other surface on the page has. */
+.nv-stack__slot[data-active] .nv-stack__card {
+  box-shadow:
+    0 3px 3px rgba(0, 0, 0, 0.4),
+    0 54px 110px -34px rgba(0, 0, 0, 1),
+    inset 0 0 0 1px var(--nv-champagne-line),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.nv-stack__card:focus-visible {
+  outline: 2px solid var(--nv-champagne-hi);
+  outline-offset: 3px;
+}
+
+.nv-stack__frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+}
+
+.nv-stack__photo {
+  object-fit: cover;
+}
+
+/* A very slow drift on the focused photograph only. It runs once per dwell and
+   holds at the end, so the image is never seen mid-jump; the movement is small
+   enough to be felt rather than watched. */
+.nv-stack__slot[data-active] .nv-stack__photo {
+  animation: nv-stack-drift 9s var(--nv-ease-lux) forwards;
+}
+
+@keyframes nv-stack-drift {
+  from { transform: scale(1.055); }
+  to { transform: scale(1); }
+}
+
+.nv-stack__fallback {
+  position: absolute;
+  inset: 0;
+  background: var(--nv-plate-well);
+}
+
+/* Only the focused card gets the scrim, so the neighbours stay clean image.
+   Charcoal, not blue-black, and reaching high enough up the frame that a
+   three-line caption never sits on bare photograph. */
+.nv-stack__scrim {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(6, 7, 10, 0.94) 0%,
+    rgba(6, 7, 10, 0.72) 26%,
+    rgba(6, 7, 10, 0.24) 52%,
+    rgba(6, 7, 10, 0) 74%
+  );
+  transition: opacity 1s var(--nv-ease-lux);
+  pointer-events: none;
+}
+
+.nv-stack__slot[data-active] .nv-stack__scrim { opacity: 1; }
+
+/* ── Caption — revealed on the focused card only ────────────────────────────
+   Set with the same margins and the same type ladder as a card body: mono
+   champagne label over a display title over reading-size prose. It rises 20px
+   as it fades, a beat behind the card's own arrival.
+   ------------------------------------------------------------------------- */
+.nv-stack__meta {
+  position: absolute;
+  inset-inline: clamp(24px, 3vw, 44px);
+  bottom: clamp(22px, 2.8vw, 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.9s var(--nv-ease-lux) 0.22s,
+    transform 1.05s var(--nv-ease-lux) 0.22s;
+}
+
+.nv-stack__slot[data-active] .nv-stack__meta {
+  opacity: 1;
+  transform: none;
+}
+
+/* Champagne mono label with the short leading rule the card kickers use, so a
+   gallery caption and a card caption are recognisably the same object. */
+.nv-stack__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-hi);
+}
+
+.nv-stack__label::before {
+  content: "";
+  width: 26px;
+  height: 1px;
+  flex: none;
+  background: var(--nv-champagne);
+}
+
+.nv-stack__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.28rem, 2.2vw, 1.95rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  color: #fff;
+  text-wrap: balance;
+}
+
+.nv-stack__desc {
+  font-size: 0.875rem;
+  line-height: 1.72;
+  color: rgba(255, 255, 255, 0.74);
+  max-width: 48ch;
+}
+
+/* Reads as the card foot: a hairline above it, mono champagne, arrow offset on
+   hover. It is inside the focused card's <a>, so the whole card is the target. */
+.nv-stack__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(217, 195, 154, 0.28);
+  font-family: var(--nv-font-mono);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-hi);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-stack__more svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-stack__card:hover .nv-stack__more svg { transform: translate(3px, -3px); }
+
+/* ── Controls ───────────────────────────────────────────────────────────────
+   Laid out as a printed caption line rather than a centred cluster: the
+   catalogue number on the left, a segmented hairline track filling the space
+   between, the two arrows on the right.
+   ------------------------------------------------------------------------- */
+.nv-stack__nav {
+  position: relative;
+  z-index: 2;
+  margin-top: clamp(24px, 3vw, 40px);
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 34px);
+}
+
+/* The counter is set at display scale — it is the only large mark in the
+   control row, which is what lets everything else stay hairline-thin. */
+.nv-stack__count {
+  margin: 0;
+  flex: none;
+  font-family: var(--nv-font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+  color: var(--nv-champagne);
+}
+
+.nv-stack__count i {
+  font-style: normal;
+  margin: 0 5px;
+  color: var(--nv-faint);
+}
+
+/* ── Segmented progress track ───────────────────────────────────────────────
+   One continuous 1px rule broken into per-slide segments. Each segment is the
+   click target for its slide and the active one fills champagne over the dwell
+   time, so navigation, position and the time remaining are all the same object
+   — no dots, no separate progress bar.
+   ------------------------------------------------------------------------- */
+.nv-stack__dots {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nv-stack__dot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  cursor: pointer;
+  background: var(--nv-hairline);
+  transition: background-color 0.7s var(--nv-ease-lux);
+}
+
+/* A 1px line is not a hittable target, so each segment carries an invisible
+   18px band around it. */
+.nv-stack__dot::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -9px;
+  bottom: -9px;
+}
+
+.nv-stack__dot:hover { background: var(--nv-champagne-dim); }
+
+.nv-stack__dot[data-on] { background: var(--nv-hairline-hi); }
+
+.nv-stack__dot:focus-visible {
+  outline: 1px solid var(--nv-champagne-hi);
+  outline-offset: 5px;
+}
+
+/* Grown to 2px and lifted clear of the rule, so the elapsed segment reads as a
+   filled bar rather than a slightly brighter hairline. */
+.nv-stack__dot-fill {
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  height: 2px;
+  transform-origin: left center;
+  background: var(--nv-champagne);
+  animation-name: nv-stack-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes nv-stack-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.nv-stack__arrows {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+}
+
+.nv-stack__arrow {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--nv-hairline);
+  background: transparent;
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-text-dim);
+  cursor: pointer;
+  transition:
+    background-color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux);
+}
+
+.nv-stack__arrow:hover {
+  background: var(--nv-champagne-faint);
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne-hi);
+}
+
+.nv-stack__arrow:focus-visible {
+  outline: 2px solid var(--nv-champagne-hi);
+  outline-offset: 2px;
+}
+
+.nv-stack__arrow svg { width: 18px; height: 18px; }
+
+/* ── Narrow screens ─────────────────────────────────────────────────────────
+   The card takes most of the viewport and the neighbours become edge slivers,
+   so the counter is dropped and the track carries position on its own.
+   ------------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .nv-stack {
+    --nvs-card-w: 80vw;
+    --nvs-card-h: calc(var(--nvs-card-w) / 1.42);
+  }
+
+  .nv-stack__count { display: none; }
+  .nv-stack__desc { display: none; }
+  .nv-stack__arrow { width: 40px; height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-stack__slot,
+  .nv-stack__scrim,
+  .nv-stack__meta,
+  .nv-stack__more svg {
+    transition: none;
+  }
+
+  /* The caption still reveals on the focused card only — it just arrives
+     without the rise, so `transform` is neutralised and opacity is left to the
+     [data-active] rule. */
+  .nv-stack__meta { transform: none; }
+
+  .nv-stack__slot[data-active] .nv-stack__photo { animation: none; }
+  .nv-stack__dot-fill { display: none; }
+}

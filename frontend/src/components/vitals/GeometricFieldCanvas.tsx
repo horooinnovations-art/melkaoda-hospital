@@ -79,9 +79,9 @@ function iridescent(
   alpha: number
 ): { fill: string; stroke: string; glow: string } {
   if (theme === "dark") {
-    const h1 = 168 + hue * 40;
-    const h2 = 195 + hue * 55;
-    const h3 = 265 + hue * 20;
+    const h1 = 155 + hue * 15;
+    const h2 = 165 + hue * 15;
+    const h3 = 175 + hue * 10;
     return {
       fill: `hsla(${h1}, 72%, 58%, ${alpha * 0.22})`,
       stroke: `hsla(${h2}, 78%, 68%, ${alpha * 0.55})`,

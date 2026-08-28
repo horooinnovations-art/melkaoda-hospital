@@ -1,0 +1,152 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Nova Atmosphere — champagne bloom, scoped to the hero band.
+
+   Three stacked layers, all non-interactive and all pure CSS:
+
+     1. .nv-bg__bloom     one very wide champagne wash high on the page
+     2. .nv-bg__horizon   a low warm pool with a single hairline across it
+     3. .nv-bg__grain     static fractal-noise film grain
+
+   What used to be here was a canvas painting a mint/teal neon perspective grid
+   and an amber sun, animated by a per-frame rAF loop on every public page. It
+   was replaced for two reasons. It fought the material — the page is charcoal
+   with champagne hairlines, and a saturated neon horizon reads as a different
+   product entirely — and it was the only continuously animating thing on the
+   site. Light does the same work: a wash this wide has no edge to notice, so it
+   reads as the room the plates are lit in rather than as a graphic.
+
+   The layer is anchored to the top of the *document* (absolute, not fixed) and
+   is only as tall as the hero, so it scrolls away with it and the bloom belongs
+   to the top of the page instead of following the viewport. The corner falloff
+   is the opposite: it is viewport-anchored, and lives on `body::before` in
+   nova-core.css.
+
+   The band is transparent. It has no base colour of its own — the page surface
+   is a single flat charcoal now, so there is nothing for the hero to be exempt
+   from. The bottom is masked to nothing so the bloom dissolves into the page
+   rather than ending on a line.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nv-bg {
+  /* Band geometry in variables, so the stacked-layout breakpoint below can
+     retune height and fade together. Tall enough to cover the hero, short
+     enough to be gone by the first content section. */
+  --nv-band-h: clamp(620px, 96vh, 1000px);
+  --nv-band-fade: 58%;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nv-band-h);
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: none;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 var(--nv-band-fade),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 var(--nv-band-fade),
+    transparent 100%
+  );
+}
+
+/* Below 1080px the hero's two columns stack, which roughly doubles its height.
+   The band grows with it so the bloom still sits behind the whole hero rather
+   than stopping halfway down it; the fade also starts later. */
+@media (max-width: 1079px) {
+  .nv-bg {
+    --nv-band-h: clamp(1040px, 158vh, 1480px);
+    --nv-band-fade: 76%;
+  }
+}
+
+/* ── Bloom ──────────────────────────────────────────────────────────────────
+   Two radials on one layer: a very wide outer wash whose centre is *above* the
+   top edge (50% -6%), so only its lower half is ever in frame and it has no
+   visible centre, and a much smaller warm core inside it. Both are far below
+   the threshold where they would tint content sitting on top — the effect is
+   meant to be noticed as depth, not as colour.
+
+   The drift is a 34s scale-and-shift on an alternating ease-in-out. At this
+   size and duration nothing about it can be watched; it only stops the top of
+   the page from being perfectly static.
+   ------------------------------------------------------------------------- */
+.nv-bg__bloom {
+  position: absolute;
+  inset: -10% -10% 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      52% 34% at 50% 4%,
+      var(--nv-bloom-core),
+      transparent 70%
+    ),
+    radial-gradient(
+      118% 78% at 50% -6%,
+      var(--nv-bloom),
+      transparent 68%
+    );
+  animation: nv-bloom-drift 34s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes nv-bloom-drift {
+  from { transform: translate3d(-1.5%, 0, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1.5%, 0) scale(1.07); }
+}
+
+/* ── Horizon ────────────────────────────────────────────────────────────────
+   The grid gave the hero a floor to stand on, and losing it left the band
+   feeling untethered. This is that floor reduced to its two useful parts: a
+   soft warm pool low in the band, and one champagne hairline across it that
+   fades out at both ends so it never reads as a border.
+   ------------------------------------------------------------------------- */
+.nv-bg__horizon {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 46%;
+  pointer-events: none;
+  background: radial-gradient(
+    92% 100% at 50% 118%,
+    var(--nv-bloom-core),
+    transparent 62%
+  );
+}
+
+.nv-bg__horizon::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 22%,
+    var(--nv-champagne-line) 78%,
+    transparent
+  );
+}
+
+/* Film grain — 160x160 fractal noise tile, sits above the light. Keeps the
+   large flat washes from banding on 8-bit displays. */
+.nv-bg__grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The bloom is the only thing on the page that moves without being asked. */
+@media (prefers-reduced-motion: reduce) {
+  .nv-bg__bloom { animation: none; }
+}

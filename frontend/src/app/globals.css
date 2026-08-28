@@ -6,30 +6,30 @@
   --ink-muted: #64748b;
   --paper: #f8fafc;
   --surface: #f1f5f9;
-  --cobalt: #0369a1;
-  --cobalt-soft: #e0f2fe;
+  --cobalt: #2dd4a7;
+  --cobalt-soft: rgba(45,212,167,0.09);
   --amber: #0369a1;
   --signal: #be123c;
 
   /* Legacy aliases → Horizon (keeps older class names compiling) */
   --teal-deep: #0f172a;
-  --teal-mid: #0369a1;
-  --teal-mist: #e0f2fe;
+  --teal-mid: #2dd4a7;
+  --teal-mist: rgba(45,212,167,0.12);
   --brass: #0369a1;
   --stone: #e8eef5;
   --abyss: #0c1b2a;
   --abyss-2: #122033;
   --abyss-3: #1a2d45;
-  --mint: #0284c8;
-  --aqua: #7dd3fc;
-  --violet: #0369a1;
-  --coral: #0369a1;
-  --gold: #0284c8;
-  --frost: #dbe7ff;
+  --mint: #46e6c8;
+  --aqua: #1fbfd6;
+  --violet: #3a9bf0;
+  --coral: #e89a3c;
+  --gold: #f5c062;
+  --frost: rgba(45,212,167,0.15);
 
   /* Font aliases for older CSS */
-  --font-fraunces: var(--font-source);
-  --font-outfit: var(--font-source);
+  --font-fraunces: "Clash Display", var(--font-source);
+  --font-outfit: "Clash Display", var(--font-source);
 }
 
 @theme inline {
@@ -37,7 +37,7 @@
   --color-ink-muted: var(--ink-muted);
   --color-paper: var(--paper);
   --color-surface: var(--surface);
-  --color-cobalt: var(--cobalt);
+  --color-cobalt: #2dd4a7;
   --color-cobalt-soft: var(--cobalt-soft);
   --color-amber: var(--amber);
   --color-signal: var(--signal);
@@ -49,13 +49,13 @@
   --color-abyss: var(--abyss);
   --color-abyss-2: var(--abyss-2);
   --color-abyss-3: var(--abyss-3);
-  --color-mint: var(--mint);
-  --color-aqua: var(--aqua);
+  --color-mint: #46e6c8;
+  --color-aqua: #1fbfd6;
   --color-violet: var(--violet);
   --color-coral: var(--coral);
   --color-gold: var(--gold);
   --color-frost: var(--frost);
-  --font-display: var(--font-source);
+  --font-display: "Clash Display", var(--font-source);
   --font-body: var(--font-source);
 }
 
@@ -72,7 +72,7 @@ body {
     radial-gradient(ellipse 90% 70% at 0% -10%, rgba(3, 105, 161, 0.06), transparent 55%),
     linear-gradient(180deg, #ffffff 0%, #f8fafc 45%, #f1f5f9 100%) !important;
   color: #0f172a !important;
-  font-family: var(--font-source), system-ui, sans-serif;
+  font-family: "Satoshi", var(--font-source), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -3261,6 +3261,155 @@ header nav.v-nav-rail .relative > .absolute[class*="top-full"] {
 
 .leaflet-popup-tip {
   background: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTON STYLES (POISELY-INSPIRED)
+   ═══════════════════════════════════════════════════════ */
+.g-btn--ink {
+  background: linear-gradient(115deg, #2dd4a7, #1fbfd6 60%, #3a9bf0);
+  box-shadow: 0 10px 30px -6px rgba(31, 191, 214, 0.5);
+}
+.g-btn--ink:hover {
+  filter: brightness(1.1);
+}
+
+.g-btn--ghost {
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.g-btn--sky {
+  background: linear-gradient(115deg, #1fbfd6, #3a9bf0);
+  box-shadow: 0 10px 30px -6px rgba(31, 191, 214, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   POISELY-INSPIRED AMBIENT EFFECTS
+   ═══════════════════════════════════════════════════════ */
+
+/* Aurora floating orbs */
+.poisely-aurora {
+  position: fixed;
+  inset: -20% -10% auto -10%;
+  height: 150vh;
+  z-index: -3;
+  pointer-events: none;
+  filter: blur(64px);
+  opacity: 0.55;
+}
+.poisely-aurora i {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  animation: poisely-drift 22s ease-in-out infinite;
+}
+.poisely-aurora i:nth-child(1) {
+  width: 48vw; height: 48vw; left: 6%; top: -10%;
+  background: radial-gradient(circle, #2dd4a7, transparent 65%);
+}
+.poisely-aurora i:nth-child(2) {
+  width: 42vw; height: 42vw; right: 2%; top: -6%;
+  background: radial-gradient(circle, #1fbfd6, transparent 65%);
+  animation-delay: -7s;
+}
+.poisely-aurora i:nth-child(3) {
+  width: 40vw; height: 40vw; left: 33%; top: 16%;
+  background: radial-gradient(circle, #46e6c8, transparent 65%);
+  opacity: 0.5;
+  animation-delay: -13s;
+}
+.poisely-aurora i:nth-child(4) {
+  width: 36vw; height: 36vw; right: 18%; top: 24%;
+  background: radial-gradient(circle, #e89a3c, transparent 64%);
+  opacity: 0.34;
+  animation: poisely-drift 26s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+@keyframes poisely-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(5%, 6%) scale(1.12); }
+  50% { transform: translate(-3%, 3%) scale(0.94); }
+  75% { transform: translate(3%, -4%) scale(1.06); }
+}
+
+/* Film grain overlay */
+.poisely-grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Cursor-following glow */
+.poisely-cursor-glow {
+  position: fixed;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(31, 191, 214, 0.10), transparent 60%);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.4s;
+  opacity: 0;
+}
+
+/* Card mouse-tracking glow effect */
+.g-glow-card {
+  position: relative;
+}
+.g-glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: inherit;
+  background: radial-gradient(
+    400px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(45, 212, 167, 0.13),
+    transparent 45%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+.g-glow-card:hover::before {
+  opacity: 1;
+}
+
+/* Poisely gradient text utility */
+.poisely-g {
+  background: linear-gradient(115deg, #2dd4a7, #1fbfd6 60%, #3a9bf0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Poisely card hover lift */
+.poisely-lift {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s;
+}
+.poisely-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* Reduced motion: disable Poisely effects */
+@media (prefers-reduced-motion: reduce) {
+  .poisely-aurora i,
+  .poisely-cursor-glow {
+    animation: none;
+  }
+  .poisely-grain {
+    display: none;
+  }
+  .poisely-cursor-glow {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

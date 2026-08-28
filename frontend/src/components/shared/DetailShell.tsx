@@ -18,7 +18,7 @@ export interface DetailBadge {
 }
 
 const BADGE_TONES: Record<DetailBadgeTone, string> = {
-  mint: "g-detail-badge g-detail-badge--sky",
+  mint: "g-detail-badge g-detail-badge--teal",
   teal: "g-detail-badge g-detail-badge--teal",
   coral: "g-detail-badge g-detail-badge--rose",
   glass: "g-detail-badge g-detail-badge--ink",
@@ -124,7 +124,7 @@ export default function DetailShell({
               <div className="g-page-hero__media group cursor-pointer">
                 <span className="g-page-hero__media-rim transition-opacity duration-500 group-hover:opacity-100" aria-hidden />
                 <span className="g-page-hero__media-glow transition-all duration-700 group-hover:scale-110 group-hover:opacity-90" aria-hidden />
-                <div className="g-page-hero__media-frame relative overflow-hidden rounded-[1.45rem] bg-slate-900/10 transition-all duration-500 ease-out group-hover:-translate-y-1.5 group-hover:shadow-2xl group-hover:shadow-sky-500/20 isolate">
+                <div className="g-page-hero__media-frame relative overflow-hidden rounded-[1.45rem] bg-slate-900/10 transition-all duration-500 ease-out group-hover:-translate-y-1.5 group-hover:shadow-2xl group-hover:shadow-teal-500/20 isolate">
                   {/* Ambient blur backdrop to fill container naturally */}
                   <SmartImage
                     src={heroSrc}

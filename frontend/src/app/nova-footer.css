@@ -1,0 +1,208 @@
+/* ==========================================================================
+   NOVA — footer
+
+   A direct port of the poisely.co footer: a single hairline rule on top, four
+   flex columns (brand + three link lists), then a bottom bar separated by a
+   second hairline. Every value below — spacing, type sizes, palette — is taken
+   from that stylesheet, so the only differences are the content and the
+   scoped .nv-footer-* names.
+   ========================================================================== */
+
+.nv-footer {
+  /* poisely's footer palette, kept local so the rest of nova is untouched */
+  --nvf-line: #1f1f29;
+  --nvf-txt: #f4f6fb;
+  --nvf-mut: #969fb4;
+  --nvf-faint: #6a6f80;
+  --nvf-accent: #2dd4a7;
+  --nvf-grad: linear-gradient(115deg, #2dd4a7, #1fbfd6 60%, #3a9bf0);
+
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--nvf-line);
+  margin-top: 90px;
+  padding: 52px 0 64px;
+  background: transparent;
+  font-family: var(--nv-font-body);
+}
+
+/* poisely's .wrap */
+.nv-footer__wrap {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Columns ────────────────────────────────────────────────────────────── */
+.nv-footer__cols {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.nv-footer__brand-col { max-width: 290px; }
+
+.nv-footer__col h4 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--nvf-faint);
+  margin: 0 0 15px;
+}
+
+/* Only the three link columns get the stacked-block treatment — the brand
+   column holds a logo, accent contact rows and social chips, all of which are
+   anchors too and need to keep their own display. */
+.nv-footer__col:not(.nv-footer__brand-col) a {
+  display: block;
+  color: var(--nvf-mut);
+  font-size: 14.5px;
+  margin-bottom: 11px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.nv-footer__col:not(.nv-footer__brand-col) a:hover { color: var(--nvf-txt); }
+
+/* ── Brand column ───────────────────────────────────────────────────────── */
+.nv-footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--nv-font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+  color: var(--nvf-txt);
+  text-decoration: none;
+}
+
+.nv-footer__mark {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--nvf-grad);
+  box-shadow: 0 6px 20px rgba(31, 191, 214, 0.45);
+}
+
+.nv-footer__mark svg {
+  position: relative;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  color: #04120f;
+}
+
+/* The sheen that crosses poisely's logo mark every few seconds */
+.nv-footer__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.5),
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: nv-footer-sheen 4.5s ease-in-out infinite;
+}
+
+@keyframes nv-footer-sheen {
+  0%, 60% { transform: translateX(-120%); }
+  80%, 100% { transform: translateX(120%); }
+}
+
+.nv-footer__blurb {
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--nvf-mut);
+  margin-top: 15px;
+}
+
+/* Accent contact rows — poisely's Telegram / X links */
+.nv-footer__accent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--nvf-accent);
+  text-decoration: none;
+}
+
+.nv-footer__blurb + .nv-footer__accent { margin-top: 16px; }
+.nv-footer__accent:hover { color: #46e6c8; }
+.nv-footer__accent svg { width: 15px; height: 15px; flex: none; }
+
+.nv-footer__where {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--nvf-faint);
+}
+
+.nv-footer__where svg { width: 15px; height: 15px; flex: none; margin-top: 2px; }
+
+.nv-footer__socials {
+  display: flex;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.nv-footer__social {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  border: 1px solid var(--nvf-line);
+  color: var(--nvf-mut);
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.nv-footer__social:hover {
+  color: var(--nvf-accent);
+  border-color: rgba(45, 212, 167, 0.45);
+  background: rgba(45, 212, 167, 0.1);
+}
+
+/* ── Bottom bar ─────────────────────────────────────────────────────────── */
+.nv-footer__bottom {
+  margin-top: 42px;
+  padding-top: 26px;
+  border-top: 1px solid var(--nvf-line);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--nvf-faint);
+  font-size: 13.5px;
+}
+
+.nv-footer__bottom a {
+  color: var(--nvf-mut);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.nv-footer__bottom a:hover { color: var(--nvf-txt); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-footer__mark::after { animation: none; }
+}

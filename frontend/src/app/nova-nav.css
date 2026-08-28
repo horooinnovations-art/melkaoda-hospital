@@ -1,0 +1,642 @@
+/* ==========================================================================
+   NOVA — site header  (namespace .nvh*)
+
+   A flush, full-width command bar. Structurally this is a different animal to
+   the header it replaces — that one was a floating rounded pill riding under a
+   contact strip, with a sliding highlight puck and a separate floating mega
+   card per menu. This one is:
+
+     · one bar, edge to edge, flush to the viewport top, hairline underneath
+     · a sliding-underline marker instead of a puck
+     · ONE full-bleed sheet shared by every menu — moving between top-level
+       items swaps the sheet's contents in place instead of closing and
+       reopening a card
+     · a right-hand slide-in panel on small screens, not a top drawer
+     · CSS transitions throughout; the header no longer pulls in framer-motion
+
+   Colour is deliberately thin: neutral surfaces, one accent (--nv-accent) for
+   the marker and link icons, and a single red-tinted emergency control. No
+   halos, rings, conic sheens or progress beam.
+   ========================================================================== */
+
+:root { --nvh-h: 62px; }
+@media (min-width: 1100px) { :root { --nvh-h: 72px; } }
+
+.nvh {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+}
+
+/* Transparent over the hero until scrolled or opened, so the bar reads as part
+   of the hero rather than a slab on top of it. */
+.nvh__bar {
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 0.35s var(--nv-ease),
+    border-color 0.35s var(--nv-ease),
+    backdrop-filter 0.35s var(--nv-ease);
+}
+
+.nvh[data-solid] .nvh__bar,
+.nvh[data-open] .nvh__bar {
+  background: rgba(6, 8, 16, 0.9);
+  border-bottom-color: var(--nv-line-soft);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.nvh__inner {
+  height: var(--nvh-h);
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 40px);
+}
+
+/* ── Brand ──────────────────────────────────────────────────────────────── */
+.nvh__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: none;
+}
+
+.nvh__mark {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 11px;
+  border: 1px solid var(--nv-line);
+  background: #0d1020;
+  color: var(--nv-accent);
+  transition: border-color 0.3s var(--nv-ease);
+}
+
+.nvh__brand:hover .nvh__mark { border-color: rgba(167, 180, 242, 0.4); }
+.nvh__mark svg { width: 18px; height: 18px; }
+
+.nvh__lockup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nvh__name {
+  font-family: var(--nv-font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 46vw;
+}
+
+.nvh__place {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) { .nvh__place { display: none; } }
+
+/* ── Top-level navigation ────────────────────────────────────────────────
+   The marker is a 2px rule that grows out from the centre of the item. It sits
+   on the bar's own bottom edge, so it reads as a tab indicator rather than a
+   floating highlight.
+   ---------------------------------------------------------------------- */
+.nvh__nav {
+  display: none;
+  align-items: stretch;
+  height: 100%;
+  gap: 2px;
+}
+
+@media (min-width: 1100px) { .nvh__nav { display: flex; } }
+
+.nvh__top {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  margin: 0;
+  padding: 0 14px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--nv-text-dim);
+  cursor: pointer;
+  transition: color 0.25s var(--nv-ease);
+}
+
+.nvh__top::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--nv-accent);
+  transform: scaleX(0);
+  transition: transform 0.32s var(--nv-ease);
+}
+
+.nvh__top:hover,
+.nvh__top[data-on],
+.nvh__top[data-open] { color: #fff; }
+
+.nvh__top[data-on]::after,
+.nvh__top[data-open]::after { transform: scaleX(1); }
+
+.nvh__top:focus-visible {
+  outline: 2px solid var(--nv-accent);
+  outline-offset: -4px;
+  border-radius: 6px;
+}
+
+.nvh__chev {
+  width: 13px;
+  height: 13px;
+  opacity: 0.5;
+  transition: transform 0.3s var(--nv-ease), opacity 0.3s var(--nv-ease);
+}
+
+.nvh__top[data-open] .nvh__chev { transform: rotate(180deg); opacity: 1; }
+
+/* ── Right-hand actions ─────────────────────────────────────────────────── */
+.nvh__acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex: none;
+}
+
+.nvh__ghost {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding-inline: 14px;
+  border-radius: 9px;
+  border: 1px solid var(--nv-line);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--nv-text-dim);
+  transition:
+    color 0.25s var(--nv-ease),
+    border-color 0.25s var(--nv-ease),
+    background-color 0.25s var(--nv-ease);
+}
+
+@media (min-width: 1240px) { .nvh__ghost { display: inline-flex; } }
+
+.nvh__ghost:hover {
+  color: #fff;
+  border-color: rgba(167, 180, 242, 0.32);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nvh__ghost svg { width: 13px; height: 13px; }
+
+/* The one saturated control in the header, and it is the one that matters. */
+.nvh__sos {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding-inline: 13px;
+  border-radius: 9px;
+  border: 1px solid rgba(251, 92, 125, 0.36);
+  background: rgba(251, 92, 125, 0.11);
+  color: #ffdbe3;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.25s var(--nv-ease), border-color 0.25s var(--nv-ease);
+}
+
+.nvh__sos:hover {
+  background: rgba(251, 92, 125, 0.2);
+  border-color: rgba(251, 92, 125, 0.55);
+}
+
+.nvh__sos svg { width: 14px; height: 14px; color: #fb5c7d; }
+.nvh__sos b { font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { .nvh__sos b { display: none; } }
+@media (max-width: 420px) { .nvh__sos span { display: none; } }
+
+.nvh__burger {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid var(--nv-line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nv-text-dim);
+  cursor: pointer;
+  transition: color 0.25s var(--nv-ease), border-color 0.25s var(--nv-ease);
+}
+
+@media (min-width: 1100px) { .nvh__burger { display: none; } }
+
+.nvh__burger:hover { color: #fff; border-color: rgba(167, 180, 242, 0.3); }
+.nvh__burger svg { width: 17px; height: 17px; }
+
+/* ── Shared sheet ────────────────────────────────────────────────────────
+   One panel for every menu. It is always mounted so swapping sections is a
+   content cross-fade rather than a re-entry animation, and so the browser can
+   keep the links in the a11y tree only while the sheet is actually open
+   (visibility: hidden takes them out).
+   ---------------------------------------------------------------------- */
+.nvh__sheet {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid var(--nv-line-soft);
+  background: rgba(7, 9, 19, 0.97);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 40px 90px -52px rgba(0, 0, 0, 0.95);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.26s var(--nv-ease),
+    transform 0.26s var(--nv-ease),
+    visibility 0.26s linear;
+}
+
+.nvh[data-open] .nvh__sheet {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (max-width: 1099px) { .nvh__sheet { display: none; } }
+
+.nvh__sheet-in {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 2.15fr);
+  gap: clamp(22px, 3vw, 54px);
+  padding-block: clamp(24px, 2.4vw, 36px);
+}
+
+.nvh__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: clamp(12px, 1.6vw, 26px);
+  border-right: 1px solid var(--nv-line-soft);
+}
+
+.nvh__intro-kicker {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-accent);
+}
+
+.nvh__intro-title {
+  margin: 0;
+  font-family: var(--nv-font-display);
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.nvh__intro-copy {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--nv-muted);
+}
+
+.nvh__intro-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  transition: color 0.25s var(--nv-ease), gap 0.25s var(--nv-ease);
+}
+
+.nvh__intro-go:hover { color: #fff; gap: 10px; }
+.nvh__intro-go svg { width: 13px; height: 13px; }
+
+.nvh__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+  align-content: start;
+}
+
+@media (min-width: 1400px) {
+  .nvh__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nvh__link {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.24s var(--nv-ease),
+    border-color 0.24s var(--nv-ease);
+}
+
+.nvh__link:hover,
+.nvh__link:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--nv-line-soft);
+}
+
+.nvh__link[data-on] {
+  background: rgba(167, 180, 242, 0.08);
+  border-color: rgba(167, 180, 242, 0.22);
+}
+
+.nvh__ico {
+  width: 31px;
+  height: 31px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  border: 1px solid var(--nv-line-soft);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nv-accent);
+}
+
+.nvh__ico svg { width: 15px; height: 15px; }
+
+.nvh__l-copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.nvh__l-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nv-text);
+}
+
+.nvh__l-hint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--nv-muted);
+}
+
+.nvh__go {
+  width: 14px;
+  height: 14px;
+  color: var(--nv-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.24s var(--nv-ease), transform 0.24s var(--nv-ease);
+}
+
+.nvh__link:hover .nvh__go { opacity: 1; transform: none; }
+
+.nvh__sheet-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-block: 13px;
+  border-top: 1px solid var(--nv-line-soft);
+  font-size: 12px;
+  color: var(--nv-muted);
+}
+
+.nvh__sheet-foot strong { color: var(--nv-text-dim); font-weight: 600; }
+
+.nvh__sheet-tel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--nv-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #ffdbe3;
+}
+
+.nvh__sheet-tel svg { width: 13px; height: 13px; color: #fb5c7d; }
+.nvh__sheet-tel:hover { color: #fff; }
+
+/* ── Mobile panel ────────────────────────────────────────────────────────
+   Slides in from the right rather than dropping from the top, so the bar stays
+   put and the panel never covers the brand.
+   ---------------------------------------------------------------------- */
+.nvh-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: rgba(3, 4, 10, 0.7);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.3s var(--nv-ease);
+}
+
+.nvh-scrim[data-show] { opacity: 1; }
+
+.nvh-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 96;
+  width: min(400px, 89vw);
+  display: flex;
+  flex-direction: column;
+  background: #080a15;
+  border-left: 1px solid var(--nv-line);
+  transform: translateX(101%);
+  transition: transform 0.4s var(--nv-ease);
+}
+
+.nvh-panel[data-show] { transform: none; }
+
+.nvh-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--nvh-h);
+  padding-inline: 16px 12px;
+  border-bottom: 1px solid var(--nv-line-soft);
+  flex: none;
+}
+
+.nvh-panel__title {
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nvh-panel__x {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid var(--nv-line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nv-text-dim);
+  cursor: pointer;
+}
+
+.nvh-panel__x:hover { color: #fff; }
+.nvh-panel__x svg { width: 16px; height: 16px; }
+
+.nvh-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 12px 20px;
+}
+
+/* One row per top-level item; sections expand in place. */
+.nvh-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--nv-line-soft);
+  background: none;
+  font: inherit;
+  font-family: var(--nv-font-display);
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--nv-text-dim);
+  text-align: left;
+  cursor: pointer;
+}
+
+.nvh-row[data-on] { color: #fff; }
+.nvh-row svg { width: 15px; height: 15px; opacity: 0.5; flex: none; transition: transform 0.3s var(--nv-ease); }
+.nvh-acc[data-open] .nvh-row svg { transform: rotate(180deg); opacity: 1; }
+
+/* --n is the child count, set inline, so the collapse height is exact without
+   measuring in JS. */
+.nvh-acc__body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.36s var(--nv-ease),
+    opacity 0.24s var(--nv-ease);
+}
+
+.nvh-acc[data-open] .nvh-acc__body {
+  max-height: calc(var(--n) * 44px + 14px);
+  opacity: 1;
+}
+
+.nvh-acc__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 4px 0 10px 10px;
+  list-style: none;
+}
+
+.nvh-sub {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 10px;
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--nv-muted);
+}
+
+.nvh-sub[data-on] { color: #fff; background: rgba(167, 180, 242, 0.08); }
+.nvh-sub svg { width: 15px; height: 15px; color: var(--nv-accent); flex: none; }
+
+.nvh-panel__foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--nv-line-soft);
+  background: #06080f;
+}
+
+.nvh-panel__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11.5px;
+  color: var(--nv-muted);
+}
+
+.nvh-panel__meta li { display: flex; align-items: flex-start; gap: 8px; }
+.nvh-panel__meta svg { width: 13px; height: 13px; margin-top: 2px; flex: none; color: var(--nv-faint); }
+.nvh-panel__meta a:hover { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nvh__bar,
+  .nvh__top,
+  .nvh__top::after,
+  .nvh__chev,
+  .nvh__sheet,
+  .nvh__link,
+  .nvh__go,
+  .nvh-scrim,
+  .nvh-panel,
+  .nvh-acc__body,
+  .nvh-row svg {
+    transition: none;
+  }
+}

@@ -62,12 +62,12 @@ function rotateZ(p: Vec3, a: number): Vec3 {
 }
 
 const PALETTE = [
-  { fill: "rgba(56, 189, 248, 0.55)", stroke: "rgba(186, 230, 253, 0.95)", glow: "rgba(56, 189, 248, 0.35)" },
+  { fill: "rgba(45, 212, 167, 0.55)", stroke: "rgba(167, 243, 218, 0.95)", glow: "rgba(45, 212, 167, 0.35)" },
   { fill: "rgba(45, 212, 191, 0.5)", stroke: "rgba(153, 246, 228, 0.9)", glow: "rgba(45, 212, 191, 0.3)" },
   { fill: "rgba(251, 146, 60, 0.5)", stroke: "rgba(254, 215, 170, 0.9)", glow: "rgba(251, 146, 60, 0.28)" },
-  { fill: "rgba(244, 114, 182, 0.45)", stroke: "rgba(251, 207, 232, 0.88)", glow: "rgba(244, 114, 182, 0.25)" },
+  { fill: "rgba(245, 192, 98, 0.45)", stroke: "rgba(253, 230, 138, 0.88)", glow: "rgba(245, 192, 98, 0.25)" },
   { fill: "rgba(250, 204, 21, 0.42)", stroke: "rgba(254, 240, 138, 0.85)", glow: "rgba(250, 204, 21, 0.22)" },
-  { fill: "rgba(129, 140, 248, 0.45)", stroke: "rgba(199, 210, 254, 0.9)", glow: "rgba(129, 140, 248, 0.28)" },
+  { fill: "rgba(31, 191, 214, 0.45)", stroke: "rgba(165, 243, 252, 0.9)", glow: "rgba(31, 191, 214, 0.28)" },
 ];
 
 /**
@@ -826,7 +826,7 @@ export default function MedicalHeroCanvas({ intensity = 1 }: { intensity?: numbe
         }
         ctx.closePath();
         const colors = [
-          "rgba(56, 189, 248, 0.18)",
+          "rgba(45, 212, 167, 0.18)",
           "rgba(45, 212, 191, 0.14)",
           "rgba(251, 146, 60, 0.12)",
         ];
@@ -864,7 +864,7 @@ export default function MedicalHeroCanvas({ intensity = 1 }: { intensity?: numbe
         {
           x: cx + Math.sin(t * 0.2) * 120,
           y: cy - 80,
-          c0: "rgba(56, 189, 248, 0.16)",
+          c0: "rgba(31, 191, 214, 0.16)",
           c1: "rgba(45, 212, 191, 0.06)",
         },
         {
@@ -876,7 +876,7 @@ export default function MedicalHeroCanvas({ intensity = 1 }: { intensity?: numbe
         {
           x: width * 0.2,
           y: height * 0.7 + Math.sin(t * 0.12) * 40,
-          c0: "rgba(244, 114, 182, 0.1)",
+          c0: "rgba(245, 192, 98, 0.1)",
           c1: "transparent",
         },
       ];

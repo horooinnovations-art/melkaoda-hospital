@@ -1,0 +1,1116 @@
+/* ==========================================================================
+   NOVA — cards & repeating units (home page)
+
+   Charcoal & champagne. Every unit is a solid top-lit charcoal plate: a 1px
+   catch-light along its upper edge, neutral hairlines everywhere else, and one
+   warm metal — champagne — used only for small marks, thin rules and hover
+   accents. Generous padding, large display type, slow heavy easing.
+
+   The rules the previous pass established still hold, because they were the
+   right ones: no coloured wash over photography, no numbers stamped on images,
+   no glowing plates. Richness comes from material — an edge that catches light,
+   a hairline that warms, a long shadow — not from added colour or light.
+   ========================================================================== */
+
+/* ── Content card — services ────────────────────────────────────────────────
+   A milled plate. At rest it is seated, lit along the top edge, and quiet. On
+   hover it rises 6px, the surface lightens by one step, the border warms to
+   champagne and a champagne hairline draws itself across the body.
+   ------------------------------------------------------------------------- */
+.nv-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 22px;
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  overflow: hidden;
+  transition:
+    transform 0.7s var(--nv-ease-lux),
+    border-color 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    background 0.7s var(--nv-ease-lux);
+}
+
+.nv-card:hover {
+  transform: translateY(-6px);
+  background: var(--nv-plate-hi);
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 rgba(255, 255, 255, 0.11);
+}
+
+/* ── Mounted photograph ─────────────────────────────────────────────────────
+   The photograph is inset on all three sides rather than running to the card's
+   own edge. That one change is what makes the unit read as a plate with an
+   image mounted on it instead of a picture with a caption stuck underneath —
+   the charcoal margin around the image is the mount, and it is the same width
+   as the border radius allows, so nothing looks cropped.
+
+   The hairline and catch-light that frame the image live on `.nv-card__scrim`,
+   not here: an inset box-shadow paints under an element's children, so on this
+   box the <img> would cover it.
+   ------------------------------------------------------------------------- */
+.nv-card__media {
+  position: relative;
+  margin: 11px 11px 0;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 15px;
+  background: var(--nv-plate-well);
+}
+
+/* Held slightly desaturated at rest and released on hover: the photograph
+   arriving at full colour is the reward, and it costs no extra ink. */
+.nv-card__photo {
+  object-fit: cover;
+  transform: scale(1.02);
+  filter: saturate(0.88) contrast(1.03);
+  transition:
+    transform 1.6s var(--nv-ease-lux),
+    filter 0.9s var(--nv-ease-lux);
+}
+
+.nv-card:hover .nv-card__photo {
+  transform: scale(1.065);
+  filter: none;
+}
+
+/* Does three jobs on one layer: seats the image with a neutral bottom fade,
+   frames it in the same hairline every other surface uses, and puts the 1px
+   catch-light along its top edge so the mount reads as a real object. */
+.nv-card__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, transparent 48%, rgba(6, 7, 10, 0.52) 100%);
+  box-shadow:
+    inset 0 0 0 1px var(--nv-hairline),
+    inset 0 1px 0 var(--nv-edge);
+  pointer-events: none;
+}
+
+/* Badge — the one thing allowed to sit on the photograph, and only because it
+   carries information. A hairline pill on a dark glass base: no fill colour, no
+   glow, so it reads as an applied label rather than a sticker. */
+.nv-card__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: rgba(10, 11, 15, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 var(--nv-edge);
+  font-family: var(--nv-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-hi);
+}
+
+/* Shown when a photograph is missing or 404s. It carries the same glyph as the
+   card's seal, so a card with no image still reads as that service rather than
+   as a hole. */
+.nv-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(217, 195, 154, 0.3);
+  background: var(--nv-plate-well);
+}
+
+.nv-card__fallback svg { width: 34px; height: 34px; }
+
+.nv-card__body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 13px;
+  padding: 24px 26px 26px;
+}
+
+/* ── Seal + kicker ──────────────────────────────────────────────────────────
+   Six services in a row all carry the identical kicker ("Clinical service"),
+   which means the kicker tells a scanning visitor nothing — it is six copies of
+   one word. The seal is what differentiates them: `iconForText(name)` picks a
+   glyph per service, so the shape beside the label is the first thing that says
+   which card this is, before the title is read.
+
+   It is an edged plate, not a filled chip: hairline border, near-transparent
+   champagne ground, and the same 1px catch-light along the top that the mounted
+   photograph and the card itself carry.
+   ------------------------------------------------------------------------- */
+.nv-card__top {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.nv-card__seal {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 11px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne);
+  transition:
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-card__seal svg { width: 16px; height: 16px; }
+
+.nv-card:hover .nv-card__seal {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne);
+  background: rgba(217, 195, 154, 0.11);
+}
+
+/* Kicker — mono, champagne, wide tracking. The short leading rule it used to
+   carry is gone: the seal now occupies that position, and two marks before one
+   nine-pixel label is one too many. */
+.nv-card__kicker {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-card:hover .nv-card__kicker { color: var(--nv-champagne-hi); }
+
+/* `text-wrap: balance` matters more here than it looks: real service names run
+   to "Inpatient Care Services (Medical and Surgical)", which otherwise orphans
+   a single word on a third line. */
+.nv-card__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.24rem, 1.5vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  color: var(--nv-text);
+}
+
+/* Clamped to three rendered lines rather than trimmed to a character count, so
+   the cut always lands at the end of a line. `truncate` in lib/utils.ts still
+   caps the string, but far above this — it is a guard against an absurd
+   description, not the thing doing the shortening. Losing `flex: 1` here is
+   deliberate; the foot's `margin-top: auto` now absorbs the slack instead, so
+   descriptions of two and three lines still sit directly under their titles. */
+.nv-card__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  font-size: 0.895rem;
+  line-height: 1.75;
+  color: var(--nv-muted);
+}
+
+/* `margin-top: auto` is what keeps a row of cards machined: whatever each
+   title and description does above it, every foot in the row sits on the same
+   line. It also hosts the champagne hairline that draws in from the left on
+   hover — it used to sit on the photograph/copy join, but the photograph is
+   inset now and that join no longer exists, so the light lands on the border
+   that does. */
+.nv-card__foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-card__foot::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgba(217, 195, 154, 0.18) 72%,
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s var(--nv-ease-lux);
+  pointer-events: none;
+}
+
+.nv-card:hover .nv-card__foot::before { transform: scaleX(1); }
+
+.nv-card__go {
+  font-family: var(--nv-font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-card:hover .nv-card__go { color: var(--nv-champagne); }
+
+/* A machined disc rather than a bare glyph. */
+.nv-card__arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--nv-hairline);
+  color: var(--nv-faint);
+  transition:
+    transform 0.7s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-card__arrow svg { width: 15px; height: 15px; }
+
+.nv-card:hover .nv-card__arrow {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  transform: translate(3px, -3px);
+}
+
+.nv-card--compact .nv-card__media { aspect-ratio: 16 / 9; margin: 9px 9px 0; }
+.nv-card--compact .nv-card__body { padding: 20px 20px 22px; gap: 11px; }
+.nv-card--compact .nv-card__title { font-size: 1.1rem; }
+.nv-card--compact .nv-card__seal { width: 30px; height: 30px; border-radius: 10px; }
+.nv-card--compact .nv-card__seal svg { width: 14px; height: 14px; }
+.nv-card--compact .nv-card__desc { -webkit-line-clamp: 2; line-clamp: 2; }
+
+/* ── Figure (hospital numbers) ──────────────────────────────────────────────
+   A row of figures separated by hairlines rather than four floating tiles. The
+   number is the loudest thing in the unit; everything else is a caption to it.
+   The icon sits in a small champagne-edged plate, the number is set large in
+   the display face with tabular figures so the row stays in column.
+   ------------------------------------------------------------------------- */
+.nv-fig {
+  position: relative;
+  padding: 6px 0 4px;
+}
+
+.nv-fig__ico {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+}
+
+.nv-fig__ico svg { width: 17px; height: 17px; }
+
+.nv-fig__value {
+  margin-top: 26px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.6rem, 5vw, 3.8rem);
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hairline between the number and its label — the printed-spec-sheet move. */
+.nv-fig__label {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--nv-hairline);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--nv-text-dim);
+}
+
+.nv-fig__hint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  line-height: 1.68;
+  color: var(--nv-faint);
+  max-width: 28ch;
+}
+
+/* ── Clinician card ─────────────────────────────────────────────────────────
+   The caption sits under the portrait, never on it. The frame is a deep well
+   with its own top catch-light; on hover the portrait comes up to full colour
+   and a champagne rule appears under the name.
+   ------------------------------------------------------------------------- */
+.nv-doc {
+  display: block;
+  height: 100%;
+}
+
+.nv-doc__frame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate-well);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge-soft);
+  transition:
+    border-color 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-doc:hover .nv-doc__frame {
+  transform: translateY(-5px);
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-doc__photo {
+  object-fit: cover;
+  object-position: center 18%;
+  filter: saturate(0.86) contrast(1.04);
+  transition:
+    transform 1.6s var(--nv-ease-lux),
+    filter 0.9s var(--nv-ease-lux);
+}
+
+.nv-doc:hover .nv-doc__photo { transform: scale(1.05); filter: none; }
+
+.nv-doc__initials {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: rgba(217, 195, 154, 0.42);
+  background: var(--nv-plate-well);
+}
+
+.nv-doc__cap { padding: 20px 2px 0; }
+
+.nv-doc__dept {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--nv-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-doc__name {
+  position: relative;
+  display: inline-block;
+  margin-top: 11px;
+  font-family: var(--nv-font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.26;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+/* Champagne underline that draws in on hover — the one flourish a name gets. */
+.nv-doc__name::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -5px;
+  height: 1px;
+  background: var(--nv-champagne-line);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.8s var(--nv-ease-lux);
+}
+
+.nv-doc:hover .nv-doc__name { color: #fff; }
+.nv-doc:hover .nv-doc__name::after { transform: scaleX(1); }
+
+.nv-doc__role {
+  margin-top: 8px;
+  font-size: 0.815rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+/* "View profile" — held at zero opacity and 6px low until the card is hovered,
+   so a grid of clinicians reads as portraits and names first. It keeps its box
+   at rest (opacity, not display) so nothing below it shifts. */
+.nv-doc__reveal {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-doc__reveal svg { width: 13px; height: 13px; }
+
+.nv-doc:hover .nv-doc__reveal,
+.nv-doc:focus-visible .nv-doc__reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Testimonial quote ──────────────────────────────────────────────────────
+   One large plate, set like a printed page: wide margins, the quotation in the
+   serif at display size, the attribution below a hairline. A single champagne
+   rule runs along the top of the plate — the "letterhead" line.
+   ------------------------------------------------------------------------- */
+.nv-quote {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: clamp(34px, 4.2vw, 56px);
+  border-radius: var(--nv-r-xl);
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  overflow: hidden;
+}
+
+.nv-quote::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 22%,
+    rgba(217, 195, 154, 0.45) 50%,
+    var(--nv-champagne-line) 78%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* The opening quotation mark, set in the serif at display size. It is the only
+   large ornament on the plate, so it is kept as a faint champagne watermark
+   rather than a filled glyph — an embossed mark, not a printed one. */
+.nv-quote__glyph {
+  display: block;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(3.4rem, 5vw, 4.8rem);
+  line-height: 0.5;
+  letter-spacing: -0.02em;
+  color: var(--nv-champagne-line);
+  user-select: none;
+}
+
+.nv-quote__body {
+  position: relative;
+  flex: 1;
+  margin-top: 30px;
+  display: grid;
+}
+
+/* Every slide stays mounted and stacked so the plate never changes height
+   between a short quote and a long one. */
+.nv-quote__slide {
+  grid-area: 1 / 1;
+  transition:
+    opacity 0.85s var(--nv-ease-lux),
+    transform 0.85s var(--nv-ease-lux);
+}
+
+.nv-quote__slide[data-on="false"] {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.nv-quote__text {
+  font-family: var(--nv-font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 2.1vw, 1.68rem);
+  line-height: 1.56;
+  letter-spacing: -0.01em;
+  color: var(--nv-text);
+}
+
+.nv-quote__by {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 34px;
+  padding-top: 24px;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-quote__avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  font-family: var(--nv-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--nv-champagne);
+}
+
+.nv-quote__name {
+  font-family: var(--nv-font-display);
+  font-size: 0.96rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--nv-text);
+}
+
+.nv-quote__stars {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.nv-quote__stars svg { width: 11px; height: 11px; color: var(--nv-champagne); }
+
+.nv-quote__dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.nv-quote__dot {
+  width: 24px;
+  height: 2px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  background: var(--nv-hairline-hi);
+  cursor: pointer;
+  transition:
+    background 0.6s var(--nv-ease-lux),
+    width 0.7s var(--nv-ease-lux);
+}
+
+.nv-quote__dot:hover { background: var(--nv-champagne-dim); }
+
+.nv-quote__dot--on {
+  width: 44px;
+  background: var(--nv-champagne);
+}
+
+/* ── Gallery tile ───────────────────────────────────────────────────────────
+   A framed photograph. The caption is always visible over a neutral scrim, so
+   the grid reads as a set of labelled plates rather than a hover puzzle.
+   ------------------------------------------------------------------------- */
+.nv-tile {
+  position: relative;
+  display: block;
+  height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate-well);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge-soft);
+  transition:
+    border-color 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-tile:hover {
+  transform: translateY(-4px);
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-tile__photo {
+  object-fit: cover;
+  filter: saturate(0.86) brightness(0.93) contrast(1.03);
+  transition:
+    transform 1.6s var(--nv-ease-lux),
+    filter 0.9s var(--nv-ease-lux);
+}
+
+.nv-tile:hover .nv-tile__photo { transform: scale(1.055); filter: none; }
+
+.nv-tile__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(5, 6, 9, 0.9) 100%);
+  pointer-events: none;
+}
+
+.nv-tile__cap {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 18px 19px;
+}
+
+.nv-tile__label {
+  font-family: var(--nv-font-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-tile__title {
+  margin-top: 7px;
+  font-family: var(--nv-font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: -0.015em;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── News row ───────────────────────────────────────────────────────────────
+   A dated editorial list. A catalogue numeral owns the left column so the
+   titles align down the page, with the date set above each headline. Hovering a
+   row lifts a very faint plate behind it and lights a champagne bar in the left
+   margin — no border-colour change, because on a list of hairlines that reads
+   as a flicker.
+   ------------------------------------------------------------------------- */
+.nv-news { border-top: 1px solid var(--nv-hairline); }
+
+.nv-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px;
+  align-items: start;
+  gap: 18px;
+  padding: 26px 4px;
+  border-bottom: 1px solid var(--nv-hairline);
+  transition: background 0.7s var(--nv-ease-lux);
+}
+
+.nv-row:hover { background: rgba(255, 255, 255, 0.016); }
+
+/* Champagne bar in the left margin, scaling up from the vertical centre. */
+.nv-row::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 12%;
+  bottom: 12%;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--nv-champagne);
+  transform: scaleY(0);
+  transition: transform 0.7s var(--nv-ease-lux);
+  pointer-events: none;
+}
+
+.nv-row:hover::before { transform: scaleY(1); }
+
+@media (min-width: 760px) {
+  .nv-row {
+    grid-template-columns: 64px minmax(0, 1fr) 30px;
+    gap: 26px;
+    padding: 30px 4px 30px 22px;
+  }
+}
+
+/* The index numeral owns the left column on wide screens — a catalogue number,
+   not a decoration, so it stays mono, tabular and quiet until the row is
+   hovered. Below 760px the column collapses and the numeral is hidden rather
+   than stacked, because a lone "03" above a headline reads as an error. */
+.nv-row__num {
+  display: none;
+  font-family: var(--nv-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: var(--nv-faint);
+  padding-top: 6px;
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-row:hover .nv-row__num { color: var(--nv-champagne); }
+
+@media (min-width: 760px) {
+  .nv-row__num { display: block; }
+}
+
+.nv-row__date {
+  display: block;
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  margin-bottom: 10px;
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-row:hover .nv-row__date { color: var(--nv-champagne); }
+
+.nv-row__copy { min-width: 0; }
+
+.nv-row__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.1rem, 1.7vw, 1.34rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.024em;
+  color: var(--nv-text);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-row:hover .nv-row__title { color: #fff; }
+
+.nv-row__excerpt {
+  margin-top: 10px;
+  font-size: 0.87rem;
+  line-height: 1.74;
+  color: var(--nv-muted);
+  max-width: 64ch;
+}
+
+.nv-row__go {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-top: 2px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--nv-faint);
+  transition:
+    transform 0.7s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux);
+}
+
+.nv-row__go svg { width: 15px; height: 15px; }
+
+.nv-row:hover .nv-row__go {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne-line);
+  transform: translate(3px, -3px);
+}
+
+/* ── Pledge row (welcome column, contact column) ────────────────────────────
+   A hairline-separated list, set the way a printed spec sheet would set it.
+   ------------------------------------------------------------------------- */
+.nv-fact {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  padding: 24px 0;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-fact__ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 13px;
+  border: 1px solid var(--nv-hairline);
+  background: rgba(255, 255, 255, 0.022);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne-dim);
+  transition:
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-fact__ico svg { width: 18px; height: 18px; }
+
+.nv-fact:hover .nv-fact__ico {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+}
+
+.nv-fact__title {
+  font-family: var(--nv-font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  color: var(--nv-text);
+}
+
+.nv-fact__desc {
+  margin-top: 8px;
+  font-size: 0.86rem;
+  line-height: 1.74;
+  color: var(--nv-muted);
+}
+
+/* Boxed variant, for a pledge list that has to stand alone on a flat band. */
+.nv-fact--boxed {
+  padding: 24px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 20px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge-soft);
+}
+
+/* ── Partner plate ──────────────────────────────────────────────────────────
+   A logo needs a calm neutral field and nothing else, so the stage stays a
+   plain light-neutral panel: no tint that could fight whatever colour the mark
+   itself uses. The champagne appears only on the plate around it.
+   ------------------------------------------------------------------------- */
+.nv-partner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 22px;
+  border: 1px solid var(--nv-hairline);
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  overflow: hidden;
+  transition:
+    border-color 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    background 0.7s var(--nv-ease-lux);
+}
+
+.nv-partner:hover {
+  transform: translateY(-5px);
+  background: var(--nv-plate-hi);
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 rgba(255, 255, 255, 0.11);
+}
+
+.nv-partner__stage {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--nv-hairline);
+}
+
+.nv-partner__logo {
+  object-fit: contain;
+  transition: transform 0.9s var(--nv-ease-lux);
+}
+
+.nv-partner:hover .nv-partner__logo { transform: scale(1.045); }
+
+.nv-partner__mono {
+  font-family: var(--nv-font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: rgba(217, 195, 154, 0.5);
+}
+
+.nv-partner__cat {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: rgba(9, 10, 14, 0.86);
+  backdrop-filter: blur(8px);
+  font-family: var(--nv-font-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-partner__body { flex: 1; padding: 24px 24px 16px; }
+
+.nv-partner__name {
+  font-family: var(--nv-font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+.nv-partner__desc {
+  margin-top: 10px;
+  font-size: 0.855rem;
+  line-height: 1.72;
+  color: var(--nv-muted);
+}
+
+.nv-partner__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 24px;
+  padding: 18px 0 22px;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-partner__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  transition: color 0.6s var(--nv-ease-lux), gap 0.6s var(--nv-ease-lux);
+}
+
+.nv-partner__link:hover { color: var(--nv-champagne-hi); gap: 13px; }
+.nv-partner__link svg { width: 13px; height: 13px; }
+
+.nv-partner__ext {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-hairline);
+  color: var(--nv-faint);
+  transition:
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-partner__ext:hover {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+}
+
+.nv-partner__ext svg { width: 14px; height: 14px; }
+
+/* ── Empty state ────────────────────────────────────────────────────────────
+   Kept quiet on purpose. A dashed hairline says "nothing here yet" without
+   dressing an absence up as content.
+   ------------------------------------------------------------------------- */
+.nv-empty {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 64px 28px;
+  border-radius: var(--nv-r-lg);
+  border: 1px dashed var(--nv-hairline-hi);
+  background: rgba(255, 255, 255, 0.012);
+  text-align: center;
+}
+
+.nv-empty__ico {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--nv-hairline);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne-dim);
+}
+
+.nv-empty__ico svg { width: 19px; height: 19px; }
+
+.nv-empty__title {
+  font-family: var(--nv-font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  color: var(--nv-text-dim);
+}
+
+.nv-empty__desc {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--nv-faint);
+  max-width: 46ch;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────
+   The drawing hairlines and underlines are decoration on a hover, so they are
+   simply shown at rest rather than animated in.
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .nv-card,
+  .nv-card__photo,
+  .nv-doc__frame,
+  .nv-doc__photo,
+  .nv-tile,
+  .nv-tile__photo,
+  .nv-partner,
+  .nv-partner__logo {
+    transition-duration: 0.01ms !important;
+  }
+
+  .nv-card:hover,
+  .nv-doc:hover .nv-doc__frame,
+  .nv-tile:hover,
+  .nv-partner:hover {
+    transform: none !important;
+  }
+
+  .nv-card__body::before,
+  .nv-doc__name::after,
+  .nv-row::before {
+    transition: none !important;
+  }
+}

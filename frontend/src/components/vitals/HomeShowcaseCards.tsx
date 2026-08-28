@@ -172,14 +172,14 @@ export function PartnerCard({ partner }: { partner: Partner }) {
     : null;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-sky-300/60 hover:shadow-xl hover:shadow-sky-500/10">
+    <div className="g-partner-card group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(23,27,39,0.6),rgba(11,13,19,0.6))] shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-teal-400/30 hover:shadow-xl hover:shadow-teal-500/10">
       {/* Coloured accent line top */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-sky-400 via-teal-400 to-emerald-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* Main card clickable link to detail page */}
       <Link href={detailHref} className="block">
         {/* Logo / image area */}
-        <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900/60 via-black/40 to-slate-800/60">
           {logoUrl ? (
             <>
               {/* Ambient blur backdrop */}
@@ -202,7 +202,7 @@ export function PartnerCard({ partner }: { partner: Partner }) {
             </>
           ) : (
             /* Fallback monogram */
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-100 to-teal-100 text-sky-600 shadow-sm ring-1 ring-sky-200/60 transition-transform duration-300 group-hover:scale-110">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-900/40 to-cyan-900/40 text-teal-300 shadow-sm ring-1 ring-teal-500/30 transition-transform duration-300 group-hover:scale-110">
               {initials ? (
                 <span className="font-display text-2xl font-bold tracking-tight">
                   {initials}
@@ -215,7 +215,7 @@ export function PartnerCard({ partner }: { partner: Partner }) {
 
           {/* Category badge */}
           {partner.category && (
-            <span className="absolute right-3 top-3 rounded-xl border border-slate-200/60 bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 shadow-sm backdrop-blur-sm">
+            <span className="absolute right-3 top-3 rounded-xl border border-white/[0.08] bg-black/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 shadow-sm backdrop-blur-sm">
               {partner.category}
             </span>
           )}
@@ -223,12 +223,12 @@ export function PartnerCard({ partner }: { partner: Partner }) {
 
         {/* Body */}
         <div className="flex flex-1 flex-col gap-2 p-5 pb-3">
-          <h3 className="font-semibold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-sky-700 line-clamp-1">
+          <h3 className="font-semibold leading-snug text-slate-100 transition-colors duration-200 group-hover:text-teal-300 line-clamp-1">
             {partner.name}
           </h3>
 
           {(partner.short_description || partner.description) && (
-            <p className="text-sm leading-relaxed text-slate-500 line-clamp-2">
+            <p className="text-sm leading-relaxed text-slate-400 line-clamp-2">
               {partner.short_description ||
                 String(partner.description ?? "")
                   .replace(/<[^>]+>/g, "")
@@ -239,10 +239,10 @@ export function PartnerCard({ partner }: { partner: Partner }) {
       </Link>
 
       {/* Bottom CTA Actions bar */}
-      <div className="mt-auto flex items-center justify-between px-5 pb-4 pt-3 border-t border-slate-100">
+      <div className="mt-auto flex items-center justify-between px-5 pb-4 pt-3 border-t border-white/[0.06]">
         <Link
           href={detailHref}
-          className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-sky-600 transition-all duration-300 hover:bg-sky-100 hover:gap-2.5"
+          className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-teal-300 transition-all duration-300 hover:bg-teal-500/20 hover:gap-2.5"
         >
           View details
           <ArrowUpRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -253,7 +253,7 @@ export function PartnerCard({ partner }: { partner: Partner }) {
             href={websiteHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-slate-400 hover:text-sky-600 transition-colors"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-slate-500 hover:text-teal-300 transition-colors"
             title="Visit official website"
           >
             <Globe className="h-3.5 w-3.5" />
@@ -272,50 +272,50 @@ function getMetricTheme(label: string) {
   if (l.includes("doctor") || l.includes("physician") || l.includes("staff")) {
     return {
       Icon: UserCheck,
-      iconBg: "bg-sky-50 text-sky-600 border-sky-200/80",
-      accentBar: "from-sky-500 via-sky-400 to-cyan-400",
+      iconBg: "bg-teal-900/40 text-teal-300 border-teal-500/30",
+      accentBar: "from-teal-400 via-cyan-400 to-sky-400",
       kicker: "Medical specialists",
       badgeText: "Verified Team",
-      badgeColor: "bg-sky-100/80 text-sky-700",
+      badgeColor: "bg-teal-500/15 text-teal-300",
     };
   }
   if (l.includes("department") || l.includes("unit") || l.includes("center")) {
     return {
       Icon: Building2,
-      iconBg: "bg-teal-50 text-teal-600 border-teal-200/80",
-      accentBar: "from-teal-500 via-teal-400 to-emerald-400",
+      iconBg: "bg-cyan-900/40 text-cyan-300 border-cyan-500/30",
+      accentBar: "from-cyan-400 via-teal-400 to-emerald-400",
       kicker: "Clinical care units",
       badgeText: "24/7 Units",
-      badgeColor: "bg-teal-100/80 text-teal-700",
+      badgeColor: "bg-cyan-500/15 text-cyan-300",
     };
   }
   if (l.includes("patient") || l.includes("served") || l.includes("treated") || l.includes("catchment") || l.includes("population")) {
     return {
       Icon: HeartPulse,
-      iconBg: "bg-emerald-50 text-emerald-600 border-emerald-200/80",
-      accentBar: "from-emerald-500 via-teal-400 to-sky-400",
+      iconBg: "bg-emerald-900/40 text-emerald-300 border-emerald-500/30",
+      accentBar: "from-emerald-400 via-teal-400 to-cyan-400",
       kicker: "Healed & supported",
       badgeText: "Community Impact",
-      badgeColor: "bg-emerald-100/80 text-emerald-700",
+      badgeColor: "bg-emerald-500/15 text-emerald-300",
     };
   }
   if (l.includes("year") || l.includes("experience") || l.includes("service")) {
     return {
       Icon: Award,
-      iconBg: "bg-amber-50 text-amber-600 border-amber-200/80",
-      accentBar: "from-amber-500 via-amber-400 to-orange-400",
+      iconBg: "bg-amber-900/40 text-amber-300 border-amber-500/30",
+      accentBar: "from-amber-400 via-orange-400 to-yellow-400",
       kicker: "Healthcare heritage",
       badgeText: "Established Heritage",
-      badgeColor: "bg-amber-100/80 text-amber-700",
+      badgeColor: "bg-amber-500/15 text-amber-300",
     };
   }
   return {
     Icon: Activity,
-    iconBg: "bg-sky-50 text-sky-600 border-sky-200/80",
-    accentBar: "from-sky-500 via-teal-400 to-cyan-400",
+    iconBg: "bg-teal-900/40 text-teal-300 border-teal-500/30",
+    accentBar: "from-teal-400 via-cyan-400 to-sky-400",
     kicker: "Hospital metric",
     badgeText: "Live Metric",
-    badgeColor: "bg-sky-100/80 text-sky-700",
+    badgeColor: "bg-teal-500/15 text-teal-300",
   };
 }
 
@@ -332,7 +332,7 @@ export function MetricCard({
   const Icon = theme.Icon;
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-500/10 h-full">
+    <div className="g-metric-card group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(23,27,39,0.7),rgba(11,13,19,0.8))] p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-400/30 hover:shadow-xl hover:shadow-teal-500/10 h-full">
       {/* Top gradient accent line */}
       <div
         className={cn(
@@ -343,7 +343,7 @@ export function MetricCard({
 
       {/* Background watermark icon */}
       <Icon
-        className="absolute -bottom-3 -right-3 h-28 w-28 text-slate-900/[0.035] transition-transform duration-500 group-hover:scale-110 pointer-events-none"
+        className="absolute -bottom-3 -right-3 h-28 w-28 text-white/[0.04] transition-transform duration-500 group-hover:scale-110 pointer-events-none"
         aria-hidden
       />
 
@@ -370,22 +370,22 @@ export function MetricCard({
 
       {/* Middle: Big Metric Number */}
       <div className="mt-6 z-10">
-        <div className="font-display text-4xl font-extrabold tracking-tight text-slate-900 lg:text-5xl">
+        <div className="font-display text-4xl font-extrabold tracking-tight text-white lg:text-5xl">
           <Counter value={value} suffix="+" />
         </div>
 
         {/* Label & Kicker */}
-        <h3 className="mt-2 text-base font-bold text-slate-800 lg:text-lg">
+        <h3 className="mt-2 text-base font-bold text-slate-200 lg:text-lg">
           {label}
         </h3>
-        <p className="mt-0.5 text-xs font-medium text-slate-500">
+        <p className="mt-0.5 text-xs font-medium text-slate-400">
           {theme.kicker}
         </p>
       </div>
 
       {/* Bottom accent indicator */}
-      <div className="mt-5 flex items-center gap-1.5 border-t border-slate-100 pt-3 text-[11px] font-medium text-slate-400 z-10">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="mt-5 flex items-center gap-1.5 border-t border-white/[0.06] pt-3 text-[11px] font-medium text-slate-500 z-10">
+        <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
         Verified hospital data
       </div>
     </div>
