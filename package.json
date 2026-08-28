@@ -4,12 +4,11 @@
   "private": true,
   "description": "Loke General Hospital — Next.js + Express + MySQL",
   "scripts": {
-    "build": "npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build",
-    "start": "npm --prefix backend start",
-    "start:api": "npm --prefix backend start",
-    "start:web": "npm --prefix frontend start",
-    "dev:api": "npm --prefix backend run dev",
-    "dev:web": "npm --prefix frontend run dev",
-    "install:all": "npm --prefix backend install && npm --prefix frontend install"
+    "build": "cd backend && npm install",
+    "start": "node src/server.js || (cd backend && npm start)",
+    "start:api": "cd backend && npm start",
+    "start:web": "cd frontend && npm start",
+    "dev:api": "cd backend && npm run dev",
+    "dev:web": "cd frontend && npm run dev"
   }
 }
