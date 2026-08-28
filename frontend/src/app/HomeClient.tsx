@@ -47,7 +47,25 @@ import {
   NovaPartnerCard,
 } from "@/components/nova/NovaCards";
 
-
+/**
+ * The column beside the welcome introduction. Static on purpose: these are the
+ * hospital's standing commitments, not API content, and the sections below are
+ * where each one gets evidenced — departments, clinicians, opening hours.
+ */
+const WELCOME_PLEDGES = [
+  {
+    title: "Care first, paperwork second",
+    desc: "Triage decides the order you are seen in — not the queue you arrived in.",
+  },
+  {
+    title: "One campus, every department",
+    desc: "Referrals move between units here, so a patient rarely has to travel for them.",
+  },
+  {
+    title: "Open every hour of the year",
+    desc: "The emergency desk is staffed overnight, at weekends, and through holidays.",
+  },
+];
 
 export default function HomeClient({
   initialData = null,
@@ -189,6 +207,11 @@ export default function HomeClient({
         images={heroShots}
       />
 
+      {/* Everything below the hero shares one lit field: see .nv-flow in
+          nova-sections.css. The wrapper is what scopes that light to the home
+          page and what lets each section alternate the side it is lit from. */}
+      <div className="nv-flow">
+
       {/* ── Gallery carousel ────────────────────────────────────────────── */}
       {stackSlides.length > 0 && (
         <section className="nv-section nv-section--tight">
@@ -230,7 +253,27 @@ export default function HomeClient({
               </div>
             </NovaReveal>
 
-
+            {/* The welcome grid reserves a second column; it used to render
+                empty, which is what left a hole beside the introduction. These
+                are the three promises the rest of the page then evidences. */}
+            <div className="nv-pledge">
+              {WELCOME_PLEDGES.map((pledge, i) => (
+                <NovaReveal
+                  key={pledge.title}
+                  from="right"
+                  delay={0.12 + i * 0.12}
+                  className="nv-pledge__row"
+                >
+                  <span className="nv-pledge__num" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="nv-pledge__copy">
+                    <span className="nv-pledge__title block">{pledge.title}</span>
+                    <span className="nv-pledge__desc block">{pledge.desc}</span>
+                  </span>
+                </NovaReveal>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -330,9 +373,10 @@ export default function HomeClient({
               </div>
 
               <div className="nv-figs">
-                {metricItems.map((item) => (
+                {metricItems.map((item, i) => (
                   <NovaMetricCard
                     key={item.label}
+                    index={i}
                     value={item.value}
                     label={item.label}
                   />
@@ -554,6 +598,10 @@ export default function HomeClient({
       <section className="nv-section">
         <div className="nv-shell nv-shell--wide">
           <NovaReveal className="nv-visit" from="up">
+            {/* One specular pass across the plate as it arrives. Its own
+                element because both of the plate pseudo-elements are already
+                carrying the top rule and the interior light. */}
+            <span className="nv-visit__sheen" aria-hidden />
 
             <div className="nv-visit__grid">
               <div>
@@ -586,10 +634,16 @@ export default function HomeClient({
                   </Link>
                 )}
 
-                <Link href="/emergency" className="nv-btn nv-btn--glass nv-btn--lg">
-                  <Siren className="h-4 w-4" />
-                  Emergency services
-                </Link>
+                {/* When there is a number to call, the primary button is the
+                    call and this one is the department page. Without a number
+                    the primary button is already the department page, so a
+                    second copy of it would be the same link twice. */}
+                {emergency ? (
+                  <Link href="/emergency" className="nv-btn nv-btn--glass nv-btn--lg">
+                    <Siren className="h-4 w-4" />
+                    Emergency services
+                  </Link>
+                ) : null}
 
                 <Link href="/contact" className="nv-btn nv-btn--ghost">
                   Contact & directions
@@ -638,6 +692,7 @@ export default function HomeClient({
           </NovaReveal>
         </div>
       </section>
+      </div>
     </>
   );
 }

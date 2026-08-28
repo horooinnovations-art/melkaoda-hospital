@@ -119,40 +119,41 @@ export function NovaContentCard({
 
 /* ── Metric tile ───────────────────────────────────────────────────────── */
 
-type MetricTheme = {
-  Icon: ComponentType<{ className?: string }>;
-  hint: string;
-};
-
-function metricTheme(label: string): MetricTheme {
+/**
+ * Only the icon is inferred from the label now. There used to be a `hint`
+ * string here too, and every one of them paraphrased the label it sat under —
+ * "Departments / Clinical units under one roof" was word-for-word the heading
+ * of the section above it. A number, its label and a rule is the whole unit.
+ */
+function metricIcon(label: string): ComponentType<{ className?: string }> {
   const key = label.toLowerCase();
-  if (/doctor|physician|staff|clinician/.test(key)) {
-    return { Icon: UserCheck, hint: "Medical specialists on staff" };
-  }
-  if (/department|unit|center|centre|ward/.test(key)) {
-    return { Icon: Building2, hint: "Clinical units under one roof" };
-  }
+  if (/doctor|physician|staff|clinician/.test(key)) return UserCheck;
+  if (/department|unit|center|centre|ward/.test(key)) return Building2;
   if (/patient|served|treated|catchment|population|community/.test(key)) {
-    return { Icon: HeartPulse, hint: "People in our catchment" };
+    return HeartPulse;
   }
-  if (/year|experience|service|heritage/.test(key)) {
-    return { Icon: Award, hint: "Years of continuous care" };
-  }
-  return { Icon: Activity, hint: "Verified hospital data" };
+  if (/year|experience|service|heritage/.test(key)) return Award;
+  return Activity;
 }
 
 export function NovaMetricCard({
   value,
   label,
+  index = 0,
 }: {
   value: number;
   label: string;
+  /** Position in the row, for the ghost numeral behind the figure. */
+  index?: number;
 }) {
-  const theme = metricTheme(label);
-  const Icon = theme.Icon;
+  const Icon = metricIcon(label);
 
   return (
     <div className="nv-fig">
+      <span className="nv-fig__ghost" aria-hidden>
+        {String(index + 1).padStart(2, "0")}
+      </span>
+
       <span className="nv-fig__ico" aria-hidden>
         <Icon />
       </span>
@@ -160,8 +161,11 @@ export function NovaMetricCard({
       <p className="nv-fig__value">
         <Counter value={value} suffix="+" />
       </p>
-      <p className="nv-fig__label">{label}</p>
-      <p className="nv-fig__hint">{theme.hint}</p>
+
+      <p className="nv-fig__label">
+        <span className="nv-fig__rule" aria-hidden />
+        {label}
+      </p>
     </div>
   );
 }
@@ -198,7 +202,7 @@ export function NovaPartnerCard({ partner }: { partner: Partner }) {
           {logoUrl ? (
             <SmartImage
               src={logoUrl}
-              alt={partner.name}
+              alt=""
               fill
               optimizeWidth={480}
               className="nv-partner__logo p-7"
@@ -273,7 +277,7 @@ export function NovaDoctorCard({
         {photo ? (
           <SmartImage
             src={photo}
-            alt={name}
+            alt=""
             fill
             optimizeWidth={520}
             className="nv-doc__photo"
@@ -321,7 +325,7 @@ export function NovaGalleryTile({
       {image ? (
         <SmartImage
           src={image}
-          alt={title}
+          alt=""
           fill
           optimizeWidth={720}
           className="nv-tile__photo"

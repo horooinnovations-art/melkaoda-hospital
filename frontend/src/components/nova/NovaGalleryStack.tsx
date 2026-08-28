@@ -134,7 +134,10 @@ export default function NovaGalleryStack({
                   {slide.image ? (
                     <SmartImage
                       src={slide.image}
-                      alt={slide.title}
+                      // Decorative: .nv-stack__title prints this exact string below the
+                      // frame, so a non-empty alt would render the name twice whenever
+                      // the candidate URL 404s and the img falls back to its alt text.
+                      alt=""
                       fill
                       optimizeWidth={1100}
                       className="nv-stack__photo"

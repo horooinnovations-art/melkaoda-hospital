@@ -7,6 +7,7 @@ const API_PROXY_TARGET = (
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   turbopack: {
     root: import.meta.dirname,
   },

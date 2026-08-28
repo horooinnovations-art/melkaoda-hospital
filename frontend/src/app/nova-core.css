@@ -444,7 +444,10 @@ body::after {
 .nv-btn--glass {
   color: var(--nv-text);
   background: rgba(255, 255, 255, 0.045);
-  border-color: rgba(148, 163, 255, 0.2);
+  /* Neutral hairline, not the old periwinkle: the glass button sits in the hero
+     beside a champagne-edged chip, and two cool borders there were the last
+     visible trace of the earlier palette above the fold. */
+  border-color: var(--nv-hairline-hi);
   backdrop-filter: blur(14px);
 }
 
@@ -458,7 +461,7 @@ body::after {
 .nv-btn--ghost {
   color: var(--nv-text-dim);
   background: transparent;
-  border-color: rgba(148, 163, 255, 0.16);
+  border-color: var(--nv-hairline);
   padding: 11px 18px;
 }
 

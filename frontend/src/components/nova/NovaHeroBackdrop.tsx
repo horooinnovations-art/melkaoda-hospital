@@ -26,7 +26,7 @@ import { useReducedMotion } from "./hooks";
 
 export default function NovaHeroBackdrop({
   images,
-  interval = 7200,
+  interval = 8400,
 }: {
   images: string[];
   /** Dwell time on each photograph, in milliseconds. */

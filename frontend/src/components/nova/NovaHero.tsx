@@ -163,83 +163,108 @@ export default function NovaHero({
   ].filter(Boolean) as Array<{ value: string; label: string }>;
 
   return (
-    <>
-      <section className="nv-hero">
-        {/* Behind the copy, not around it: full-bleed, scrimmed, non-interactive. */}
-        {images && images.length > 0 ? (
-          <NovaHeroBackdrop images={images} />
-        ) : null}
+    <section className="nv-hero">
+      {/* Behind the copy, not around it: full-bleed, scrimmed, non-interactive. */}
+      {images && images.length > 0 ? (
+        <NovaHeroBackdrop images={images} />
+      ) : null}
 
-        <div className="nv-shell nv-shell--wide">
-          <div className="nv-hero__grid">
-            <div className="nv-hero__copy">
-              <p className="nv-hero__place">
-                <i aria-hidden />
-                {place}
-              </p>
+      {/* Light over the photographs: drifting rails, a warm pool that breathes
+          and one specular sweep. All CSS, all additive, none of it interactive —
+          and all of it present even with no photographs, which is what keeps an
+          image-less hero from going flat. */}
+      <div className="nv-hero__aura" aria-hidden>
+        <span className="nv-hero__rails" />
+        <span className="nv-hero__pool" />
+        <span className="nv-hero__sweep" />
+      </div>
 
-              <h1 className="nv-hero__title">
-                <NovaWords
-                  text={brand}
-                  accentFrom={Math.max(brandWords.length - 1, 0)}
-                  stagger={85}
-                />
-                <span className="nv-hero__title-sub">{headline}</span>
-              </h1>
+      <div className="nv-shell nv-shell--wide">
+        <div className="nv-hero__grid">
+          <div className="nv-hero__copy">
+            <p className="nv-hero__place">
+              <i aria-hidden />
+              {place}
+            </p>
 
-              <p className="nv-hero__lede">{truncate(support, 260)}</p>
+            <h1 className="nv-hero__title">
+              <NovaWords
+                text={brand}
+                accentFrom={Math.max(brandWords.length - 1, 0)}
+                stagger={85}
+              />
+              <span className="nv-hero__title-sub">{headline}</span>
+            </h1>
 
-              <div className="nv-hero__cta">
-                <Link href="/departments" className="nv-btn nv-btn--primary nv-btn--lg">
-                  Explore our care
-                  <ArrowUpRight className="h-4 w-4" />
+            <p className="nv-hero__lede">{truncate(support, 260)}</p>
+
+            <div className="nv-hero__cta">
+              <Link
+                href="/departments"
+                className="nv-btn nv-btn--primary nv-btn--lg"
+              >
+                Explore our care
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+
+              {emergency ? (
+                <a
+                  href={`tel:${emergency}`}
+                  className="nv-btn nv-btn--glass nv-btn--lg"
+                >
+                  <Phone className="h-4 w-4" />
+                  {emergency}
+                </a>
+              ) : (
+                <Link
+                  href="/emergency"
+                  className="nv-btn nv-btn--glass nv-btn--lg"
+                >
+                  <Siren className="h-4 w-4" />
+                  Emergency
                 </Link>
+              )}
 
-                {emergency ? (
-                  <a href={`tel:${emergency}`} className="nv-btn nv-btn--glass nv-btn--lg">
-                    <Phone className="h-4 w-4" />
-                    {emergency}
-                  </a>
-                ) : (
-                  <Link href="/emergency" className="nv-btn nv-btn--glass nv-btn--lg">
-                    <Siren className="h-4 w-4" />
-                    Emergency
-                  </Link>
-                )}
-
-                <Link href="/doctors" className="nv-btn nv-btn--ghost">
-                  Meet the doctors
-                </Link>
-              </div>
-
-              <div className="nv-hero__trust">
-                {trust.map((item) => (
-                  <div className="nv-hero__trust-item" key={item.label}>
-                    <span className="nv-hero__trust-value">{item.value}</span>
-                    <span className="nv-hero__trust-label">{item.label}</span>
-                  </div>
-                ))}
-              </div>
+              <Link href="/doctors" className="nv-btn nv-btn--ghost">
+                Meet the doctors
+              </Link>
             </div>
 
-            {/* Service reel: the list is rendered twice so the -50% loop is seamless. */}
-            <div className="nv-reel">
-              <div className="nv-reel__viewport">
-                <div className="nv-reel__track">
-                  {FEATURES.map((item) => (
-                    <ReelCard key={item.title} item={item} />
-                  ))}
-                  {FEATURES.map((item) => (
-                    <ReelCard key={`clone-${item.title}`} item={item} clone />
-                  ))}
+            <div className="nv-hero__trust">
+              {trust.map((item) => (
+                <div className="nv-hero__trust-item" key={item.label}>
+                  <span className="nv-hero__trust-value">{item.value}</span>
+                  <span className="nv-hero__trust-label">{item.label}</span>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Service reel: the list is rendered twice so the -50% loop is seamless. */}
+          <div className="nv-reel">
+            <div className="nv-reel__viewport">
+              <div className="nv-reel__track">
+                {FEATURES.map((item) => (
+                  <ReelCard key={item.title} item={item} />
+                ))}
+                {FEATURES.map((item) => (
+                  <ReelCard key={`clone-${item.title}`} item={item} clone />
+                ))}
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-
-    </>
+        {/* Closes the hero and points down. Decorative: the section below is
+            the real target and it is one scroll away, so there is nothing here
+            to announce or to click. */}
+        <div className="nv-hero__cue" aria-hidden>
+          <span>Scroll</span>
+          <span className="nv-hero__cue-rail">
+            <i />
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }

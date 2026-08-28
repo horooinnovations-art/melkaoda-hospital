@@ -1,25 +1,48 @@
 /* ==========================================================================
    NOVA — hero
+
+   The hero is built in four stacked planes, back to front:
+
+     0. .nv-hero__back   the hospital's own photographs, cross-fading, + scrim
+     1. .nv-hero__aura   light: architectural rails, a breathing pool, one sweep
+     2. .nv-hero__grid   the copy column and the service reel
+     3. .nv-hero__cue    the baseline rule and scroll mark
+
+   Every plane except the grid is `aria-hidden` and `pointer-events: none`.
+
+   The material is the page's: charcoal, one warm metal (champagne) used only for
+   small marks and thin rules, neutral hairlines, a 1px catch-light along upper
+   edges, and slow heavy easing. The teal and periwinkle this section used to
+   carry — mint status dots, `rgba(45, 212, 167)` reel chips, an iris ticker —
+   are gone; they were the last of an earlier palette and they were the only
+   place on the public site still showing it.
+
+   Motion here is deliberately layered but slow. Nothing completes in under a
+   second, nothing loops in under twelve, and every animation in this file is
+   switched off under `prefers-reduced-motion`.
    ========================================================================== */
 
 .nv-hero {
   position: relative;
   z-index: 1;
-  padding-top: clamp(112px, 15vh, 168px);
-  padding-bottom: clamp(48px, 7vw, 88px);
+  /* `isolation` gives the hero its own stacking context, so the aura's blend
+     mode cannot reach the page behind it. */
+  isolation: isolate;
+  padding-top: clamp(120px, 16vh, 180px);
+  padding-bottom: clamp(56px, 7vw, 96px);
   overflow: clip;
 }
 
-/* ── Photographic backdrop ──────────────────────────────────────────────────
+/* ── Plane 0 · photographic backdrop ────────────────────────────────────────
    The hospital's own photographs cross-fading behind the headline, full-bleed
    across the hero box. Painted by NovaHeroBackdrop; only the geometry, the
    light and the scrim live here.
 
    `.nv-hero` is already `position: relative` with `overflow: clip`, so the
    backdrop fills exactly the hero and the slow zoom cannot spill onto the page
-   below. `z-index: 0` on the backdrop plus `z-index: 1` on the grid is what
-   keeps the copy in front: without it the absolutely-positioned backdrop would
-   paint over the grid, which is not positioned.
+   below. The explicit `z-index` on each plane is what keeps the copy in front:
+   without it the absolutely-positioned backdrop would paint over the grid,
+   which is not positioned.
    ------------------------------------------------------------------------- */
 .nv-hero__back {
   position: absolute;
@@ -35,7 +58,7 @@
   opacity: 0;
   /* Long enough that a visitor reading the headline never sees a change begin
      and end — they look up and the photograph is simply a different one. */
-  transition: opacity 2.2s var(--nv-ease-lux);
+  transition: opacity 2.4s var(--nv-ease-lux);
 }
 
 .nv-hero__shot[data-on] { opacity: 1; }
@@ -46,15 +69,24 @@
 .nv-hero__shot-img {
   object-fit: cover;
   object-position: center 38%;
-  filter: brightness(0.46) saturate(0.68);
-  transform: scale(1.07);
+  filter: brightness(0.44) saturate(0.66);
+  transform: scale(1.08);
   /* Settles over the whole dwell, so the movement is felt and never watched.
      A transition rather than a keyframe: the layers stay mounted, so an
      animation would only ever run on a photograph's first turn. */
-  transition: transform 9s linear;
+  transition: transform 10s linear;
 }
 
 .nv-hero__shot[data-on] .nv-hero__shot-img { transform: scale(1); }
+
+/* Alternate photographs settle the other way — out of a tighter crop rather
+   than into one — so a visitor who stays through several changes is not
+   watching the same move repeat. Odd and even are the only two cases; anything
+   more would be a pattern nobody can perceive. */
+.nv-hero__shot:nth-child(even) .nv-hero__shot-img { transform: scale(1); }
+.nv-hero__shot:nth-child(even)[data-on] .nv-hero__shot-img {
+  transform: scale(1.08);
+}
 
 .nv-hero__shot-fallback {
   position: absolute;
@@ -65,13 +97,13 @@
 /* ── Scrim ──────────────────────────────────────────────────────────────────
    Three gradients on one layer, each doing one job:
 
-     1. horizontal — near-solid charcoal under the copy column, thinning toward
-        the reel so the photograph is actually visible on the right
+     1. champagne  — the same warm wash the rest of the page is lit by, so the
+        photographs belong to this material and not to a stock hero
      2. vertical   — darkens the very top under the fixed header, then lands on
         --nv-paper at the bottom so the hero dissolves into the page instead of
         ending on a photograph's edge
-     3. champagne  — the same warm wash the rest of the page is lit by, so the
-        photographs belong to this material and not to a stock hero
+     3. horizontal — near-solid charcoal under the copy column, thinning toward
+        the reel so the photograph is actually visible on the right
 
    Charcoal, not black: the same rgba(9,10,13) family the plates use.
    ------------------------------------------------------------------------- */
@@ -82,14 +114,14 @@
   background:
     radial-gradient(
       86% 58% at 50% -8%,
-      rgba(217, 195, 154, 0.11),
+      rgba(217, 195, 154, 0.12),
       transparent 64%
     ),
     linear-gradient(
       180deg,
-      rgba(9, 10, 13, 0.72) 0%,
-      rgba(9, 10, 13, 0.22) 22%,
-      rgba(9, 10, 13, 0.42) 62%,
+      rgba(9, 10, 13, 0.74) 0%,
+      rgba(9, 10, 13, 0.24) 22%,
+      rgba(9, 10, 13, 0.44) 62%,
       rgba(16, 18, 22, 0.9) 88%,
       var(--nv-paper) 100%
     ),
@@ -98,7 +130,7 @@
       rgba(9, 10, 13, 0.95) 0%,
       rgba(9, 10, 13, 0.86) 34%,
       rgba(9, 10, 13, 0.56) 62%,
-      rgba(9, 10, 13, 0.34) 100%
+      rgba(9, 10, 13, 0.32) 100%
     );
 }
 
@@ -115,19 +147,136 @@
       ),
       linear-gradient(
         180deg,
-        rgba(9, 10, 13, 0.86) 0%,
-        rgba(9, 10, 13, 0.72) 34%,
-        rgba(9, 10, 13, 0.8) 70%,
+        rgba(9, 10, 13, 0.88) 0%,
+        rgba(9, 10, 13, 0.74) 34%,
+        rgba(9, 10, 13, 0.82) 70%,
         var(--nv-paper) 100%
       );
   }
 }
 
+/* ── Plane 1 · aura ─────────────────────────────────────────────────────────
+   Light over the photographs, in three parts. This is the layer that makes the
+   hero feel built rather than photographed, and it is the reason the backdrop
+   can stay this dark: the warmth is added back on top, where it can be aimed.
+
+     .nv-hero__rails  vertical champagne hairlines, drifting
+     .nv-hero__pool   a wide warm pool low behind the copy, breathing
+     .nv-hero__sweep  one specular bar crossing the hero every 19s
+
+   `screen` blending is what keeps all three additive — they only ever lighten,
+   so none of them can dull a photograph or tint the copy sitting above.
+   ------------------------------------------------------------------------- */
+.nv-hero__aura {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Rails — the architectural note. Hairlines at a wide, regular interval, so
+   faint they are only read as structure at the edges of vision, masked away at
+   the top and bottom so they never terminate on a visible line. The drift is
+   28s across a single interval's width, which at this opacity is imperceptible
+   frame to frame and obvious only if you leave and come back. */
+.nv-hero__rails {
+  position: absolute;
+  inset: -1px -20% -1px -20%;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(217, 195, 154, 0.07) 0 1px,
+    transparent 1px clamp(104px, 11vw, 172px)
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent,
+    #000 26%,
+    #000 62%,
+    transparent 94%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent,
+    #000 26%,
+    #000 62%,
+    transparent 94%
+  );
+  animation: nv-hero-rails 28s linear infinite;
+  will-change: transform;
+}
+
+@keyframes nv-hero-rails {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(clamp(104px, 11vw, 172px), 0, 0); }
+}
+
+/* Pool — a very wide champagne wash sitting low and left, behind the headline
+   rather than behind the whole band. It is the warmth the copy is read against.
+   The 22s breathe changes its size and strength together, which is how actual
+   light behaves when something moves in front of it. */
+.nv-hero__pool {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      44% 52% at 26% 62%,
+      rgba(217, 195, 154, 0.12),
+      transparent 68%
+    ),
+    radial-gradient(
+      36% 40% at 74% 24%,
+      rgba(240, 226, 194, 0.07),
+      transparent 70%
+    );
+  animation: nv-hero-pool 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes nv-hero-pool {
+  from { transform: scale(1) translate3d(0, 0, 0); opacity: 0.72; }
+  to { transform: scale(1.12) translate3d(2%, -1.5%, 0); opacity: 1; }
+}
+
+/* Sweep — one soft specular bar, raked at 16deg, crossing the whole hero and
+   then absent for most of the cycle. It is the single moment of glint in the
+   section: 19s apart, 4.5s wide, and only 22% of the cycle is spent on screen,
+   so it registers as a reflection passing rather than as an animation running.
+   The `1px` stop in the middle is not a hairline — it is what stops the bar's
+   own centre from washing flat. */
+.nv-hero__sweep {
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 46%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(240, 226, 194, 0.055) 42%,
+    rgba(255, 249, 236, 0.1) 50%,
+    rgba(240, 226, 194, 0.055) 58%,
+    transparent
+  );
+  transform: translate3d(-140%, 0, 0) rotate(16deg);
+  animation: nv-hero-sweep 19s var(--nv-ease-io) infinite;
+  will-change: transform;
+}
+
+@keyframes nv-hero-sweep {
+  0% { transform: translate3d(-140%, 0, 0) rotate(16deg); }
+  /* On screen between 4% and 26%; parked off the right edge for the rest. */
+  26%,
+  100% { transform: translate3d(280%, 0, 0) rotate(16deg); }
+}
+
+/* ── Plane 2 · grid ─────────────────────────────────────────────────────── */
 .nv-hero__grid {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
-  gap: clamp(40px, 5vw, 72px);
+  gap: clamp(44px, 5vw, 76px);
   align-items: center;
 }
 
@@ -138,117 +287,241 @@
   }
 }
 
-/* ── Copy column ────────────────────────────────────────────────────────── */
-.nv-hero__copy {
-  position: relative;
-  max-width: 640px;
+/* ── Copy column ────────────────────────────────────────────────────────────
+   The column arrives in sequence rather than all at once: chip, then tagline,
+   then lede, then buttons, then the figures. Each step is 1.05s and they are
+   140ms apart, so the whole entrance is under a second and a half and reads as
+   one movement with an order to it.
+
+   The `<h1>` itself is not in the sequence — NovaWords already lifts the
+   hospital name word by word out of its own mask, and stacking a second
+   animation on the container would fight it.
+   ------------------------------------------------------------------------- */
+.nv-hero__copy { position: relative; max-width: 660px; }
+
+@keyframes nv-hero-rise {
+  from { opacity: 0; transform: translate3d(0, 22px, 0); }
+  to { opacity: 1; transform: none; }
 }
 
+.nv-hero__place,
+.nv-hero__title-sub,
+.nv-hero__lede,
+.nv-hero__cta,
+.nv-hero__trust { animation: nv-hero-rise 1.05s var(--nv-ease-lux) both; }
+
+.nv-hero__place { animation-delay: 0.08s; }
+.nv-hero__title-sub { animation-delay: 0.34s; }
+.nv-hero__lede { animation-delay: 0.48s; }
+.nv-hero__cta { animation-delay: 0.62s; }
+.nv-hero__trust { animation-delay: 0.76s; }
+
+/* Locality chip — a hairline pill on dark glass, with a live champagne mark.
+   The mark used to be a mint dot with a hard glow, which was the only saturated
+   colour left above the fold; it is now the page's own metal, and it pulses by
+   expanding a ring outward rather than by changing its own brightness, so
+   nothing blinks. */
 .nv-hero__place {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px 8px 12px;
+  gap: 11px;
+  padding: 8px 17px 8px 13px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 255, 0.2);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--nv-champagne-line);
+  background: rgba(11, 12, 16, 0.6);
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 var(--nv-edge);
   font-family: var(--nv-font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--nv-text-dim);
+  color: var(--nv-champagne-dim);
 }
 
 .nv-hero__place i {
   width: 6px;
   height: 6px;
+  flex: none;
   border-radius: 999px;
-  background: var(--nv-mint);
-  box-shadow: 0 0 10px var(--nv-mint);
-  animation: nv-blink 2.2s var(--nv-ease-io) infinite;
+  background: var(--nv-champagne-hi);
+  animation: nv-hero-mark 2.8s var(--nv-ease-io) infinite;
+}
+
+@keyframes nv-hero-mark {
+  0% { box-shadow: 0 0 0 0 rgba(217, 195, 154, 0.34); }
+  70%,
+  100% { box-shadow: 0 0 0 7px rgba(217, 195, 154, 0); }
 }
 
 .nv-hero__title {
-  margin-top: 22px;
+  margin-top: 26px;
   font-family: var(--nv-font-display);
   font-weight: 700;
-  font-size: clamp(2.7rem, 6.6vw, 5.2rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  font-size: clamp(2.8rem, 6.8vw, 5.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.042em;
   color: #fff;
+  text-wrap: balance;
 }
 
+/* The accent word inside the headline. Flat champagne, not a gradient: this
+   sheet is not the place to reverse the decision recorded on `.nv-ink` in
+   nova-core.css, where an animated gradient in running text was removed for
+   costing contrast on thin strokes. */
+.nv-hero__title .nv-ink {
+  color: var(--nv-champagne-hi);
+  -webkit-text-fill-color: currentColor;
+}
+
+/* The tagline, in the serif italic, preceded by a champagne rule that draws
+   itself in once — the same gesture the cards use on hover, spent here on
+   arrival instead. */
 .nv-hero__title-sub {
   display: block;
-  margin-top: 10px;
+  position: relative;
+  margin-top: 20px;
+  padding-top: 20px;
   font-family: var(--nv-font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(1.5rem, 3.1vw, 2.5rem);
-  line-height: 1.06;
+  font-size: clamp(1.5rem, 3.1vw, 2.4rem);
+  line-height: 1.08;
   letter-spacing: -0.015em;
   color: var(--nv-text-dim);
 }
 
+.nv-hero__title-sub::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(64px, 8vw, 104px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--nv-champagne), transparent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: nv-hero-rule 1.4s var(--nv-ease-lux) 0.72s both;
+}
+
+@keyframes nv-hero-rule {
+  to { transform: scaleX(1); }
+}
+
 .nv-hero__lede {
-  margin-top: 24px;
-  max-width: 52ch;
+  margin-top: 26px;
+  max-width: 54ch;
   font-size: clamp(0.96rem, 1.1vw, 1.08rem);
-  line-height: 1.75;
+  line-height: 1.78;
   color: var(--nv-muted);
 }
 
-.nv-hero__lede b {
-  color: var(--nv-text-dim);
-  font-weight: 600;
-}
+.nv-hero__lede b { color: var(--nv-text-dim); font-weight: 600; }
 
 .nv-hero__cta {
-  margin-top: 32px;
+  margin-top: 34px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
 }
 
-/* Inline trust strip under the CTAs */
+/* ── Figures ────────────────────────────────────────────────────────────────
+   One machined strip rather than three floating numbers: a single hairline
+   plate on dark glass, divided by hairlines, lit along its top edge. `auto-fit`
+   because the count is data-dependent — two of the three cells only exist if
+   the API returned those stats.
+   ------------------------------------------------------------------------- */
 .nv-hero__trust {
-  margin-top: 34px;
-  padding-top: 24px;
-  border-top: 1px solid var(--nv-line-soft);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 30px;
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 29, 36, 0.52),
+    rgba(15, 17, 22, 0.64)
+  );
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    var(--nv-lift),
+    inset 0 1px 0 var(--nv-edge);
+  overflow: hidden;
 }
 
 .nv-hero__trust-item {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 5px;
+  padding: 19px 22px 20px;
+  transition: background 0.7s var(--nv-ease-lux);
 }
+
+/* A hairline between cells, never before the first — and because `auto-fit` can
+   wrap the strip onto a second row on a narrow column, the divider is drawn on
+   the cell's own inline-start edge rather than as a border on the plate. */
+.nv-hero__trust-item + .nv-hero__trust-item {
+  box-shadow: inset 1px 0 0 var(--nv-hairline);
+}
+
+/* Champagne lights along the top of the cell under the pointer. The figures are
+   not links, so this is feedback about attention rather than about action —
+   which is why it warms rather than lifts. */
+.nv-hero__trust-item::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgba(217, 195, 154, 0.2) 74%,
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.8s var(--nv-ease-lux);
+}
+
+.nv-hero__trust-item:hover { background: rgba(217, 195, 154, 0.045); }
+.nv-hero__trust-item:hover::before { transform: scaleX(1); }
 
 .nv-hero__trust-value {
   font-family: var(--nv-font-display);
-  font-size: 1.45rem;
+  font-size: clamp(1.5rem, 2vw, 1.8rem);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  line-height: 1;
+  letter-spacing: -0.026em;
+  /* Tabular figures so a row of numbers of different widths still lines up. */
+  font-variant-numeric: tabular-nums;
   color: #fff;
 }
 
 .nv-hero__trust-label {
   font-family: var(--nv-font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--nv-faint);
 }
 
-/* ── Service reel ───────────────────────────────────────────────────────────
+/* -- Service reel -----------------------------------------------------------
    A vertical marquee: the track holds the service list twice and travels
-   exactly -50%, so the second copy lands where the first began and the loop
-   is seamless. The mask fades cards in at the bottom and out at the top.
+   exactly -50%, so the second copy lands where the first began and the loop is
+   seamless. The mask fades cards in at the bottom and out at the top, and the
+   whole thing pauses on hover so a card can be read and clicked.
+
+   The plates are the same plates the rest of the page uses now: hairline
+   border, dark glass, catch-light on the top edge. They used to be teal-bordered
+   chips with rgba(45, 212, 167) icons. The distinction the old palette carried
+   between ordinary and urgent services is kept, but champagne on the icon plate
+   carries it instead of a second hue.
    ------------------------------------------------------------------------- */
 .nv-reel {
   position: relative;
@@ -260,9 +533,9 @@
 .nv-reel__viewport {
   position: relative;
   width: 100%;
-  max-width: 430px;
+  max-width: 436px;
   height: 72vh;
-  max-height: 620px;
+  max-height: 640px;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(
     180deg,
@@ -280,17 +553,53 @@
   );
 }
 
+/* A rail down the left of the reel with a champagne highlight travelling along
+   it. It gives the marquee an axis to run against, and it is the one place in
+   the hero where the eye is meant to follow the motion. */
+.nv-reel__viewport::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  z-index: 2;
+  background: var(--nv-hairline);
+  pointer-events: none;
+}
+
+.nv-reel__viewport::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 34%;
+  z-index: 3;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--nv-champagne) 50%,
+    transparent
+  );
+  animation: nv-reel-rail 11s var(--nv-ease-io) infinite;
+  pointer-events: none;
+}
+
+@keyframes nv-reel-rail {
+  from { transform: translate3d(0, -120%, 0); }
+  to { transform: translate3d(0, 420%, 0); }
+}
+
 .nv-reel__track {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  animation: nv-reel-scroll 28s linear infinite;
+  padding-left: 22px;
+  animation: nv-reel-scroll 34s linear infinite;
   will-change: transform;
 }
 
-.nv-reel__viewport:hover .nv-reel__track {
-  animation-play-state: paused;
-}
+.nv-reel__viewport:hover .nv-reel__track { animation-play-state: paused; }
 
 @keyframes nv-reel-scroll {
   from { transform: translate3d(0, 0, 0); }
@@ -298,49 +607,76 @@
 }
 
 .nv-reel__card {
+  position: relative;
   display: flex;
-  gap: 14px;
+  gap: 15px;
   align-items: flex-start;
   padding: 18px 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 17px;
+  border: 1px solid var(--nv-hairline);
   background: linear-gradient(
     180deg,
-    rgba(23, 27, 39, 0.66),
-    rgba(11, 13, 19, 0.72)
+    rgba(25, 28, 35, 0.58),
+    rgba(14, 16, 21, 0.68)
   );
-  backdrop-filter: blur(12px);
-  box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 26px 62px -36px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 var(--nv-edge-soft);
   color: inherit;
   transition:
-    border-color 0.3s var(--nv-ease),
-    transform 0.3s var(--nv-ease);
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux),
+    transform 0.6s var(--nv-ease-lux),
+    box-shadow 0.6s var(--nv-ease-lux);
 }
 
 a.nv-reel__card:hover {
-  border-color: rgba(45, 212, 167, 0.4);
-  transform: translateX(4px);
+  border-color: var(--nv-champagne-line);
+  background: linear-gradient(
+    180deg,
+    rgba(32, 36, 45, 0.66),
+    rgba(18, 20, 26, 0.74)
+  );
+  box-shadow:
+    0 30px 70px -34px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 var(--nv-edge);
+  transform: translateX(5px);
 }
 
 .nv-reel__ic {
   width: 40px;
   height: 40px;
   flex: 0 0 auto;
-  border-radius: 11px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(45, 212, 167, 0.12);
-  border: 1px solid rgba(45, 212, 167, 0.28);
-  color: #7fe8d6;
+  border: 1px solid var(--nv-hairline-hi);
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-text-dim);
+  transition:
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
 }
 
+/* The services a visitor may be looking for in an emergency. Champagne rather
+   than amber: it is the accent this page already uses to mean "look here". */
 .nv-reel__card--gold .nv-reel__ic {
-  background: rgba(232, 154, 60, 0.14);
-  border-color: rgba(232, 154, 60, 0.32);
-  color: #f5c062;
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne-hi);
 }
 
-.nv-reel__ic svg { width: 21px; height: 21px; }
+a.nv-reel__card:hover .nv-reel__ic {
+  border-color: var(--nv-champagne);
+  background: rgba(217, 195, 154, 0.12);
+  color: var(--nv-champagne-hi);
+}
+
+.nv-reel__ic svg { width: 20px; height: 20px; }
 
 .nv-reel__body { min-width: 0; }
 
@@ -349,20 +685,70 @@ a.nv-reel__card:hover {
   font-family: var(--nv-font-display);
   font-size: 16.5px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 1px 0 4px;
+  letter-spacing: -0.012em;
+  margin: 2px 0 5px;
   color: var(--nv-text);
+  transition: color 0.6s var(--nv-ease-lux);
 }
+
+a.nv-reel__card:hover .nv-reel__title { color: #fff; }
 
 .nv-reel__desc {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 12.5px;
+  line-height: 1.5;
   color: var(--nv-muted);
 }
 
-/* Below the two-column breakpoint the reel becomes a plain static list —
-   no marquee, nothing clipped, and the duplicate copy stays hidden. */
+/* -- Plane 3 - baseline -----------------------------------------------------
+   One hairline across the foot of the hero with a mono label and a short
+   vertical rail down which a champagne mark travels. It closes the section -
+   without it the hero simply stops - and it tells a visitor who has landed on a
+   near-full-height photograph that there is more underneath it.
+   ------------------------------------------------------------------------- */
+.nv-hero__cue {
+  position: relative;
+  z-index: 2;
+  margin-top: clamp(48px, 6vw, 84px);
+  padding-top: 18px;
+  border-top: 1px solid var(--nv-hairline);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-family: var(--nv-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  animation: nv-hero-rise 1.05s var(--nv-ease-lux) 0.9s both;
+}
+
+.nv-hero__cue-rail {
+  position: relative;
+  width: 1px;
+  height: 34px;
+  flex: none;
+  overflow: hidden;
+  background: var(--nv-hairline);
+}
+
+.nv-hero__cue-rail i {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 14px;
+  background: linear-gradient(180deg, transparent, var(--nv-champagne));
+  animation: nv-hero-cue 2.6s var(--nv-ease-io) infinite;
+}
+
+@keyframes nv-hero-cue {
+  from { transform: translate3d(0, -100%, 0); }
+  to { transform: translate3d(0, 240%, 0); }
+}
+
+/* Below the two-column breakpoint the reel becomes a plain static list - no
+   marquee, nothing clipped, no rail, and the duplicate copy stays hidden. */
 @media (max-width: 1079px) {
   .nv-reel { display: block; }
 
@@ -375,65 +761,55 @@ a.nv-reel__card:hover {
     mask-image: none;
   }
 
-  .nv-reel__track { animation: none; }
+  .nv-reel__viewport::before,
+  .nv-reel__viewport::after { display: none; }
+
+  .nv-reel__track { padding-left: 0; animation: none; }
+
   .nv-reel__track > [data-clone="true"] { display: none; }
 }
 
+/* -- Reduced motion ---------------------------------------------------------
+   Everything that moves on its own is switched off, and everything that arrives
+   arrives already in place. The backdrop is handled in JS as well -
+   NovaHeroBackdrop stops advancing - so the cross-fade and the zoom have
+   nothing left to do either.
+   ------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  .nv-hero__rails,
+  .nv-hero__pool,
+  .nv-hero__sweep,
+  .nv-hero__place i,
+  .nv-hero__cue-rail i,
+  .nv-reel__viewport::after,
   .nv-reel__track { animation: none !important; }
 
-  /* The backdrop holds on its first photograph — NovaHeroBackdrop stops
-     advancing, so the cross-fade and the zoom have nothing left to do. */
+  .nv-hero__place,
+  .nv-hero__title-sub,
+  .nv-hero__lede,
+  .nv-hero__cta,
+  .nv-hero__trust,
+  .nv-hero__cue {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* The rule under the tagline is scaled to nothing at rest, so switching its
+     animation off would delete it rather than reveal it. It has to be placed. */
+  .nv-hero__title-sub::before {
+    animation: none !important;
+    transform: scaleX(1);
+  }
+
+  .nv-hero__trust-item::before { transition: none; }
+
   .nv-hero__shot { transition: none; }
-  .nv-hero__shot-img { transform: none; transition: none; }
+
+  .nv-hero__shot-img,
+  .nv-hero__shot:nth-child(even) .nv-hero__shot-img,
+  .nv-hero__shot:nth-child(even)[data-on] .nv-hero__shot-img {
+    transform: none;
+    transition: none;
+  }
 }
-
-/* ── Open-services ticker under the hero ────────────────────────────────── */
-.nv-ticker {
-  position: relative;
-  z-index: 1;
-  margin-top: clamp(36px, 5vw, 60px);
-  border-block: 1px solid var(--nv-line-soft);
-  background: linear-gradient(
-    180deg,
-    rgba(124, 108, 255, 0.05),
-    rgba(4, 5, 10, 0)
-  );
-  padding-block: 16px;
-}
-
-.nv-ticker__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--nv-font-display);
-  font-size: clamp(0.92rem, 1.5vw, 1.15rem);
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  color: var(--nv-text-dim);
-  white-space: nowrap;
-  transition: color 0.3s var(--nv-ease);
-}
-
-.nv-ticker__item:hover { color: #fff; }
-
-.nv-ticker__item svg {
-  width: 15px;
-  height: 15px;
-  color: var(--nv-iris-hi);
-  flex: none;
-}
-
-.nv-ticker__dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(148, 163, 255, 0.4);
-  flex: none;
-}
-
-
-
-
-
-

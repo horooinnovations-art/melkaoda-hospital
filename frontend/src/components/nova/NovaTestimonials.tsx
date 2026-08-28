@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { cleanPublicText, truncate } from "@/lib/utils";
 import type { Testimonial } from "@/lib/types";
 import { NovaStars } from "./NovaCards";
@@ -20,20 +20,28 @@ export default function NovaTestimonials({
   const reduced = useReducedMotion();
   const [index, setIndex] = useState(0);
   const total = items.length;
+  const autoRotates = total > 1 && !reduced;
 
   useEffect(() => {
-    if (total < 2 || reduced) return;
+    if (!autoRotates) return;
     const id = setInterval(
       () => setIndex((current) => (current + 1) % total),
       ROTATE_MS
     );
     return () => clearInterval(id);
-  }, [total, reduced]);
+  }, [total, autoRotates]);
 
   if (!total) return null;
 
   return (
-    <div className="nv-quote">
+    <div
+      className="nv-quote"
+      /* The active dot fills over exactly one rotation. Both the duration and
+         the "is it rotating at all" answer come from here rather than being
+         restated in CSS, so there is one source of truth for the timing. */
+      data-auto={autoRotates ? "true" : "false"}
+      style={{ "--nv-quote-ms": `${ROTATE_MS}ms` } as CSSProperties}
+    >
       <span className="nv-quote__glyph" aria-hidden>
         &ldquo;
       </span>
