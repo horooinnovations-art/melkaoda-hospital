@@ -5,8 +5,8 @@
   "description": "Loke General Hospital — Next.js + Express + MySQL",
   "scripts": {
     "build": "cd backend && npm install",
-    "start": "node src/server.js || (cd backend && npm start)",
-    "start:api": "cd backend && npm start",
+    "start": "cd backend && node src/server.js",
+    "start:api": "cd backend && node src/server.js",
     "start:web": "cd frontend && npm start",
     "dev:api": "cd backend && npm run dev",
     "dev:web": "cd frontend && npm run dev"
