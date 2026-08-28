@@ -1,9 +1,10 @@
 {
   "name": "loke-general-hospital",
   "version": "1.0.0",
-  "private": true,
+  "type": "module",
   "description": "Loke General Hospital — Next.js + Express + MySQL",
   "scripts": {
+    "postinstall": "cd backend && npm install",
     "build": "cd backend && npm install",
     "start": "cd backend && node src/server.js",
     "start:api": "cd backend && node src/server.js",
