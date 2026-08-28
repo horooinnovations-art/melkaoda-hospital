@@ -10,6 +10,14 @@ interface PublicPaginationProps {
   className?: string;
 }
 
+/**
+ * List-page pager.
+ *
+ * Rebuilt in Nova terms: mono numerals in hairline cells, and the current page
+ * marked by a warmed border plus a short champagne rule under the numeral. The
+ * old active state was a sky-to-teal gradient pill, which on this canvas would
+ * have been the only saturated object on the page.
+ */
 export default function PublicPagination({
   currentPage,
   totalItems,
@@ -24,7 +32,8 @@ export default function PublicPagination({
   const startItem = (currentPage - 1) * perPage + 1;
   const endItem = Math.min(currentPage * perPage, totalItems);
 
-  // Generate page numbers array (with max 5 visible page numbers around current)
+  // Up to five numbered cells around the current page; the rest collapse to an
+  // ellipsis so the row never wraps on a phone.
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
@@ -49,90 +58,57 @@ export default function PublicPagination({
     return pages;
   };
 
-  const createPageUrl = (page: number) => {
-    if (page === 1) return basePath;
-    return `${basePath}?page=${page}`;
-  };
+  const createPageUrl = (page: number) =>
+    page === 1 ? basePath : `${basePath}?page=${page}`;
 
   return (
-    <div
-      className={cn(
-        "mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-8 sm:flex-row",
-        className
-      )}
-    >
-      {/* Count summary */}
-      <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-        Showing <span className="font-bold text-slate-900">{startItem}</span> to{" "}
-        <span className="font-bold text-slate-900">{endItem}</span> of{" "}
-        <span className="font-bold text-slate-900">{totalItems}</span> items
+    <div className={cn("nv-pager", className)}>
+      <p className="nv-pager__count">
+        Showing <b>{startItem}</b>–<b>{endItem}</b> of <b>{totalItems}</b>
       </p>
 
-      {/* Pagination controls */}
-      <nav className="inline-flex items-center gap-1.5" aria-label="Pagination">
-        {/* Previous page link */}
+      <nav className="nv-pager__nav" aria-label="Pagination">
         {currentPage > 1 ? (
-          <Link
-            href={createPageUrl(currentPage - 1)}
-            className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-slate-50 hover:text-sky-600"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Prev</span>
+          <Link href={createPageUrl(currentPage - 1)} className="nv-pager__step">
+            <ChevronLeft aria-hidden />
+            Prev
           </Link>
         ) : (
-          <span className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-slate-100 bg-slate-50 px-3 text-xs font-semibold text-slate-300 pointer-events-none">
-            <ChevronLeft className="h-4 w-4" />
-            <span>Prev</span>
+          <span className="nv-pager__step nv-pager__step--off" aria-hidden>
+            <ChevronLeft />
+            Prev
           </span>
         )}
 
-        {/* Page numbers */}
-        <div className="flex items-center gap-1">
-          {getPageNumbers().map((num, i) => {
-            if (num === "...") {
-              return (
-                <span
-                  key={`ellipsis-${i}`}
-                  className="flex h-10 w-8 items-center justify-center text-xs text-slate-400"
-                >
-                  ...
-                </span>
-              );
-            }
+        {getPageNumbers().map((num, i) =>
+          num === "..." ? (
+            <span key={`gap-${i}`} className="nv-pager__gap" aria-hidden>
+              …
+            </span>
+          ) : (
+            <Link
+              key={num}
+              href={createPageUrl(num as number)}
+              aria-current={num === currentPage ? "page" : undefined}
+              className={cn(
+                "nv-pager__page",
+                num === currentPage && "nv-pager__page--on"
+              )}
+            >
+              {num}
+            </Link>
+          )
+        )}
 
-            const pageNum = num as number;
-            const isActive = pageNum === currentPage;
-
-            return (
-              <Link
-                key={pageNum}
-                href={createPageUrl(pageNum)}
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold transition",
-                  isActive
-                    ? "bg-gradient-to-r from-sky-500 to-teal-500 text-white shadow-md shadow-sky-500/20 ring-1 ring-sky-400"
-                    : "border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-sky-300 hover:bg-slate-50 hover:text-sky-600"
-                )}
-              >
-                {pageNum}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Next page link */}
         {currentPage < totalPages ? (
-          <Link
-            href={createPageUrl(currentPage + 1)}
-            className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-slate-50 hover:text-sky-600"
-          >
-            <span>Next</span>
-            <ChevronRight className="h-4 w-4" />
+          <Link href={createPageUrl(currentPage + 1)} className="nv-pager__step">
+            Next
+            <ChevronRight aria-hidden />
           </Link>
         ) : (
-          <span className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-slate-100 bg-slate-50 px-3 text-xs font-semibold text-slate-300 pointer-events-none">
-            <span>Next</span>
-            <ChevronRight className="h-4 w-4" />
+          <span className="nv-pager__step nv-pager__step--off" aria-hidden>
+            Next
+            <ChevronRight />
           </span>
         )}
       </nav>

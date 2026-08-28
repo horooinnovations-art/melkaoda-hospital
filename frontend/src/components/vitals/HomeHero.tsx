@@ -104,27 +104,43 @@ export default function HomeHero({
     cleanPublicText(about) ||
     "We are committed to providing safe, compassionate and high-quality health care services to the people of Siraro District and surrounding communities.";
 
-  const slides: Slide[] = useMemo(
-    () =>
-      (
-        data?.heroImages?.length
-          ? data.heroImages.map((item, i) => ({
-              id: i,
-              src: resolveMediaUrl(item.url),
-              title: item.title || item.alt,
-            }))
-          : data?.gallery?.map((item) => ({
-              id: item.id,
-              src: getImageFromItem(item as unknown as Record<string, unknown>),
-              title: item.title ?? undefined,
-            })) ?? []
-      )
-        .flatMap((s) =>
-          s.src ? [{ id: s.id, src: s.src, title: s.title }] : []
-        )
-        .slice(0, MAX_SLIDES),
-    [data]
-  );
+  const slides: Slide[] = useMemo(() => {
+    const custom = (
+      data?.heroImages?.length
+        ? data.heroImages.map((item, i) => ({
+            id: i,
+            src: resolveMediaUrl(item.url),
+            title: item.title || item.alt,
+          }))
+        : data?.gallery?.map((item) => ({
+            id: item.id,
+            src: getImageFromItem(item as unknown as Record<string, unknown>),
+            title: item.title ?? undefined,
+          })) ?? []
+    )
+      .flatMap((s) => (s.src ? [{ id: s.id, src: s.src, title: s.title }] : []))
+      .slice(0, MAX_SLIDES);
+
+    if (custom.length > 0) return custom;
+
+    return [
+      {
+        id: 9001,
+        src: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop",
+        title: `${brand} Campus`,
+      },
+      {
+        id: 9002,
+        src: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=1200&auto=format&fit=crop",
+        title: "Medical & Healthcare Facility",
+      },
+      {
+        id: 9003,
+        src: "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=1200&auto=format&fit=crop",
+        title: "Clinical Excellence",
+      },
+    ];
+  }, [data, brand]);
 
   const multi = slides.length > 1;
   const active = slides[index];

@@ -157,28 +157,59 @@ export default function HomeClient({
 
   // Cards for the stacked carousel under the hero. Gallery entries first; the
   // hero image list is the fallback for tenants that have not filled a gallery.
-  const stackSlides: StackSlide[] = (gallery.length
-    ? gallery.map((item) => ({
-        key: `gal-${item.id}`,
-        href: `/gallery/${item.slug}`,
-        title: cleanPublicText(item.title) || item.title,
-        description:
-          truncate(
-            cleanPublicText(item.short_description || item.description || ""),
-            120
-          ) || undefined,
-        label: item.category || "On campus",
-        image: getImageFromItem(item as unknown as Record<string, unknown>),
-      }))
-    : (data?.heroImages ?? []).map((image, i) => ({
-        key: `hero-${i}`,
-        href: "/gallery",
-        title: cleanPublicText(image.title || image.alt || "") || `${name} campus`,
-        description: undefined,
-        label: "On campus",
-        image: getImageFromItem(image as unknown as Record<string, unknown>),
-      }))
-  ).filter((slide) => Boolean(slide.image));
+  const stackSlides: StackSlide[] = (() => {
+    const custom = (gallery.length
+      ? gallery.map((item) => ({
+          key: `gal-${item.id}`,
+          href: `/gallery/${item.slug}`,
+          title: cleanPublicText(item.title) || item.title,
+          description:
+            truncate(
+              cleanPublicText(item.short_description || item.description || ""),
+              120
+            ) || undefined,
+          label: item.category || "On campus",
+          image: getImageFromItem(item as unknown as Record<string, unknown>),
+        }))
+      : (data?.heroImages ?? []).map((image, i) => ({
+          key: `hero-${i}`,
+          href: "/gallery",
+          title: cleanPublicText(image.title || image.alt || "") || `${name} campus`,
+          description: undefined,
+          label: "On campus",
+          image: getImageFromItem(image as unknown as Record<string, unknown>),
+        }))
+    ).filter((slide) => Boolean(slide.image));
+
+    if (custom.length > 0) return custom;
+
+    return [
+      {
+        key: "def-1",
+        href: "/departments",
+        title: `${name} Campus`,
+        description: "State-of-the-art medical facility providing comprehensive healthcare.",
+        label: "Campus",
+        image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop",
+      },
+      {
+        key: "def-2",
+        href: "/departments",
+        title: "Advanced Clinical Care",
+        description: "Equipped with modern diagnostic technology and surgical suites.",
+        label: "Care",
+        image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=1200&auto=format&fit=crop",
+      },
+      {
+        key: "def-3",
+        href: "/departments",
+        title: "24/7 Emergency Services",
+        description: "Dedicated emergency and trauma care team ready for immediate response.",
+        label: "Emergency",
+        image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=1200&auto=format&fit=crop",
+      },
+    ];
+  })();
 
   // Photographs for the hero backdrop. Priority is the reverse of the carousel's:
   // heroImages are the ones a tenant picked *for* the hero, so they come first
@@ -224,7 +255,7 @@ export default function HomeClient({
       )}
 
       {/* ── Welcome ─────────────────────────────────────────────────────── */}
-      <section className="nv-section">
+      <section className="nv-section nv-section--tight">
         <div className="nv-shell nv-shell--wide">
           <div className="nv-welcome">
             <NovaReveal from="up">
@@ -281,7 +312,7 @@ export default function HomeClient({
 
 
       {/* ── Services ────────────────────────────────────────────────────── */}
-      <section className="nv-section">
+      <section className="nv-section nv-section--tight">
         <div className="nv-shell nv-shell--wide">
           <NovaSectionHead
             eyebrow="Services"

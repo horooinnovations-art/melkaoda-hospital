@@ -5,13 +5,9 @@ import { fetchResourceList } from "@/lib/api";
 import type { PublicResource } from "@/lib/types";
 import { getImageFromItem, optimizeImageUrl } from "@/lib/media";
 import { cleanPublicText, cn, isPublicItemActive, stripHtml, truncate } from "@/lib/utils";
-import Reveal from "@/components/motion/Reveal";
+import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
-import {
-  DepartmentCard,
-  ServiceCard,
-} from "@/components/vitals/HomeShowcaseCards";
-import FancyMediaCard from "@/components/shared/FancyMediaCard";
+import { NovaContentCard } from "@/components/nova/NovaCards";
 import SmartImage from "@/components/shared/SmartImage";
 import PublicPagination from "@/components/shared/PublicPagination";
 
@@ -25,6 +21,17 @@ interface ResourceListProps {
   layout?: "grid" | "editorial" | "ribbon" | "services" | "departments";
   emptyTitle?: string;
   emptyDescription?: string;
+}
+
+/** Long-form dates, formatted once so every layout agrees. */
+function formatDate(raw: string) {
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default async function ResourceList({
@@ -58,7 +65,7 @@ export default async function ResourceList({
   }
 
   if (failed) {
-    // Determine friendly message: hide raw internal API/URL details from visitors
+    // Never surface the upstream host or the raw fetch error to a visitor.
     const isNetworkError =
       errorMessage.includes("Invalid API response") ||
       errorMessage.includes("onrender.com") ||
@@ -68,12 +75,7 @@ export default async function ResourceList({
       ? "Content is temporarily unavailable. Our team has been notified — please try refreshing the page in a moment."
       : errorMessage || "Something went wrong while fetching this section. Please try again shortly.";
 
-    return (
-      <EmptyState
-        title="Unable to load content"
-        description={friendlyMessage}
-      />
-    );
+    return <EmptyState title="Unable to load content" description={friendlyMessage} />;
   }
 
   if (items.length === 0) {
@@ -88,10 +90,16 @@ export default async function ResourceList({
     );
   }
 
+  const isCardLayout =
+    layout === "grid" ||
+    layout === "ribbon" ||
+    layout === "services" ||
+    layout === "departments";
+
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full">
       {layout === "editorial" && (
-        <div className="space-y-5">
+        <div className="nv-plist">
           {items.map((item, i) => {
             const title = cleanPublicText(
               String(item[titleField] ?? item.title ?? item.name ?? "")
@@ -101,178 +109,100 @@ export default async function ResourceList({
             );
             const image = getImageFromItem(item);
             const slug = String(item.slug);
-            const date =
+            const rawDate =
               (item.published_at as string) ||
               (item.event_date as string) ||
               (item.created_at as string) ||
               "";
+            const date = rawDate ? formatDate(rawDate) : "";
+            // "Featured" means top of the feed. Item 13 on page 2 is not the top
+            // of anything, so the treatment is scoped to the first page.
             const featured = i === 0 && page === 1;
 
             return (
-              <Reveal key={String(item.id)} delay={Math.min(i, 6) * 0.05}>
+              <NovaReveal key={String(item.id)} from="up" delay={Math.min(i, 6) * 0.07}>
                 <Link
                   href={`${basePath}/${slug}`}
-                  className={cn(
-                    "v-home-news group",
-                    featured && "v-home-news--featured"
-                  )}
+                  className={cn("nv-post", featured && "nv-post--featured")}
                 >
-                  <div
-                    className={cn(
-                      "v-home-news__media relative overflow-hidden bg-[#122033]",
-                      featured
-                        ? "min-h-[16rem] md:min-h-[20rem]"
-                        : "aspect-[16/11] md:aspect-auto md:min-h-[14rem]"
-                    )}
-                  >
+                  <span className="nv-post__media">
                     {image ? (
                       <SmartImage
                         src={optimizeImageUrl(image, 900) ?? image}
-                        alt={title}
+                        // Decorative: .nv-post__title carries this item's name in
+                        // text directly beside the frame.
+                        alt=""
                         fill
                         optimizeWidth={900}
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="nv-post__photo"
                         sizes="(max-width: 768px) 100vw, 45vw"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#0c1b2a] to-[#122033] font-display text-6xl text-sky-300/40">
+                      <span className="nv-post__initial" aria-hidden>
                         {title.charAt(0)}
-                      </div>
+                      </span>
                     )}
-                  </div>
+                  </span>
 
-                  <div className="flex flex-col justify-center px-6 py-7 md:px-9 md:py-8">
-                    {date && (
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-mid">
-                        {new Date(date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    )}
-                    <h3 className="mt-3 font-display text-2xl leading-tight text-[#0c1b2a] md:text-[1.85rem]">
-                      {title}
-                    </h3>
+                  <span className="nv-post__copy">
+                    {date && <span className="nv-post__date">{date}</span>}
+                    <span className="nv-post__title block">{title}</span>
                     {desc && (
-                      <p className="mt-3 text-sm leading-relaxed text-[#5a6e6a] md:text-[0.975rem]">
-                        {truncate(desc, featured ? 220 : 160)}
-                      </p>
+                      <span className="nv-post__excerpt block">
+                        {truncate(stripHtml(desc), featured ? 260 : 200)}
+                      </span>
                     )}
-                    <span className="mt-6 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-mid">
-                      <span className="h-px w-8 bg-current opacity-40 transition-all duration-500 group-hover:w-12" />
+                    <span className="nv-post__more">
+                      <span className="nv-post__more-rule" aria-hidden />
                       Read more
-                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <ArrowUpRight aria-hidden />
                     </span>
-                  </div>
+                  </span>
                 </Link>
-              </Reveal>
+              </NovaReveal>
             );
           })}
         </div>
       )}
 
-      {layout === "services" && (
-        <div className="g-compact-grid">
+      {isCardLayout && (
+        <div className={layout === "ribbon" ? "nv-grid-4" : "nv-grid-3"}>
           {items.map((item, i) => {
             const title = String(item[titleField] ?? item.name ?? item.title ?? "");
             const rawDesc = String(
               item[descField] ?? item.short_description ?? item.description ?? ""
             );
-            const desc = rawDesc
-              ? truncate(stripHtml(rawDesc), 90)
-              : undefined;
+            // Generous budget: `.nv-card__desc` clamps to three rendered lines, so
+            // the cut lands at a line end rather than at a character count.
+            const desc = rawDesc ? truncate(stripHtml(rawDesc), 220) : undefined;
             const kicker =
-              resource === "emergency-services" ? "Emergency care" : "Clinical service";
-            const rowIndex = Math.floor(i / 2);
-            const rowDelay = Math.min(rowIndex, 8) * 0.12;
+              layout === "departments"
+                ? "Clinical unit"
+                : resource === "emergency-services"
+                  ? "Emergency care"
+                  : layout === "services"
+                    ? "Clinical service"
+                    : "Featured";
+
             return (
-              <Reveal
+              <NovaReveal
                 key={String(item.id)}
-                delay={rowDelay}
-                className="h-full"
+                from="up"
+                delay={Math.min(Math.floor(i / 3), 5) * 0.12}
               >
-                <ServiceCard
+                <NovaContentCard
                   href={`${basePath}/${String(item.slug)}`}
                   title={title}
                   description={desc}
                   image={getImageFromItem(item)}
-                  index={i}
                   kicker={kicker}
-                  compact
                 />
-              </Reveal>
+              </NovaReveal>
             );
           })}
         </div>
       )}
 
-      {layout === "departments" && (
-        <div className="g-compact-grid">
-          {items.map((item, i) => {
-            const title = String(item[titleField] ?? item.name ?? "");
-            const rawDesc = String(
-              item[descField] ?? item.short_description ?? item.description ?? ""
-            );
-            const desc = rawDesc
-              ? truncate(stripHtml(rawDesc), 90)
-              : undefined;
-            const rowIndex = Math.floor(i / 2);
-            const rowDelay = Math.min(rowIndex, 8) * 0.12;
-            return (
-              <Reveal
-                key={String(item.id)}
-                delay={rowDelay}
-                className="h-full"
-              >
-                <DepartmentCard
-                  href={`${basePath}/${String(item.slug)}`}
-                  title={title}
-                  description={desc}
-                  image={getImageFromItem(item)}
-                  index={i}
-                  compact
-                />
-              </Reveal>
-            );
-          })}
-        </div>
-      )}
-
-      {(layout === "grid" || layout === "ribbon") && (
-        <div
-          className={cn(
-            "grid items-stretch gap-5",
-            layout === "ribbon"
-              ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "sm:grid-cols-2 lg:grid-cols-3"
-          )}
-        >
-          {items.map((item, i) => {
-            const title = String(item[titleField] ?? item.title ?? item.name ?? "");
-            const desc = String(
-              item[descField] ?? item.short_description ?? item.description ?? ""
-            );
-            const image = getImageFromItem(item);
-            const slug = String(item.slug);
-            const cta = layout === "ribbon" ? "Explore" : "Learn more";
-
-            return (
-              <FancyMediaCard
-                key={String(item.id)}
-                href={`${basePath}/${slug}`}
-                title={title}
-                description={desc ? truncate(stripHtml(desc), 140) : undefined}
-                image={image}
-                index={i + 1}
-                cta={cta}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* Pagination Controls Bar */}
       <PublicPagination
         currentPage={page}
         totalItems={totalItems}

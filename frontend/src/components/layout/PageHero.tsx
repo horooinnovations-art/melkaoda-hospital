@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ChevronRight, Sparkles, Zap } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NovaReveal from "@/components/nova/NovaReveal";
 import PageHeroAtmosphere from "@/components/layout/PageHeroAtmosphere";
 
 interface Crumb {
@@ -17,11 +18,21 @@ interface PageHeroProps {
   className?: string;
   children?: React.ReactNode;
   stats?: { label: string; value: string }[];
+  /** Retained for source compatibility; the Nova opening has one treatment. */
   variant?: "default" | "gradient" | "premium" | "dark" | "minimal";
   badges?: { label: string; icon?: "sparkles" | "zap" }[];
   showDecoration?: boolean;
 }
 
+/**
+ * The opening of every interior page.
+ *
+ * `from="none"` rather than the usual "up": this sits above the fold on load,
+ * so it fades in place instead of sliding up into it. The reveal is still what
+ * puts `data-shown` on `.nv-ph`, which is how the brand mark, the flourish and
+ * the stat rules draw themselves — nova-page.css keys all of them off that one
+ * attribute, so none of this needs its own observer.
+ */
 export default function PageHero({
   title,
   subtitle,
@@ -35,28 +46,26 @@ export default function PageHero({
   const trail = breadcrumbs ?? [{ label: title }];
 
   return (
-    <section
-      className={cn(
-        "g-page-hero -mx-[calc((100vw-100%)/2)] w-screen",
-        className
-      )}
+    <NovaReveal
+      as="section"
+      from="none"
+      className={cn("nv-ph -mx-[calc((100vw-100%)/2)] w-screen", className)}
     >
       <PageHeroAtmosphere />
 
-      <div className="g-page-hero__inner mx-auto max-w-7xl px-5 lg:px-8">
-        <nav aria-label="Breadcrumb" className="g-crumbs">
-          <Link href="/" className="g-crumbs__chip">
+      <div className="nv-ph__inner nv-shell nv-shell--wide">
+        <nav aria-label="Breadcrumb" className="nv-ph__crumbs">
+          <Link href="/" className="nv-ph__crumb">
             Home
           </Link>
           {trail.map((crumb) => (
-            <span key={crumb.label} className="g-crumbs__step">
-              <ChevronRight className="g-crumbs__chev" aria-hidden />
+            <span key={crumb.label} className="nv-ph__step">
               {crumb.href ? (
-                <Link href={crumb.href} className="g-crumbs__chip">
+                <Link href={crumb.href} className="nv-ph__crumb">
                   {crumb.label}
                 </Link>
               ) : (
-                <span className="g-crumbs__chip g-crumbs__chip--current">
+                <span className="nv-ph__crumb nv-ph__crumb--current" aria-current="page">
                   {crumb.label}
                 </span>
               )}
@@ -64,69 +73,51 @@ export default function PageHero({
           ))}
         </nav>
 
-        <div className="g-page-hero__copy">
-          <p className="g-page-hero__brand">
-            <span className="g-page-hero__brand-mark" aria-hidden />
-            Gambo General Hospital
-          </p>
+        <p className="nv-ph__brand">
+          <span className="nv-ph__brand-mark" aria-hidden />
+          Gambo General Hospital
+        </p>
 
-          {badges && badges.length > 0 && (
-            <div className="g-page-hero__badges g-page-hero__badges--top">
-              {badges.map((badge, idx) => {
-                const BadgeIcon =
-                  badge.icon === "sparkles"
-                    ? Sparkles
-                    : badge.icon === "zap"
-                      ? Zap
-                      : null;
-                return (
-                  <span
-                    key={`${badge.label}-${idx}`}
-                    className="g-detail-badge g-detail-badge--sky"
-                  >
-                    {BadgeIcon && <BadgeIcon className="h-3.5 w-3.5" />}
-                    {badge.label}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-
-          {eyebrow && (
-            <p className="g-page-hero__kicker">
-              <span className="g-page-hero__kicker-live" aria-hidden>
-                <span className="g-page-hero__kicker-dot" />
-              </span>
-              {eyebrow}
-            </p>
-          )}
-
-          <h1 className="g-page-hero__title">
-            <span className="g-page-hero__title-ink">{title}</span>
-          </h1>
-
-          <div className="g-page-hero__flourish" aria-hidden>
-            <span />
-            <i />
-            <span />
+        {badges && badges.length > 0 && (
+          <div className="nv-ph__badges">
+            {badges.map((badge, idx) => {
+              const BadgeIcon =
+                badge.icon === "sparkles"
+                  ? Sparkles
+                  : badge.icon === "zap"
+                    ? Zap
+                    : null;
+              return (
+                <span key={`${badge.label}-${idx}`} className="nv-ph__badge">
+                  {BadgeIcon && <BadgeIcon aria-hidden />}
+                  {badge.label}
+                </span>
+              );
+            })}
           </div>
+        )}
 
-          {subtitle && <p className="g-page-hero__sub">{subtitle}</p>}
+        {eyebrow && <p className="nv-eyebrow mt-5">{eyebrow}</p>}
 
-          {stats && stats.length > 0 && (
-            <div className="g-page-hero__stats">
-              {stats.map((stat) => (
-                <div key={stat.label} className="g-page-hero__stat">
-                  <span className="g-page-hero__stat-value">{stat.value}</span>
-                  <span className="g-page-hero__stat-label">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
+        <h1 className="nv-ph__title">{title}</h1>
 
-          {children && <div className="g-page-hero__actions">{children}</div>}
-        </div>
+        <div className="nv-ph__flourish" aria-hidden />
+
+        {subtitle && <p className="nv-ph__sub">{subtitle}</p>}
+
+        {stats && stats.length > 0 && (
+          <div className="nv-ph__stats">
+            {stats.map((stat) => (
+              <div key={stat.label} className="nv-ph__stat">
+                <span className="nv-ph__stat-value">{stat.value}</span>
+                <span className="nv-ph__stat-label">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {children && <div className="nv-ph__actions">{children}</div>}
       </div>
-    </section>
+    </NovaReveal>
   );
 }

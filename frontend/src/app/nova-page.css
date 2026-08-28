@@ -1,0 +1,1463 @@
+/* ==========================================================================
+   NOVA — interior pages
+   Namespace: .nv-ph (page hero) · .nv-pb (page body field)
+   Loaded after nova-sections.css, before nova-footer.css.
+
+   Why this sheet exists
+   ---------------------
+   Every interior page used to open with `.g-page-hero`: a teal gradient that
+   ran from near-black to #f8fafc, wrapped in ~40 decorative nodes — prisms,
+   a constellation, corner jewels, a crest, pilasters, a ribbon. Two problems.
+   It ended white, so an interior page and the homepage looked like two
+   different websites joined at the nav; and its richness came from ornament
+   stacked on top of the surface rather than from the surface itself.
+
+   This sheet rebuilds the interior opening in the same terms as the homepage:
+   charcoal ground, one warm metal used only for hairlines and small marks, and
+   three light layers instead of forty ornaments —
+
+     1. a drifting rail field, on the same clamp() interval as the page field
+        below it, so the two align rather than beat against each other
+     2. one breathing champagne bloom, lit from the leading edge
+     3. a centre-warming seam at the base, the same rule that joins two
+        sections on the homepage, so the hero hands off to the body instead of
+        fading out
+
+   Arrival animations are keyed off [data-shown="true"], which NovaReveal sets
+   on whatever element takes its className — no second observer, no new JS.
+   ========================================================================== */
+
+.nv-ph {
+  --nv-ph-rail: clamp(118px, 12vw, 196px);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--nv-paper);
+  padding: clamp(104px, 11vw, 152px) 0 clamp(52px, 5.5vw, 76px);
+}
+
+/* 1 — the rail field. Same interval as .nv-flow::before on the homepage, and
+   the same 52s drift, so a visitor scrolling from hero into body sees one
+   continuous field rather than two. */
+.nv-ph::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(217, 195, 154, 0.042) 0 1px,
+    transparent 1px var(--nv-ph-rail)
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+  animation: nv-ph-rails 52s linear infinite;
+  will-change: transform;
+}
+
+@keyframes nv-ph-rails {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(var(--nv-ph-rail), 0, 0); }
+}
+
+/* 2 — the bloom. Lit from the left, where the title starts, and breathing on a
+   long cycle. Its focal point sits inside an in-bounds box so the layer can
+   never contribute horizontal overflow. */
+.nv-ph__glow {
+  position: absolute;
+  top: -12%;
+  bottom: -18%;
+  left: 0;
+  width: 68%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    62% 54% at 16% 42%,
+    rgba(217, 195, 154, 0.075),
+    transparent 72%
+  );
+  animation: nv-ph-breathe 26s ease-in-out infinite alternate;
+}
+
+.nv-ph__glow--warm {
+  left: auto;
+  right: 0;
+  width: 54%;
+  background: radial-gradient(
+    58% 50% at 84% 58%,
+    rgba(240, 226, 194, 0.045),
+    transparent 72%
+  );
+  animation-delay: -13s;
+}
+
+@keyframes nv-ph-breathe {
+  from { opacity: 0.6; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.08); }
+}
+
+/* Corner falloff — lets the edges of the opening drop away so the centre
+   carries the eye. A vignette, not a border. */
+.nv-ph__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 92% at 50% 34%,
+    transparent 42%,
+    var(--nv-vignette) 100%
+  );
+}
+
+/* 3 — the base seam. Identical to the homepage's section boundary, so the hero
+   joins the body on a warm hairline instead of fading to a lighter colour. */
+.nv-ph::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 1px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-hairline) 22%,
+    var(--nv-champagne-line) 50%,
+    var(--nv-hairline) 78%,
+    transparent
+  );
+}
+
+.nv-ph__inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Breadcrumbs ──────────────────────────────────────────────────────────
+   Mono, small, faint. The separator is a champagne slash rather than a chevron
+   glyph — one warm mark per step, and it aligns on the baseline instead of
+   floating like an icon. A crumb warms on hover; the current page does not,
+   because it is not a link. */
+.nv-ph__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 10px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-ph__crumb {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.4s var(--nv-ease-lux);
+}
+
+.nv-ph__crumb:hover {
+  color: var(--nv-champagne);
+}
+
+.nv-ph__crumb--current {
+  color: var(--nv-text-dim);
+}
+
+.nv-ph__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nv-ph__step::before {
+  content: "/";
+  color: var(--nv-champagne-line);
+}
+
+/* ── Brand line ───────────────────────────────────────────────────────────
+   A hairline that draws itself out from the mark on arrival, then the hospital
+   name. The line is the ornament; there is no plate behind it. */
+.nv-ph__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(24px, 2.6vw, 34px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-ph__brand-mark {
+  width: clamp(28px, 3.4vw, 46px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--nv-champagne), rgba(217, 195, 154, 0));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.1s var(--nv-ease-lux) 0.1s;
+}
+
+.nv-ph[data-shown="true"] .nv-ph__brand-mark {
+  transform: scaleX(1);
+}
+
+/* ── Badges ───────────────────────────────────────────────────────────────
+   Hairline pills. They warm to champagne on hover; they never glow, and they
+   never carry a fill, because a filled warm pill at this size reads brown. */
+.nv-ph__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.nv-ph__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux);
+}
+
+.nv-ph__badge svg {
+  width: 13px;
+  height: 13px;
+}
+
+.nv-ph__badge:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+/* ── Title, flourish, lede ────────────────────────────────────────────────── */
+.nv-ph__title {
+  margin-top: clamp(14px, 1.6vw, 20px);
+  max-width: 22ch;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.5rem, 5.6vw, 4.5rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  color: var(--nv-text);
+}
+
+/* The flourish that replaced the three-part ornament: a single hairline that
+   warms at its centre and draws outward from the left on arrival. */
+.nv-ph__flourish {
+  position: relative;
+  height: 1px;
+  width: clamp(150px, 22vw, 280px);
+  margin-top: clamp(22px, 2.4vw, 30px);
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-champagne) 34%,
+    var(--nv-hairline) 78%,
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.35s var(--nv-ease-lux) 0.24s;
+}
+
+.nv-ph[data-shown="true"] .nv-ph__flourish {
+  transform: scaleX(1);
+}
+
+.nv-ph__sub {
+  margin-top: clamp(18px, 2vw, 24px);
+  max-width: 62ch;
+  font-size: clamp(0.975rem, 1.1vw, 1.075rem);
+  line-height: 1.68;
+  color: var(--nv-text-dim);
+}
+
+/* ── Stats ────────────────────────────────────────────────────────────────
+   Built like the homepage figures: a mono value, a label under a hairline that
+   draws itself in, staggered left to right. No plates, no fills — on an opening
+   this size a row of boxes would compete with the title. */
+.nv-ph__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(26px, 4vw, 58px);
+  margin-top: clamp(34px, 3.6vw, 46px);
+}
+
+.nv-ph__stat {
+  position: relative;
+  min-width: 96px;
+}
+
+.nv-ph__stat-value {
+  display: block;
+  font-family: var(--nv-font-mono);
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--nv-text);
+}
+
+.nv-ph__stat-label {
+  position: relative;
+  display: block;
+  margin-top: 14px;
+  padding-top: 12px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-ph__stat-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 72%,
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1s var(--nv-ease-lux);
+}
+
+.nv-ph[data-shown="true"] .nv-ph__stat-label::before {
+  transform: scaleX(1);
+}
+
+.nv-ph[data-shown="true"] .nv-ph__stat:nth-child(1) .nv-ph__stat-label::before { transition-delay: 0.42s; }
+.nv-ph[data-shown="true"] .nv-ph__stat:nth-child(2) .nv-ph__stat-label::before { transition-delay: 0.54s; }
+.nv-ph[data-shown="true"] .nv-ph__stat:nth-child(3) .nv-ph__stat-label::before { transition-delay: 0.66s; }
+.nv-ph[data-shown="true"] .nv-ph__stat:nth-child(4) .nv-ph__stat-label::before { transition-delay: 0.78s; }
+
+.nv-ph__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(30px, 3.2vw, 40px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE BODY FIELD
+   The interior-page counterpart to .nv-flow. Same three layers, but the bloom
+   is anchored near the top rather than repeated per section, because interior
+   pages are usually one long column instead of nine distinct bands.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-pb {
+  --nv-pb-rail: clamp(118px, 12vw, 196px);
+  position: relative;
+  isolation: isolate;
+  background: var(--nv-paper);
+}
+
+.nv-pb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(217, 195, 154, 0.036) 0 1px,
+    transparent 1px var(--nv-pb-rail)
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  animation: nv-pb-rails 52s linear infinite;
+  will-change: transform;
+}
+
+@keyframes nv-pb-rails {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(var(--nv-pb-rail), 0, 0); }
+}
+
+/* One wash that decays over the first screenful, so the top of the body is lit
+   and the long tail of a list page settles into flat charcoal. */
+.nv-pb__glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: clamp(420px, 52vh, 720px);
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 78% at 78% 0%, rgba(217, 195, 154, 0.05), transparent 70%),
+    radial-gradient(48% 66% at 8% 12%, rgba(240, 226, 194, 0.032), transparent 72%);
+  animation: nv-pb-breathe 30s ease-in-out infinite alternate;
+}
+
+@keyframes nv-pb-breathe {
+  from { opacity: 0.62; }
+  to { opacity: 1; }
+}
+
+.nv-pb__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .nv-ph {
+    padding-top: clamp(88px, 22vw, 112px);
+  }
+
+  .nv-ph__title {
+    max-width: none;
+  }
+
+  .nv-ph__stats {
+    gap: 22px 30px;
+  }
+
+  .nv-ph__stat {
+    min-width: calc(50% - 15px);
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────────
+   Two different jobs here. Layers that only travel are stopped (the rails) or
+   held at a fixed opacity (the blooms). Layers that carry structure — every
+   hairline drawn with scaleX(0) — must be *placed* at scaleX(1), not merely
+   un-animated, or the rule they draw never appears at all. */
+@media (prefers-reduced-motion: reduce) {
+  .nv-ph::before,
+  .nv-pb::before {
+    animation: none;
+  }
+
+  .nv-ph__glow,
+  .nv-pb__glow {
+    animation: none;
+    opacity: 0.85;
+  }
+
+  .nv-ph__brand-mark,
+  .nv-ph__flourish,
+  .nv-ph__stat-label::before {
+    transform: scaleX(1);
+    transition: none;
+  }
+
+  .nv-ph[data-shown="true"] .nv-ph__stat:nth-child(1) .nv-ph__stat-label::before,
+  .nv-ph[data-shown="true"] .nv-ph__stat:nth-child(2) .nv-ph__stat-label::before,
+  .nv-ph[data-shown="true"] .nv-ph__stat:nth-child(3) .nv-ph__stat-label::before,
+  .nv-ph[data-shown="true"] .nv-ph__stat:nth-child(4) .nv-ph__stat-label::before {
+    transition-delay: 0s;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EDITORIAL LIST — news, announcements, events, careers, health education
+   The old treatment hardcoded light values (#0c1b2a copy on #f8fafc) which is
+   unreadable on charcoal. This is the same content in Nova terms: a plate, a
+   framed photograph, a mono date, and a "Read more" rule that extends on hover
+   instead of a coloured link.
+
+   The first item on page 1 gets --featured: a taller frame and a larger title.
+   Later pages do not, because "featured" means "top of the feed", and item 13
+   is not the top of anything.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-plist {
+  display: grid;
+  gap: clamp(16px, 1.8vw, 22px);
+}
+
+.nv-post {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  text-decoration: none;
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-post:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+/* The catch-light along the top edge — the one gradient in the system, and the
+   thing that makes a flat rectangle read as a solid object. */
+.nv-post::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 40%, transparent);
+}
+
+@media (min-width: 768px) {
+  .nv-post {
+    grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .nv-post--featured {
+    grid-template-columns: minmax(0, 52%) minmax(0, 1fr);
+  }
+}
+
+/* Media. The framing hairline and the scrim live on ::after rather than as an
+   inset shadow on the frame itself, because an inset shadow paints *under* an
+   element's children and the photograph is an absolutely-positioned child. */
+.nv-post__media {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(190px, 26vw, 240px);
+  background: var(--nv-plate-well);
+}
+
+.nv-post--featured .nv-post__media {
+  min-height: clamp(240px, 34vw, 340px);
+}
+
+.nv-post__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 62%,
+    rgba(6, 7, 10, 0.42) 100%
+  );
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-post__photo {
+  object-fit: cover;
+  transition: transform 1.5s var(--nv-ease-lux);
+}
+
+.nv-post:hover .nv-post__photo {
+  transform: scale(1.045);
+}
+
+/* Colourless pass across the photograph on hover. Warm light over a face turns
+   the skin tone, so this sheen carries no hue of its own. */
+.nv-post__media::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 44%;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(240, 226, 194, 0.05) 46%,
+    rgba(255, 249, 236, 0.085) 52%,
+    transparent
+  );
+  transform: translate3d(-190%, 0, 0) rotate(12deg);
+  transition: transform 1.2s var(--nv-ease-io);
+}
+
+.nv-post:hover .nv-post__media::before {
+  transform: translate3d(320%, 0, 0) rotate(12deg);
+}
+
+/* The initial shown when an item has no photograph. A large, very faint letter
+   in the display face — a placeholder that looks deliberate rather than broken. */
+.nv-post__initial {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: clamp(3.4rem, 7vw, 5.4rem);
+  font-weight: 500;
+  color: rgba(217, 195, 154, 0.11);
+  user-select: none;
+}
+
+/* Copy side. */
+.nv-post__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(22px, 2.6vw, 34px);
+}
+
+.nv-post__date {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-post__date::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--nv-champagne-line);
+}
+
+.nv-post__title {
+  margin-top: 14px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-post--featured .nv-post__title {
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+}
+
+.nv-post:hover .nv-post__title {
+  color: var(--nv-champagne-hi);
+}
+
+/* Clamped on the rendered line rather than at a character count, so the
+   ellipsis always lands at a line end. */
+.nv-post__excerpt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin-top: 12px;
+  font-size: 0.925rem;
+  line-height: 1.66;
+  color: var(--nv-muted);
+}
+
+.nv-post__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(18px, 2vw, 24px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-post__more-rule {
+  width: 26px;
+  height: 1px;
+  background: var(--nv-champagne-line);
+  transition:
+    width 0.6s var(--nv-ease-lux),
+    background-color 0.5s var(--nv-ease-lux);
+}
+
+.nv-post:hover .nv-post__more {
+  color: var(--nv-champagne);
+}
+
+.nv-post:hover .nv-post__more-rule {
+  width: 46px;
+  background: var(--nv-champagne);
+}
+
+.nv-post__more svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.5s var(--nv-ease-lux);
+}
+
+.nv-post:hover .nv-post__more svg {
+  transform: translate3d(2px, -2px, 0);
+}
+
+/* ── Empty and error states ───────────────────────────────────────────────
+   `.nv-empty` in nova-cards.css is a compact inline state sized for a card
+   slot. A list page that fails to load needs the same language at page scale,
+   so this widens it rather than defining a second look. */
+.nv-state {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  overflow: hidden;
+  padding: clamp(56px, 8vw, 92px) clamp(24px, 4vw, 48px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 20px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  text-align: center;
+}
+
+.nv-state::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 50%,
+    transparent
+  );
+}
+
+.nv-state__ico {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 14px;
+  background: var(--nv-plate-well);
+  color: var(--nv-champagne);
+}
+
+.nv-state__ico svg {
+  width: 22px;
+  height: 22px;
+}
+
+.nv-state__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+.nv-state__desc {
+  max-width: 52ch;
+  font-size: 0.925rem;
+  line-height: 1.66;
+  color: var(--nv-muted);
+}
+
+/* ── Pagination ───────────────────────────────────────────────────────────
+   Mono numerals in hairline cells. The current page is marked by a champagne
+   underline rather than a filled pill: at 40px a filled warm square reads
+   brown, and a gradient fill would be the only saturated object on the page. */
+.nv-pager {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: clamp(38px, 4.4vw, 56px);
+  padding-top: clamp(24px, 2.8vw, 34px);
+}
+
+.nv-pager::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-hairline) 20%,
+    var(--nv-champagne-line) 50%,
+    var(--nv-hairline) 80%,
+    transparent
+  );
+}
+
+@media (min-width: 640px) {
+  .nv-pager {
+    flex-direction: row;
+  }
+}
+
+.nv-pager__count {
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-pager__count b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--nv-text-dim);
+}
+
+.nv-pager__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nv-pager__step,
+.nv-pager__page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 11px;
+  background: var(--nv-plate-flat);
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  text-decoration: none;
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    color 0.4s var(--nv-ease-lux),
+    background-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-pager__step { padding: 0 13px; }
+.nv-pager__page { width: 38px; font-variant-numeric: tabular-nums; }
+
+.nv-pager__step svg { width: 14px; height: 14px; }
+
+.nv-pager__step:hover,
+.nv-pager__page:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-pager__step--off {
+  pointer-events: none;
+  border-color: var(--nv-line-soft);
+  background: transparent;
+  color: var(--nv-faint);
+  opacity: 0.55;
+}
+
+/* The current page. A champagne rule under the numeral, drawn inside the cell,
+   plus a warmed border — the same vocabulary as every other "you are here" mark
+   in the system. */
+.nv-pager__page--on {
+  position: relative;
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne-hi);
+}
+
+.nv-pager__page--on::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 14px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: var(--nv-champagne);
+}
+
+.nv-pager__gap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 38px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  color: var(--nv-faint);
+}
+
+/* Reduced motion — the post plate. Travel is removed (the hover sweep and the
+   photograph's scale); the hairline rules stay, because they are structure. */
+@media (prefers-reduced-motion: reduce) {
+  .nv-post,
+  .nv-post__photo,
+  .nv-post__title,
+  .nv-post__more,
+  .nv-post__more-rule {
+    transition: none;
+  }
+
+  .nv-post:hover {
+    transform: none;
+  }
+
+  .nv-post:hover .nv-post__photo {
+    transform: none;
+  }
+
+  .nv-post__media::before {
+    display: none;
+  }
+}
+
+/* A four-across variant of `.nv-grid-3` for the ribbon layout, which packs
+   shorter cards. Steps 1 → 2 → 3 → 4 so a card never drops below ~260px. */
+.nv-grid-4 {
+  display: grid;
+  gap: clamp(16px, 1.6vw, 22px);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+  .nv-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .nv-grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1320px) {
+  .nv-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DETAIL PAGES
+   The [slug] shell: a narrower opening with a back link and an optional framed
+   thumbnail, then a column of panels.
+
+   What was removed and why: each panel used to carry a rim, an accent bar, a
+   travelling shine and two corner brackets — five decorative nodes per panel,
+   on a page that stacks six or seven of them. A plate with one catch-light
+   along its top edge and a warm rule under its heading carries the same weight
+   with two, and it does not multiply as the page grows.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-ph--detail {
+  padding-bottom: clamp(44px, 4.6vw, 62px);
+}
+
+/* Back link. The arrow travels, the rule under the label extends — no chip, no
+   plate, because this sits above the page title and must not outweigh it. */
+.nv-ph__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  text-decoration: none;
+  transition: color 0.4s var(--nv-ease-lux);
+}
+
+.nv-ph__back svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-ph__back:hover {
+  color: var(--nv-champagne);
+}
+
+.nv-ph__back:hover svg {
+  transform: translate3d(-3px, 0, 0);
+}
+
+/* Detail hero layout — copy beside an optional portrait of the subject. */
+.nv-ph__split {
+  display: grid;
+  gap: clamp(28px, 3.4vw, 48px);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .nv-ph__split--media {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+  }
+}
+
+.nv-ph__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  aspect-ratio: 4 / 3;
+  background: var(--nv-plate-well);
+  box-shadow: var(--nv-lift);
+}
+
+/* Frame and scrim above the photograph — an inset shadow on the frame itself
+   would paint under the absolutely-positioned image. */
+.nv-ph__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 66%, rgba(6, 7, 10, 0.4) 100%);
+  box-shadow:
+    inset 0 0 0 1px var(--nv-hairline),
+    inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-ph__media img {
+  object-fit: cover;
+}
+
+/* ── Detail body ──────────────────────────────────────────────────────────── */
+.nv-dstack {
+  display: grid;
+  gap: clamp(18px, 2.2vw, 28px);
+}
+
+.nv-dpanel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(22px, 2.8vw, 38px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 20px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+}
+
+.nv-dpanel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+/* ── Section header inside a detail page ─────────────────────────────────── */
+.nv-dhead {
+  display: grid;
+  gap: 12px;
+}
+
+.nv-dhead__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-dhead__eyebrow::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--nv-champagne-line);
+}
+
+.nv-dhead__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  color: var(--nv-text);
+}
+
+/* One hairline that warms at its left end, in place of the old span/i/span
+   ornament. */
+.nv-dhead__rule {
+  height: 1px;
+  width: clamp(90px, 12vw, 150px);
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    var(--nv-hairline) 60%,
+    transparent
+  );
+}
+
+.nv-dhead__desc {
+  max-width: 66ch;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--nv-muted);
+}
+
+/* ── Divider between detail sections ─────────────────────────────────────── */
+.nv-ddiv {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-hairline) 20%,
+    var(--nv-champagne-line) 50%,
+    var(--nv-hairline) 80%,
+    transparent
+  );
+}
+
+/* ── Meta chips and link chips ───────────────────────────────────────────── */
+.nv-dmeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nv-dmeta__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  background: var(--nv-plate-well);
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+}
+
+.nv-dmeta__chip svg {
+  width: 13px;
+  height: 13px;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-dlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 12px;
+  background: var(--nv-plate-flat);
+  font-size: 0.875rem;
+  color: var(--nv-text-dim);
+  text-decoration: none;
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux);
+}
+
+.nv-dlink:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-dlink__ico {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 7px;
+  color: inherit;
+  transition: border-color 0.45s var(--nv-ease-lux);
+}
+
+.nv-dlink__ico svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-dlink:hover .nv-dlink__ico {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-dlink:hover .nv-dlink__ico svg {
+  transform: translate3d(2px, -2px, 0);
+}
+
+/* Detail badges — same hairline pill as the hero badges, so a page that shows
+   both does not present two different pills. */
+.nv-dbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+}
+
+.nv-dbadge svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* The tone variants carry a warmed border and ink rather than a coloured fill.
+   Four filled tones on one page was the single loudest thing in the old detail
+   view; the distinction they draw is worth one hairline, not a block of colour. */
+.nv-dbadge--warm {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-dbadge--cool {
+  border-color: rgba(216, 221, 232, 0.2);
+  color: var(--nv-platinum);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PROSE — sanitized CMS HTML on charcoal
+   The old `.g-prose` / `.prose-hospital` pair set dark ink on a light card. The
+   markup coming out of the CMS is arbitrary, so this styles by element rather
+   than by class, and covers everything an editor can produce — including the
+   tables and code blocks the previous sheets left unstyled.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-prose {
+  font-size: 1rem;
+  line-height: 1.78;
+  color: var(--nv-text-dim);
+}
+
+.nv-prose > * + * {
+  margin-top: 1.1em;
+}
+
+.nv-prose h2,
+.nv-prose h3,
+.nv-prose h4 {
+  font-family: var(--nv-font-display);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+.nv-prose h2 {
+  margin-top: 2em;
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+}
+
+.nv-prose h3 {
+  margin-top: 1.7em;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+}
+
+.nv-prose h4 {
+  margin-top: 1.5em;
+  font-size: 1.05rem;
+}
+
+/* A warm rule under every h2, drawn from the text's left edge. It is the one
+   ornament in the prose, and it is what makes a long CMS article scan. */
+.nv-prose h2::after {
+  content: "";
+  display: block;
+  width: clamp(58px, 7vw, 92px);
+  height: 1px;
+  margin-top: 12px;
+  background: linear-gradient(90deg, var(--nv-champagne), rgba(217, 195, 154, 0));
+}
+
+.nv-prose p {
+  color: var(--nv-text-dim);
+}
+
+.nv-prose a {
+  color: var(--nv-champagne);
+  text-decoration: none;
+  border-bottom: 1px solid var(--nv-champagne-line);
+  transition: border-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-prose a:hover {
+  border-bottom-color: var(--nv-champagne);
+}
+
+.nv-prose strong,
+.nv-prose b {
+  font-weight: 600;
+  color: var(--nv-text);
+}
+
+.nv-prose em {
+  font-family: var(--nv-font-serif);
+  font-style: italic;
+}
+
+.nv-prose ul,
+.nv-prose ol {
+  padding-left: 1.35em;
+}
+
+.nv-prose ul { list-style: none; }
+.nv-prose ol { list-style: decimal; }
+
+.nv-prose li + li {
+  margin-top: 0.5em;
+}
+
+/* Unordered items get a champagne en-dash rather than a bullet glyph — the same
+   small warm mark the rest of the system uses for enumeration. */
+.nv-prose ul > li {
+  position: relative;
+}
+
+.nv-prose ul > li::before {
+  content: "";
+  position: absolute;
+  top: 0.85em;
+  left: -1.15em;
+  width: 9px;
+  height: 1px;
+  background: var(--nv-champagne);
+}
+
+.nv-prose ol > li::marker {
+  font-family: var(--nv-font-mono);
+  font-size: 0.85em;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-prose img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 14px;
+  box-shadow: var(--nv-lift);
+}
+
+.nv-prose figure > figcaption {
+  margin-top: 10px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-prose blockquote {
+  position: relative;
+  padding: 4px 0 4px 22px;
+  font-family: var(--nv-font-serif);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--nv-text);
+}
+
+.nv-prose blockquote::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    var(--nv-champagne),
+    var(--nv-champagne-line) 60%,
+    transparent
+  );
+}
+
+.nv-prose hr {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-hairline) 22%,
+    var(--nv-champagne-line) 50%,
+    var(--nv-hairline) 78%,
+    transparent
+  );
+}
+
+/* Tables. The CMS can emit them and neither previous sheet styled them, which
+   is why an editor's price or schedule table used to render as unaligned text. */
+.nv-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.nv-prose th,
+.nv-prose td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--nv-hairline);
+  text-align: left;
+}
+
+.nv-prose th {
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-prose td {
+  color: var(--nv-text-dim);
+}
+
+.nv-prose tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.nv-prose code {
+  padding: 2px 6px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 6px;
+  background: var(--nv-plate-well);
+  font-family: var(--nv-font-mono);
+  font-size: 0.85em;
+  color: var(--nv-champagne-hi);
+}
+
+.nv-prose pre {
+  overflow-x: auto;
+  padding: 16px 18px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 14px;
+  background: var(--nv-plate-well);
+}
+
+.nv-prose pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--nv-text-dim);
+}

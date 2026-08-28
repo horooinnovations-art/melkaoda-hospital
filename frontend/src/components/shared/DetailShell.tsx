@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import SmartImage from "@/components/shared/SmartImage";
-import Reveal from "@/components/motion/Reveal";
+import NovaReveal from "@/components/nova/NovaReveal";
 import PageHeroAtmosphere from "@/components/layout/PageHeroAtmosphere";
 import { optimizeImageUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
@@ -17,12 +17,17 @@ export interface DetailBadge {
   tone?: DetailBadgeTone;
 }
 
+/**
+ * The five old tones were four saturated fills plus a glass one. Nova draws the
+ * same distinction with a hairline: warm for the tones that used to be brass or
+ * mint, cool for the rest. The tone names are kept so no caller has to change.
+ */
 const BADGE_TONES: Record<DetailBadgeTone, string> = {
-  mint: "g-detail-badge g-detail-badge--teal",
-  teal: "g-detail-badge g-detail-badge--teal",
-  coral: "g-detail-badge g-detail-badge--rose",
-  glass: "g-detail-badge g-detail-badge--ink",
-  brass: "g-detail-badge g-detail-badge--amber",
+  mint: "nv-dbadge nv-dbadge--warm",
+  teal: "nv-dbadge nv-dbadge--cool",
+  coral: "nv-dbadge nv-dbadge--warm",
+  glass: "nv-dbadge",
+  brass: "nv-dbadge nv-dbadge--warm",
 };
 
 const WIDTHS = {
@@ -45,6 +50,14 @@ interface DetailShellProps {
   imageMode?: "showcase" | "ambient";
 }
 
+/**
+ * The [slug] page shell.
+ *
+ * Shares `.nv-ph` with the list-page hero, so a visitor moving from /news into
+ * /news/some-story stays in one opening rather than meeting a second design.
+ * `--detail` only tightens the bottom padding and admits the back link and the
+ * subject's portrait.
+ */
 export default function DetailShell({
   title,
   eyebrow,
@@ -63,47 +76,39 @@ export default function DetailShell({
   const showcase = Boolean(heroSrc) && imageMode === "showcase";
 
   return (
-    <div className="g-detail">
-      <section className="g-page-hero g-page-hero--detail -mx-[calc((100vw-100%)/2)] w-screen">
+    <div>
+      <NovaReveal
+        as="section"
+        from="none"
+        className="nv-ph nv-ph--detail -mx-[calc((100vw-100%)/2)] w-screen"
+      >
         <PageHeroAtmosphere />
 
-        <div className="g-page-hero__inner mx-auto max-w-6xl px-5 lg:px-8">
-          <div
-            className={cn(
-              "g-page-hero__split",
-              showcase && "g-page-hero__split--media"
-            )}
-          >
-            <div className="g-page-hero__copy">
+        <div className="nv-ph__inner mx-auto max-w-6xl px-5 lg:px-8">
+          <div className={cn("nv-ph__split", showcase && "nv-ph__split--media")}>
+            <div>
               {backHref && (
-                <Link href={backHref} className="g-page-hero__back">
-                  <ArrowLeft className="h-4 w-4" />
+                <Link href={backHref} className="nv-ph__back">
+                  <ArrowLeft aria-hidden />
                   {backLabel}
                 </Link>
               )}
-              <p className="g-page-hero__brand">
-                <span className="g-page-hero__brand-mark" aria-hidden />
+
+              <p className="nv-ph__brand">
+                <span className="nv-ph__brand-mark" aria-hidden />
                 Gambo General Hospital
               </p>
-              {eyebrow && (
-                <p className="g-page-hero__kicker">
-                  <span className="g-page-hero__kicker-live" aria-hidden>
-                    <span className="g-page-hero__kicker-dot" />
-                  </span>
-                  {eyebrow}
-                </p>
-              )}
-              <h1 className="g-page-hero__title">
-                <span className="g-page-hero__title-ink">{title}</span>
-              </h1>
-              <div className="g-page-hero__flourish" aria-hidden>
-                <span />
-                <i />
-                <span />
-              </div>
-              {subtitle && <p className="g-page-hero__sub">{subtitle}</p>}
+
+              {eyebrow && <p className="nv-eyebrow mt-5">{eyebrow}</p>}
+
+              <h1 className="nv-ph__title">{title}</h1>
+
+              <div className="nv-ph__flourish" aria-hidden />
+
+              {subtitle && <p className="nv-ph__sub">{subtitle}</p>}
+
               {visibleBadges.length > 0 && (
-                <div className="g-page-hero__badges">
+                <div className="nv-ph__badges mt-7">
                   {visibleBadges.map((badge, i) => {
                     const Icon = badge.icon;
                     return (
@@ -111,7 +116,7 @@ export default function DetailShell({
                         key={`${badge.label}-${i}`}
                         className={BADGE_TONES[badge.tone ?? "glass"]}
                       >
-                        {Icon && <Icon className="h-3.5 w-3.5" />}
+                        {Icon && <Icon aria-hidden />}
                         {badge.label}
                       </span>
                     );
@@ -121,46 +126,29 @@ export default function DetailShell({
             </div>
 
             {showcase && heroSrc && (
-              <div className="g-page-hero__media group cursor-pointer">
-                <span className="g-page-hero__media-rim transition-opacity duration-500 group-hover:opacity-100" aria-hidden />
-                <span className="g-page-hero__media-glow transition-all duration-700 group-hover:scale-110 group-hover:opacity-90" aria-hidden />
-                <div className="g-page-hero__media-frame relative overflow-hidden rounded-[1.45rem] bg-slate-900/10 transition-all duration-500 ease-out group-hover:-translate-y-1.5 group-hover:shadow-2xl group-hover:shadow-teal-500/20 isolate">
-                  {/* Ambient blur backdrop to fill container naturally */}
-                  <SmartImage
-                    src={heroSrc}
-                    alt=""
-                    fill
-                    optimizeWidth={120}
-                    className="object-cover blur-2xl scale-125 opacity-40 select-none pointer-events-none transition-opacity duration-700 group-hover:opacity-60"
-                    aria-hidden
-                  />
-                  {/* Main image strictly contained inside card boundaries with elegant zoom */}
-                  <SmartImage
-                    src={heroSrc}
-                    alt={title}
-                    fill
-                    priority
-                    optimizeWidth={1200}
-                    className="object-contain p-1.5 transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                  />
-                  {/* Light sweep animation overlay strictly contained */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none z-10" />
-                </div>
+              <div className="nv-ph__media">
+                <SmartImage
+                  src={heroSrc}
+                  // Decorative: the <h1> beside this frame is the subject's name.
+                  // A non-empty alt here printed the title twice whenever the
+                  // candidate URL 404'd and the img fell back to its alt text.
+                  alt=""
+                  fill
+                  priority
+                  optimizeWidth={1200}
+                  sizes="(max-width: 900px) 100vw, 340px"
+                />
               </div>
             )}
           </div>
         </div>
-      </section>
+      </NovaReveal>
 
-      <div className="g-pagebody g-pagebody--detail">
-        <div className="g-pagebody__aura" aria-hidden />
-        <div className="g-pagebody__mesh" aria-hidden />
-        <div className="g-pagebody__rail g-pagebody__rail--l" aria-hidden />
-        <div className="g-pagebody__rail g-pagebody__rail--r" aria-hidden />
+      <div className="nv-pb relative -mx-[calc((100vw-100%)/2)] w-screen">
+        <span className="nv-pb__glow" aria-hidden />
         <div
           className={cn(
-            "g-pagebody__inner g-detail-stack relative z-[1] mx-auto px-5 py-12 lg:px-8 lg:py-16",
+            "nv-pb__inner nv-dstack mx-auto px-5 py-12 lg:px-8 lg:py-16",
             WIDTHS[width],
             bodyClassName
           )}
@@ -176,31 +164,18 @@ export function DetailPanel({
   children,
   delay = 0.05,
   className,
-  tone = 1,
 }: {
   children: React.ReactNode;
   delay?: number;
   className?: string;
   as?: "div" | "section" | "article";
+  /** Retained for source compatibility; every panel now shares one surface. */
   tone?: 1 | 2 | 3 | 4;
 }) {
   return (
-    <Reveal delay={delay} fadeOut={false}>
-      <div
-        className={cn(
-          "g-detail-panel",
-          `g-detail-panel--tone-${tone}`,
-          className
-        )}
-      >
-        <span className="g-detail-panel__rim" aria-hidden />
-        <span className="g-detail-panel__accent" aria-hidden />
-        <span className="g-detail-panel__shine" aria-hidden />
-        <span className="g-detail-panel__corner g-detail-panel__corner--tl" aria-hidden />
-        <span className="g-detail-panel__corner g-detail-panel__corner--br" aria-hidden />
-        <div className="g-detail-panel__body">{children}</div>
-      </div>
-    </Reveal>
+    <NovaReveal from="up" delay={delay}>
+      <div className={cn("nv-dpanel", className)}>{children}</div>
+    </NovaReveal>
   );
 }
 
@@ -216,37 +191,22 @@ export function DetailSectionHeader({
   delay?: number;
 }) {
   return (
-    <Reveal delay={delay} fadeOut={false}>
-      <div className="g-detail-head">
-        {eyebrow && (
-          <p className="g-detail-head__eyebrow">
-            <span className="g-detail-head__dot" aria-hidden />
-            {eyebrow}
-          </p>
-        )}
-        <h2 className="g-detail-head__title">{title}</h2>
-        <div className="g-detail-head__rule" aria-hidden>
-          <span />
-          <i />
-          <span />
-        </div>
-        {description && (
-          <p className="g-detail-head__desc">{description}</p>
-        )}
+    <NovaReveal from="up" delay={delay}>
+      <div className="nv-dhead">
+        {eyebrow && <p className="nv-dhead__eyebrow">{eyebrow}</p>}
+        <h2 className="nv-dhead__title">{title}</h2>
+        <div className="nv-dhead__rule" aria-hidden />
+        {description && <p className="nv-dhead__desc">{description}</p>}
       </div>
-    </Reveal>
+    </NovaReveal>
   );
 }
 
 export function DetailDivider({ delay = 0 }: { delay?: number }) {
   return (
-    <Reveal delay={delay} fadeOut={false}>
-      <div className="g-detail-divider" aria-hidden>
-        <span />
-        <i />
-        <span />
-      </div>
-    </Reveal>
+    <NovaReveal from="none" delay={delay}>
+      <div className="nv-ddiv" aria-hidden />
+    </NovaReveal>
   );
 }
 
@@ -258,10 +218,10 @@ export function DetailLinkChip({
   children: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="g-detail-link">
+    <Link href={href} className="nv-dlink">
       <span>{children}</span>
-      <span className="g-detail-link__ico">
-        <ArrowUpRight className="h-3.5 w-3.5" />
+      <span className="nv-dlink__ico" aria-hidden>
+        <ArrowUpRight />
       </span>
     </Link>
   );
@@ -274,12 +234,12 @@ export function DetailMetaRow({
 }) {
   if (!items.length) return null;
   return (
-    <div className="g-detail-meta">
+    <div className="nv-dmeta">
       {items.map((item, i) => {
         const Icon = item.icon;
         return (
-          <span key={`${item.label}-${i}`} className="g-detail-meta__chip">
-            {Icon && <Icon className="h-3.5 w-3.5" />}
+          <span key={`${item.label}-${i}`} className="nv-dmeta__chip">
+            {Icon && <Icon aria-hidden />}
             {item.label}
           </span>
         );

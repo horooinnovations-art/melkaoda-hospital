@@ -18,6 +18,7 @@ import "./nova-hero.css";
 import "./nova-stack.css";
 import "./nova-cards.css";
 import "./nova-sections.css";
+import "./nova-page.css";
 import "./nova-footer.css";
 
 const sourceSans = Source_Sans_3({
