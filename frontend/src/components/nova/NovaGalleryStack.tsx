@@ -52,7 +52,7 @@ const LAST_RING = RING.length - 1;
 
 export default function NovaGalleryStack({
   slides,
-  interval = 4200,
+  interval = 2600,
 }: {
   slides: StackSlide[];
   /** Dwell time on each card, in milliseconds. */
@@ -171,6 +171,7 @@ export default function NovaGalleryStack({
                 key={slide.key}
                 className="nv-stack__slot"
                 data-active={isActive || undefined}
+                data-ring={Math.min(distance, LAST_RING)}
                 style={{
                   zIndex: 20 - distance,
                   opacity: beyond ? 0 : 1,
@@ -199,6 +200,27 @@ export default function NovaGalleryStack({
                     {body}
                   </button>
                 )}
+
+                {/* The floor. Both of these sit outside .nv-stack__card on
+                    purpose: the card clips to its own radius and would crop them
+                    away. They ride the slot's 3D transform, so a card that turns
+                    away takes its reflection with it. */}
+                <span className="nv-stack__shadow" aria-hidden />
+                {slide.image ? (
+                  <span className="nv-stack__reflect" aria-hidden>
+                    <SmartImage
+                      src={slide.image}
+                      alt=""
+                      fill
+                      // Same optimizeWidth and sizes as the frame above it, so the
+                      // mirror is served from the copy the browser already has
+                      // rather than as a second distinct request.
+                      optimizeWidth={1100}
+                      className="nv-stack__reflect-img"
+                      sizes="(max-width: 900px) 86vw, 620px"
+                    />
+                  </span>
+                ) : null}
               </div>
             );
           })}

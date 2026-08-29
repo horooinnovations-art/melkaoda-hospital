@@ -82,7 +82,9 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      { source: "/favicon.ico", destination: "/vercel.svg" },
+      // A browser requests /favicon.ico whether or not the document asks it to,
+      // so it resolves to the hospital's own mark rather than the starter logo.
+      { source: "/favicon.ico", destination: "/api/favicon" },
       // Same-origin API proxy — browsers hit /api/v1/* even when Next is on :3001+.
       { source: "/api/v1/:path*", destination: `${API_PROXY_TARGET}/:path*` },
     ];

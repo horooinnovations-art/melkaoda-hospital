@@ -415,3 +415,108 @@
   .nv-stack__slot[data-active] .nv-stack__photo { animation: none; }
   .nv-stack__dot-fill { display: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE FLOOR
+   A reflection and a contact shadow under the deck, so the cards read as
+   standing on a surface rather than floating in the page. Both live on
+   .nv-stack__slot rather than inside .nv-stack__card, because the card clips to
+   its own radius; and because they are inside the slot they inherit its 3D
+   transform, so a card that turns away takes its reflection with it.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* Contact shadow: a soft ellipse tight under the card. Tighter and darker than
+   the card's own ambient shadow — that one says "raised", this one says "resting
+   on something". */
+.nv-stack__shadow {
+  position: absolute;
+  top: 100%;
+  left: 6%;
+  right: 6%;
+  height: 34px;
+  margin-top: -6px;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    50% 50% at 50% 0%,
+    rgb(var(--nv-ink-rgb) / 0.26),
+    rgb(var(--nv-ink-rgb) / 0.07) 55%,
+    transparent 78%
+  );
+  transition: opacity 0.9s var(--nv-ease-lux);
+}
+
+.nv-stack__slot[data-active] .nv-stack__shadow {
+  opacity: 1;
+}
+
+/* A weaker one on the first ring, so the neighbours are grounded too but do not
+   compete with the focused card. */
+.nv-stack__slot[data-ring="1"] .nv-stack__shadow {
+  opacity: 0.45;
+}
+
+/* ── Reflection ───────────────────────────────────────────────────────────
+   A true 1:1 mirror: the box is the same height as the card and sits directly
+   below it, then `scaleY(-1)` about its own centre flips it in place, which puts
+   the photograph's bottom edge against the card's bottom edge. Anything shorter
+   than 100% would squash the mirrored image rather than crop it.
+
+   The mask reads inverted on purpose. `mask-image` is resolved in the element's
+   own coordinate space and the transform is applied to the result, so a gradient
+   that is opaque at the LOCAL bottom ends up opaque at the VISUAL top — which is
+   the end touching the card, where a reflection is strongest. Writing it the
+   intuitive way round fades the wrong end. */
+.nv-stack__reflect {
+  position: absolute;
+  top: 100%;
+  inset-inline: 0;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: clamp(16px, 1.7vw, 24px);
+  transform: scaleY(-1);
+  opacity: 0;
+  transition: opacity 1s var(--nv-ease-lux);
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 58%,
+    rgb(0 0 0 / 0.34) 92%,
+    rgb(0 0 0 / 0.46) 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 58%,
+    rgb(0 0 0 / 0.34) 92%,
+    rgb(0 0 0 / 0.46) 100%
+  );
+}
+
+.nv-stack__slot[data-active] .nv-stack__reflect {
+  opacity: 1;
+}
+
+/* Rings 1 and 2 keep a fainter one. A deck where only the centre card has a
+   reflection looks like the others are hovering. */
+.nv-stack__slot[data-ring="1"] .nv-stack__reflect { opacity: 0.5; }
+.nv-stack__slot[data-ring="2"] .nv-stack__reflect { opacity: 0.26; }
+
+/* Slightly soft and slightly desaturated — a reflection in a polished floor is
+   never as sharp or as saturated as the object above it. */
+.nv-stack__reflect-img {
+  object-fit: cover;
+  filter: blur(1.4px) saturate(0.72) brightness(0.92);
+}
+
+/* Room for it. The stage clips, and its bottom padding was sized for a deck with
+   nothing under it. */
+.nv-stack__stage {
+  padding-bottom: clamp(58px, 6vw, 92px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-stack__reflect,
+  .nv-stack__shadow {
+    transition: none;
+  }
+}

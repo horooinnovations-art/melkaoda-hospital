@@ -181,34 +181,12 @@ export default function HomeClient({
         }))
     ).filter((slide) => Boolean(slide.image));
 
-    if (custom.length > 0) return custom;
-
-    return [
-      {
-        key: "def-1",
-        href: "/departments",
-        title: `${name} Campus`,
-        description: "State-of-the-art medical facility providing comprehensive healthcare.",
-        label: "Campus",
-        image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop",
-      },
-      {
-        key: "def-2",
-        href: "/departments",
-        title: "Advanced Clinical Care",
-        description: "Equipped with modern diagnostic technology and surgical suites.",
-        label: "Care",
-        image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=1200&auto=format&fit=crop",
-      },
-      {
-        key: "def-3",
-        href: "/departments",
-        title: "24/7 Emergency Services",
-        description: "Dedicated emergency and trauma care team ready for immediate response.",
-        label: "Emergency",
-        image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=1200&auto=format&fit=crop",
-      },
-    ];
+    // Backend only. This used to fall through to three stock Unsplash
+    // photographs of somebody else's hospital, which meant a tenant who had not
+    // filled a gallery yet was advertising a building they do not own. With no
+    // images from the API the carousel renders nothing at all — the section
+    // below is already conditional on the list being non-empty.
+    return custom;
   })();
 
   // Photographs for the hero backdrop. Priority is the reverse of the carousel's:
@@ -248,7 +226,7 @@ export default function HomeClient({
         <section className="nv-section nv-section--tight">
           <div className="nv-shell nv-shell--wide">
             <NovaReveal from="up">
-              <NovaGalleryStack slides={stackSlides} interval={4200} />
+              <NovaGalleryStack slides={stackSlides} interval={2600} />
             </NovaReveal>
           </div>
         </section>

@@ -69,10 +69,14 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${title}`,
     },
     description: (settings.tagline as string) || DEFAULT_TAGLINE,
+    // The hospital's own mark. These were pinned to /vercel.svg — the Next.js
+    // starter logo — while the settings payload carried a real favicon_url and
+    // logo_url all along. `/api/favicon` resolves the same order server-side, so
+    // the tab, the bookmark and the home-screen icon agree.
     icons: {
-      icon: [{ url: "/vercel.svg", type: "image/svg+xml" }],
-      shortcut: [{ url: "/vercel.svg" }],
-      apple: [{ url: "/vercel.svg" }],
+      icon: [{ url: "/api/favicon" }],
+      shortcut: [{ url: "/api/favicon" }],
+      apple: [{ url: "/api/favicon" }],
     },
   };
 }
