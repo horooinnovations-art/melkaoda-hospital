@@ -38,7 +38,7 @@
   transform: translateY(-6px);
   background: var(--nv-plate-hi);
   border-color: var(--nv-champagne-line);
-  box-shadow: var(--nv-lift-hi), inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 var(--nv-edge);
 }
 
 /* ── Mounted photograph ─────────────────────────────────────────────────────
@@ -85,7 +85,7 @@
   inset: 0;
   z-index: 1;
   border-radius: inherit;
-  background: linear-gradient(180deg, transparent 48%, rgba(6, 7, 10, 0.52) 100%);
+  background: linear-gradient(180deg, transparent 48%, rgb(var(--nv-scrim-rgb) / 0.52) 100%);
   box-shadow:
     inset 0 0 0 1px var(--nv-hairline),
     inset 0 1px 0 var(--nv-edge);
@@ -105,7 +105,7 @@
   padding: 7px 13px;
   border-radius: 999px;
   border: 1px solid var(--nv-champagne-line);
-  background: rgba(10, 11, 15, 0.72);
+  background: rgb(var(--nv-scrim-rgb) / 0.72);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 var(--nv-edge);
@@ -125,7 +125,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  color: rgba(217, 195, 154, 0.3);
+  color: rgb(var(--nv-metal-rgb) / 0.3);
   background: var(--nv-plate-well);
 }
 
@@ -179,7 +179,7 @@
 .nv-card:hover .nv-card__seal {
   color: var(--nv-champagne-hi);
   border-color: var(--nv-champagne);
-  background: rgba(217, 195, 154, 0.11);
+  background: rgb(var(--nv-metal-rgb) / 0.11);
 }
 
 /* Kicker — mono, champagne, wide tracking. The short leading rule it used to
@@ -253,7 +253,7 @@
   background: linear-gradient(
     90deg,
     var(--nv-champagne),
-    rgba(217, 195, 154, 0.18) 72%,
+    rgb(var(--nv-metal-rgb) / 0.18) 72%,
     transparent
   );
   transform: scaleX(0);
@@ -336,7 +336,7 @@
   font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: rgba(217, 195, 154, 0.085);
+  color: rgb(var(--nv-metal-rgb) / 0.085);
   pointer-events: none;
   user-select: none;
 }
@@ -362,7 +362,7 @@
   font-weight: 600;
   line-height: 0.92;
   letter-spacing: -0.045em;
-  color: #fff;
+  color: var(--nv-text);
   font-variant-numeric: tabular-nums;
 }
 
@@ -455,7 +455,7 @@
   z-index: 2;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(180deg, transparent 58%, rgba(6, 7, 10, 0.46) 100%);
+  background: linear-gradient(180deg, transparent 58%, rgb(var(--nv-scrim-rgb) / 0.46) 100%);
   box-shadow:
     inset 0 0 0 1px var(--nv-hairline),
     inset 0 1px 0 var(--nv-edge);
@@ -475,8 +475,8 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgba(240, 226, 194, 0.06) 46%,
-    rgba(255, 249, 236, 0.11) 52%,
+    rgb(var(--nv-glaze-rgb) / 0.06) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.11) 52%,
     transparent
   );
   transform: translate3d(-180%, 0, 0) rotate(12deg);
@@ -494,7 +494,7 @@
   font-size: 2.2rem;
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: rgba(217, 195, 154, 0.42);
+  color: rgb(var(--nv-metal-rgb) / 0.42);
   background: var(--nv-plate-well);
 }
 
@@ -507,7 +507,7 @@
   padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid var(--nv-hairline);
-  background: rgba(255, 255, 255, 0.022);
+  background: rgb(var(--nv-metal-rgb) / 0.057);
   box-shadow: inset 0 1px 0 var(--nv-edge-soft);
   font-family: var(--nv-font-mono);
   font-size: 9px;
@@ -553,7 +553,7 @@
   transition: transform 0.8s var(--nv-ease-lux);
 }
 
-.nv-doc:hover .nv-doc__name { color: #fff; }
+.nv-doc:hover .nv-doc__name { color: var(--nv-text); }
 .nv-doc:hover .nv-doc__name::after { transform: scaleX(1); }
 
 .nv-doc__role {
@@ -620,7 +620,7 @@
     90deg,
     transparent,
     var(--nv-champagne-line) 22%,
-    rgba(217, 195, 154, 0.45) 50%,
+    rgb(var(--nv-metal-rgb) / 0.45) 50%,
     var(--nv-champagne-line) 78%,
     transparent
   );
@@ -645,12 +645,12 @@
   background-image:
     radial-gradient(
       48% 56% at 76% 14%,
-      rgba(217, 195, 154, 0.07),
+      rgb(var(--nv-metal-rgb) / 0.07),
       transparent 72%
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(217, 195, 154, 0.026) 0 1px,
+      rgb(var(--nv-ink-rgb) / 0.055) 0 1px,
       transparent 1px clamp(118px, 12vw, 196px)
     );
   animation: nv-quote-pool 25s ease-in-out infinite alternate;
@@ -844,7 +844,7 @@
 .nv-tile__veil {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(5, 6, 9, 0.9) 100%);
+  background: linear-gradient(180deg, transparent 40%, rgb(var(--nv-scrim-rgb) / 0.9) 100%);
   pointer-events: none;
 }
 
@@ -871,7 +871,7 @@
   font-weight: 600;
   line-height: 1.32;
   letter-spacing: -0.015em;
-  color: #fff;
+  color: var(--nv-text);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -897,7 +897,7 @@
   transition: background 0.7s var(--nv-ease-lux);
 }
 
-.nv-row:hover { background: rgba(255, 255, 255, 0.016); }
+.nv-row:hover { background: rgb(var(--nv-metal-rgb) / 0.042); }
 
 /* Champagne bar in the left margin, scaling up from the vertical centre. */
 .nv-row::before {
@@ -930,8 +930,8 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgba(240, 226, 194, 0.04) 46%,
-    rgba(255, 249, 236, 0.07) 52%,
+    rgb(var(--nv-glaze-rgb) / 0.04) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.07) 52%,
     transparent
   );
   transform: translate3d(-160%, 0, 0);
@@ -998,7 +998,7 @@
   transition: color 0.6s var(--nv-ease-lux);
 }
 
-.nv-row:hover .nv-row__title { color: #fff; }
+.nv-row:hover .nv-row__title { color: var(--nv-text); }
 
 .nv-row__excerpt {
   margin-top: 10px;
@@ -1081,7 +1081,7 @@
   flex: none;
   border-radius: 13px;
   border: 1px solid var(--nv-hairline);
-  background: rgba(255, 255, 255, 0.022);
+  background: rgb(var(--nv-metal-rgb) / 0.057);
   box-shadow: inset 0 1px 0 var(--nv-edge-soft);
   color: var(--nv-champagne-dim);
   transition:
@@ -1150,7 +1150,7 @@
   transform: translateY(-5px);
   background: var(--nv-plate-hi);
   border-color: var(--nv-champagne-line);
-  box-shadow: var(--nv-lift-hi), inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 var(--nv-edge);
 }
 
 /* Champagne letterhead rule along the top of the plate, drawn on hover. It
@@ -1167,7 +1167,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(217, 195, 154, 0.5) 50%,
+    rgb(var(--nv-metal-rgb) / 0.5) 50%,
     transparent
   );
   transform: scaleX(0);
@@ -1181,7 +1181,7 @@
   aspect-ratio: 16 / 7;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(var(--nv-metal-rgb) / 0.090);
   border-bottom: 1px solid var(--nv-hairline);
 }
 
@@ -1197,7 +1197,7 @@
   font-size: 1.6rem;
   font-weight: 600;
   letter-spacing: -0.025em;
-  color: rgba(217, 195, 154, 0.5);
+  color: rgb(var(--nv-metal-rgb) / 0.5);
 }
 
 .nv-partner__cat {
@@ -1207,7 +1207,7 @@
   padding: 6px 11px;
   border-radius: 999px;
   border: 1px solid var(--nv-champagne-line);
-  background: rgba(9, 10, 14, 0.86);
+  background: rgb(var(--nv-scrim-rgb) / 0.86);
   backdrop-filter: blur(8px);
   font-family: var(--nv-font-mono);
   font-size: 8.5px;
@@ -1299,7 +1299,7 @@
   padding: 64px 28px;
   border-radius: var(--nv-r-lg);
   border: 1px dashed var(--nv-hairline-hi);
-  background: rgba(255, 255, 255, 0.012);
+  background: rgb(var(--nv-metal-rgb) / 0.031);
   text-align: center;
 }
 
@@ -1310,7 +1310,7 @@
   height: 48px;
   border-radius: 14px;
   border: 1px solid var(--nv-hairline);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--nv-metal-rgb) / 0.052);
   box-shadow: inset 0 1px 0 var(--nv-edge-soft);
   color: var(--nv-champagne-dim);
 }

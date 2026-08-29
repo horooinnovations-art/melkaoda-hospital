@@ -129,7 +129,7 @@ export default function LeaderDetail({
       </article>
 
       <DetailDivider delay={0.08} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/leadership">Back to leadership</DetailLinkChip>
         <DetailLinkChip href="/leadership/history">
           Leadership history

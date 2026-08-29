@@ -1,9 +1,10 @@
 "use client";
 
-import { Quote } from "lucide-react";
+import { Star } from "lucide-react";
 import { useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/Skeleton";
 import PageTransition from "@/components/motion/PageTransition";
@@ -32,8 +33,7 @@ export default function TestimonialsPage() {
         breadcrumbs={[{ label: "Testimonials" }]}
       />
 
-      <div className="v-home-light relative -mx-[calc((100vw-100%)/2)] w-screen">
-        <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+      <PageBody>
           {isLoading ? (
             <GridSkeleton count={6} />
           ) : isError ? (
@@ -41,59 +41,75 @@ export default function TestimonialsPage() {
           ) : items.length === 0 ? (
             <EmptyState title="Testimonials coming soon" />
           ) : (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="nv-grid-3">
               {items.map((item, i) => {
                 const photo = getImageFromItem(item as unknown as Record<string, unknown>);
                 const content = stripHtml(item.content || "");
+                const rating = item.rating ?? 0;
                 return (
-                  <Reveal key={item.id} delay={Math.min(i, 8) * 0.05}>
-                    <blockquote className="v-home-card group relative flex h-full flex-col overflow-hidden p-7 transition duration-500">
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-sky-700/70" />
-                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#0c1b2a] to-[#1d4ed8] text-sky-100">
-                        <Quote className="h-5 w-5" />
+                  <NovaReveal
+                    key={item.id}
+                    from="up"
+                    delay={Math.min(Math.floor(i / 3), 5) * 0.12}
+                  >
+                    <blockquote className="nv-tcard">
+                      <span className="nv-tcard__glyph" aria-hidden>
+                        &ldquo;
                       </span>
-                      <p className="mt-6 flex-1 font-display text-lg leading-relaxed text-[#0c1b2a]">
-                        &ldquo;{content}&rdquo;
-                      </p>
-                      <footer className="mt-8 flex items-center gap-4 border-t border-[#0c1b2a]/8 pt-5">
-                        {photo ? (
-                          <div className="relative h-12 w-12 overflow-hidden rounded-xl ring-2 ring-teal-mid/30 ring-offset-2 ring-offset-white">
+
+                      <p className="nv-tcard__body">&ldquo;{content}&rdquo;</p>
+
+                      <footer className="nv-tcard__foot">
+                        <span className="nv-tcard__photo">
+                          {photo ? (
                             <SmartImage
                               src={photo}
-                              alt={item.patient_name}
+                              // Decorative: the <cite> beside this frame names
+                              // the same person.
+                              alt=""
                               fill
                               optimizeWidth={112}
                               className="object-cover object-[center_20%]"
-                              sizes="48px"
+                              sizes="44px"
                             />
-                          </div>
-                        ) : (
-                          <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#122033] font-display text-lg text-sky-300">
-                            {item.patient_name.charAt(0)}
-                          </div>
-                        )}
+                          ) : (
+                            <span className="nv-tcard__initial" aria-hidden>
+                              {item.patient_name.charAt(0)}
+                            </span>
+                          )}
+                        </span>
+
                         <div>
-                          <cite className="not-italic font-medium text-[#0c1b2a]">
-                            {item.patient_name}
-                          </cite>
-                          {item.rating ? (
-                            <p className="mt-0.5 text-xs tracking-wide text-brass">
-                              {"★".repeat(item.rating)}
-                              <span className="text-[#0c1b2a]/20">
-                                {"★".repeat(Math.max(0, 5 - item.rating))}
-                              </span>
-                            </p>
+                          <cite className="nv-tcard__who">{item.patient_name}</cite>
+                          {rating > 0 ? (
+                            <div
+                              className="nv-tcard__stars"
+                              aria-label={`${rating} out of 5`}
+                            >
+                              {Array.from({ length: 5 }).map((_, star) => (
+                                <Star
+                                  key={star}
+                                  aria-hidden
+                                  className={
+                                    star < rating
+                                      ? "nv-tcard__star--on"
+                                      : "nv-tcard__star--off"
+                                  }
+                                  fill="currentColor"
+                                />
+                              ))}
+                            </div>
                           ) : null}
                         </div>
                       </footer>
                     </blockquote>
-                  </Reveal>
+                  </NovaReveal>
                 );
               })}
             </div>
           )}
-        </div>
-      </div>
+      </PageBody>
+
     </PageTransition>
   );
 }

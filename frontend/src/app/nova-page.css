@@ -47,7 +47,7 @@
   pointer-events: none;
   background-image: repeating-linear-gradient(
     90deg,
-    rgba(217, 195, 154, 0.042) 0 1px,
+    rgb(var(--nv-ink-rgb) / 0.055) 0 1px,
     transparent 1px var(--nv-ph-rail)
   );
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
@@ -74,7 +74,7 @@
   pointer-events: none;
   background: radial-gradient(
     62% 54% at 16% 42%,
-    rgba(217, 195, 154, 0.075),
+    rgb(var(--nv-metal-rgb) / 0.075),
     transparent 72%
   );
   animation: nv-ph-breathe 26s ease-in-out infinite alternate;
@@ -86,7 +86,7 @@
   width: 54%;
   background: radial-gradient(
     58% 50% at 84% 58%,
-    rgba(240, 226, 194, 0.045),
+    rgb(var(--nv-glaze-rgb) / 0.045),
     transparent 72%
   );
   animation-delay: -13s;
@@ -196,7 +196,7 @@
 .nv-ph__brand-mark {
   width: clamp(28px, 3.4vw, 46px);
   height: 1px;
-  background: linear-gradient(90deg, var(--nv-champagne), rgba(217, 195, 154, 0));
+  background: linear-gradient(90deg, var(--nv-champagne), rgb(var(--nv-metal-rgb) / 0));
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.1s var(--nv-ease-lux) 0.1s;
@@ -383,7 +383,7 @@
   pointer-events: none;
   background-image: repeating-linear-gradient(
     90deg,
-    rgba(217, 195, 154, 0.036) 0 1px,
+    rgb(var(--nv-ink-rgb) / 0.055) 0 1px,
     transparent 1px var(--nv-pb-rail)
   );
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
@@ -408,8 +408,8 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(58% 78% at 78% 0%, rgba(217, 195, 154, 0.05), transparent 70%),
-    radial-gradient(48% 66% at 8% 12%, rgba(240, 226, 194, 0.032), transparent 72%);
+    radial-gradient(58% 78% at 78% 0%, rgb(var(--nv-metal-rgb) / 0.05), transparent 70%),
+    radial-gradient(48% 66% at 8% 12%, rgb(var(--nv-glaze-rgb) / 0.032), transparent 72%);
   animation: nv-pb-breathe 30s ease-in-out infinite alternate;
 }
 
@@ -560,7 +560,7 @@
   background: linear-gradient(
     180deg,
     transparent 62%,
-    rgba(6, 7, 10, 0.42) 100%
+    rgb(var(--nv-scrim-rgb) / 0.42) 100%
   );
   box-shadow: inset 0 0 0 1px var(--nv-hairline);
 }
@@ -588,8 +588,8 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgba(240, 226, 194, 0.05) 46%,
-    rgba(255, 249, 236, 0.085) 52%,
+    rgb(var(--nv-glaze-rgb) / 0.05) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.085) 52%,
     transparent
   );
   transform: translate3d(-190%, 0, 0) rotate(12deg);
@@ -610,7 +610,7 @@
   font-family: var(--nv-font-display);
   font-size: clamp(3.4rem, 7vw, 5.4rem);
   font-weight: 500;
-  color: rgba(217, 195, 154, 0.11);
+  color: rgb(var(--nv-metal-rgb) / 0.11);
   user-select: none;
 }
 
@@ -1026,7 +1026,7 @@
   z-index: 2;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(180deg, transparent 66%, rgba(6, 7, 10, 0.4) 100%);
+  background: linear-gradient(180deg, transparent 66%, rgb(var(--nv-scrim-rgb) / 0.4) 100%);
   box-shadow:
     inset 0 0 0 1px var(--nv-hairline),
     inset 0 1px 0 var(--nv-edge);
@@ -1232,7 +1232,7 @@
 }
 
 .nv-dbadge--cool {
-  border-color: rgba(216, 221, 232, 0.2);
+  border-color: rgb(var(--nv-ink-rgb) / 0.2);
   color: var(--nv-platinum);
 }
 
@@ -1287,7 +1287,7 @@
   width: clamp(58px, 7vw, 92px);
   height: 1px;
   margin-top: 12px;
-  background: linear-gradient(90deg, var(--nv-champagne), rgba(217, 195, 154, 0));
+  background: linear-gradient(90deg, var(--nv-champagne), rgb(var(--nv-metal-rgb) / 0));
 }
 
 .nv-prose p {
@@ -1460,4 +1460,3627 @@
   border: 0;
   background: none;
   color: var(--nv-text-dim);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SKELETONS
+   The old ones were slate-and-sky tints on white, which on charcoal read as
+   nothing at all. A Nova skeleton is a plate well with one colourless sweep
+   crossing it — the same sweep the cards use on hover, so a loading page and a
+   loaded page move in the same language.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-skel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--nv-plate-well);
+}
+
+.nv-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgb(var(--nv-glaze-rgb) / 0.05) 48%,
+    rgb(var(--nv-glaze-rgb) / 0.075) 52%,
+    transparent 80%
+  );
+  transform: translate3d(-100%, 0, 0);
+  animation: nv-skel-sweep 1.7s var(--nv-ease-io) infinite;
+}
+
+@keyframes nv-skel-sweep {
+  to { transform: translate3d(100%, 0, 0); }
+}
+
+/* A skeleton card frame, so a loading grid has the same edges as the grid that
+   replaces it and the page does not reflow when the data lands. */
+.nv-skel-card {
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-skel::after {
+    animation: none;
+    transform: none;
+    opacity: 0.5;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CLINICAL DIRECTORY
+   A row, not a portrait card: at twelve per page, twelve cards is a wall and
+   twelve rows is a list you can read. Built like `.nv-row` on the homepage —
+   a mono index, a small framed portrait, the name, the unit, and a travelling
+   sheen on hover.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-dir__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--nv-hairline);
+}
+
+.nv-dir__label,
+.nv-dir__count {
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.nv-dir__label { color: var(--nv-champagne-dim); }
+.nv-dir__count { color: var(--nv-faint); font-variant-numeric: tabular-nums; }
+
+.nv-dir__rows {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nv-clin {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 20px);
+  overflow: hidden;
+  padding: 14px clamp(14px, 1.8vw, 20px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 14px;
+  background: var(--nv-plate);
+  text-decoration: none;
+  transition:
+    border-color 0.5s var(--nv-ease-lux),
+    background-color 0.5s var(--nv-ease-lux);
+}
+
+.nv-clin:hover {
+  border-color: var(--nv-hairline-hi);
+}
+
+/* Champagne bar at the leading edge, above the sheen. */
+.nv-clin::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  z-index: 2;
+  background: var(--nv-champagne);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.6s var(--nv-ease-lux);
+}
+
+.nv-clin:hover::before {
+  transform: scaleY(1);
+}
+
+/* Colourless pass. `overflow: hidden` on the row is what keeps it inside the
+   radius, and every child below carries z-index 1 to clear it. */
+.nv-clin::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 42%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.045) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.07) 52%,
+    transparent
+  );
+  transform: translate3d(-160%, 0, 0);
+  transition: transform 1.25s var(--nv-ease-io);
+}
+
+.nv-clin:hover::after {
+  transform: translate3d(320%, 0, 0);
+}
+
+.nv-clin__index,
+.nv-clin__photo,
+.nv-clin__copy,
+.nv-clin__dept,
+.nv-clin__go {
+  position: relative;
+  z-index: 1;
+}
+
+.nv-clin__index {
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--nv-faint);
+  transition: color 0.5s var(--nv-ease-lux);
+}
+
+.nv-clin:hover .nv-clin__index {
+  color: var(--nv-champagne);
+}
+
+.nv-clin__photo {
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 11px;
+  background: var(--nv-plate-well);
+}
+
+/* Frame above the portrait — an inset shadow on the container would paint under
+   the absolutely-positioned image. */
+.nv-clin__photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-clin__img {
+  transition: transform 1.2s var(--nv-ease-lux);
+}
+
+.nv-clin:hover .nv-clin__img {
+  transform: scale(1.06);
+}
+
+.nv-clin__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-clin__name {
+  display: block;
+  font-family: var(--nv-font-display);
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-clin:hover .nv-clin__name {
+  color: var(--nv-champagne-hi);
+}
+
+.nv-clin__role {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.8rem;
+  color: var(--nv-muted);
+}
+
+/* The unit, as a hairline pill that warms on hover. */
+.nv-clin__dept {
+  display: none;
+  padding: 5px 11px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+  white-space: nowrap;
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux);
+}
+
+@media (min-width: 860px) {
+  .nv-clin__dept { display: inline-flex; }
+}
+
+.nv-clin:hover .nv-clin__dept {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-clin__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-clin__go svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-clin:hover .nv-clin__go {
+  color: var(--nv-champagne);
+}
+
+.nv-clin:hover .nv-clin__go svg {
+  transform: translate3d(3px, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-clin::after { display: none; }
+  .nv-clin::before { transition: none; }
+  .nv-clin:hover .nv-clin__img { transform: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LEADERSHIP BOARD
+   Structurally different from a clinician row on purpose: a governance entry
+   gets a portrait at real size and room for a summary. Alternate entries flip,
+   so a column of them reads as a spread rather than a repeated card.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 20px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  text-decoration: none;
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-board:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-board::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+@media (min-width: 820px) {
+  .nv-board {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  }
+
+  /* The flip reorders the columns rather than the DOM, so the portrait stays
+     after the copy for a screen reader and for a phone. */
+  .nv-board--flip > .nv-board__main { order: 2; }
+  .nv-board--flip > .nv-board__media { order: 1; }
+
+  .nv-board--flip {
+    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  }
+}
+
+.nv-board__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 3vw, 38px);
+}
+
+.nv-board__office {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-board__office::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--nv-champagne-line);
+}
+
+.nv-board__name {
+  margin-top: 13px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-board:hover .nv-board__name {
+  color: var(--nv-champagne-hi);
+}
+
+.nv-board__summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin-top: 12px;
+  font-size: 0.925rem;
+  line-height: 1.66;
+  color: var(--nv-muted);
+}
+
+.nv-board__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(18px, 2vw, 24px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-board__cta svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-board:hover .nv-board__cta {
+  color: var(--nv-champagne);
+}
+
+.nv-board:hover .nv-board__cta svg {
+  transform: translate3d(3px, 0, 0);
+}
+
+.nv-board__media {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(230px, 30vw, 300px);
+  background: var(--nv-plate-well);
+}
+
+.nv-board__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 60%, rgb(var(--nv-scrim-rgb) / 0.4) 100%);
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-board__img {
+  transition: transform 1.5s var(--nv-ease-lux);
+}
+
+.nv-board:hover .nv-board__img {
+  transform: scale(1.04);
+}
+
+.nv-board__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 500;
+  color: rgb(var(--nv-metal-rgb) / 0.13);
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-board,
+  .nv-board__img,
+  .nv-board__name,
+  .nv-board__cta {
+    transition: none;
+  }
+
+  .nv-board:hover {
+    transform: none;
+  }
+
+  .nv-board:hover .nv-board__img {
+    transform: none;
+  }
+}
+
+/* ── Section toolbar ──────────────────────────────────────────────────────
+   A kicker and note on the left, one link on the right. Used at the top of a
+   list that needs a word of context before the items — leadership, gallery,
+   testimonials — so those pages stop inventing a header each. */
+.nv-toolbar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: clamp(18px, 2vw, 24px);
+  margin-bottom: clamp(24px, 2.8vw, 34px);
+}
+
+.nv-toolbar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 40%,
+    transparent
+  );
+}
+
+.nv-toolbar__kicker {
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-toolbar__note {
+  margin-top: 8px;
+  max-width: 54ch;
+  font-size: 0.925rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+.nv-toolbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  text-decoration: none;
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-toolbar__link svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-toolbar__link:hover {
+  color: var(--nv-champagne);
+}
+
+.nv-toolbar__link:hover svg {
+  transform: translate3d(3px, 0, 0);
+}
+
+/* A column of board entries. Wider gap than a card grid because each entry is
+   a spread, and two spreads butted together read as one four-panel block. */
+.nv-board-stack {
+  display: grid;
+  gap: clamp(20px, 2.4vw, 30px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TESTIMONIAL CARD
+   The grid counterpart to the homepage's single rotating quote plate. Same
+   parts — a glyph, the quote in the serif, an attribution rule — sized for a
+   three-across grid instead of a full-width plate.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-tcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(22px, 2.4vw, 30px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-tcard:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-tcard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+/* The quote glyph, set large and very faint behind the opening words rather
+   than boxed in a filled plate. */
+.nv-tcard__glyph {
+  position: absolute;
+  top: clamp(10px, 1.2vw, 16px);
+  right: clamp(14px, 1.6vw, 22px);
+  font-family: var(--nv-font-serif);
+  font-size: 4.2rem;
+  line-height: 1;
+  color: rgb(var(--nv-metal-rgb) / 0.1);
+  pointer-events: none;
+  user-select: none;
+}
+
+.nv-tcard__body {
+  position: relative;
+  flex: 1;
+  font-family: var(--nv-font-serif);
+  font-size: 1.075rem;
+  line-height: 1.62;
+  color: var(--nv-text);
+}
+
+.nv-tcard__foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: clamp(22px, 2.4vw, 28px);
+  padding-top: 18px;
+}
+
+.nv-tcard__foot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 60%,
+    transparent
+  );
+}
+
+.nv-tcard__photo {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--nv-plate-well);
+}
+
+.nv-tcard__photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-tcard__initial {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: 1.05rem;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-tcard__who {
+  font-family: var(--nv-font-display);
+  font-size: 0.975rem;
+  font-weight: 500;
+  font-style: normal;
+  color: var(--nv-text);
+}
+
+.nv-tcard__stars {
+  display: flex;
+  gap: 3px;
+  margin-top: 5px;
+}
+
+.nv-tcard__stars svg {
+  width: 12px;
+  height: 12px;
+}
+
+.nv-tcard__star--on { color: var(--nv-champagne); }
+.nv-tcard__star--off { color: rgb(var(--nv-ink-rgb) / 0.14); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-tcard { transition: none; }
+  .nv-tcard:hover { transform: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ACCORDION — FAQs
+   The open state is marked by a warmed border and a champagne mark in the
+   toggle, not by a filled gradient plate. The answer opens on a grid-rows
+   transition, so it animates to its own height without a measured max-height.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-faq-group + .nv-faq-group {
+  margin-top: clamp(34px, 4vw, 50px);
+}
+
+.nv-faq-group__label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 16px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-faq-group__label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--nv-champagne-line), transparent);
+}
+
+.nv-faq-list {
+  display: grid;
+  gap: 10px;
+}
+
+.nv-faq {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 15px;
+  background: var(--nv-plate);
+  transition:
+    border-color 0.5s var(--nv-ease-lux),
+    box-shadow 0.5s var(--nv-ease-lux);
+}
+
+.nv-faq[data-open="true"] {
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift);
+}
+
+.nv-faq__q {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: clamp(16px, 1.8vw, 20px) clamp(18px, 2vw, 24px);
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-faq__q:hover {
+  color: var(--nv-champagne-hi);
+}
+
+.nv-faq__toggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 10px;
+  color: var(--nv-muted);
+  transition:
+    transform 0.5s var(--nv-ease-lux),
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux);
+}
+
+.nv-faq__toggle svg {
+  width: 15px;
+  height: 15px;
+}
+
+.nv-faq[data-open="true"] .nv-faq__toggle {
+  transform: rotate(180deg);
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+/* grid-template-rows 0fr → 1fr animates to the content's own height, which is
+   why there is no measured max-height anywhere in this component. */
+.nv-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s var(--nv-ease-lux);
+}
+
+.nv-faq[data-open="true"] .nv-faq__panel {
+  grid-template-rows: 1fr;
+}
+
+.nv-faq__panel > div {
+  overflow: hidden;
+}
+
+.nv-faq__a {
+  position: relative;
+  padding: 4px clamp(18px, 2vw, 24px) clamp(18px, 2vw, 22px);
+}
+
+.nv-faq__a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: clamp(18px, 2vw, 24px);
+  right: clamp(18px, 2vw, 24px);
+  height: 1px;
+  background: var(--nv-hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-faq__panel,
+  .nv-faq__toggle,
+  .nv-faq {
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LOGO CARD — insurance partners
+   A partner's mark is usually a flat logo on white, which is why the frame is a
+   plate well with the logo `object-fit: contain` and padded inside it: scaling a
+   wordmark to fill the box would crop it, and putting a warm wash behind it
+   would shift its colours.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-logo-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(26px, 3vw, 36px) clamp(20px, 2.4vw, 28px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  text-align: center;
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-logo-card:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-logo-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+.nv-logo-card__frame {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--nv-plate-well);
+}
+
+.nv-logo-card__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+  transition: box-shadow 0.5s var(--nv-ease-lux);
+}
+
+.nv-logo-card:hover .nv-logo-card__frame::after {
+  box-shadow: inset 0 0 0 1px var(--nv-champagne-line);
+}
+
+.nv-logo-card__frame img {
+  object-fit: contain;
+  padding: 14px;
+}
+
+.nv-logo-card__initial {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: 1.9rem;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-logo-card__name {
+  margin-top: 18px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-logo-card:hover .nv-logo-card__name {
+  color: var(--nv-champagne-hi);
+}
+
+.nv-logo-card__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin-top: 11px;
+  font-size: 0.875rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+/* Contact row. Hairline chips, one warm icon each — the same pill the detail
+   pages use, so a visitor meets one chip in this system, not four. */
+.nv-logo-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: clamp(18px, 2vw, 24px);
+}
+
+.nv-logo-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  background: var(--nv-plate-well);
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  text-decoration: none;
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    color 0.4s var(--nv-ease-lux);
+}
+
+.nv-logo-card__link svg {
+  width: 12px;
+  height: 12px;
+  color: var(--nv-champagne-dim);
+  transition: color 0.4s var(--nv-ease-lux);
+}
+
+.nv-logo-card__link:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-logo-card__link:hover svg {
+  color: var(--nv-champagne);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-logo-card { transition: none; }
+  .nv-logo-card:hover { transform: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DETAIL SUB-UNITS — portrait column, labelled panels, achievement lists
+   Used by the leadership and partnership detail pages.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-dsplit {
+  display: grid;
+  gap: clamp(18px, 2.2vw, 26px);
+}
+
+@media (min-width: 940px) {
+  .nv-dsplit {
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* A portrait panel: the photograph fills the panel's top, its caption sits
+   under a warm rule. No padding on the media, so the frame is the panel's own
+   edge rather than a second box inside it. */
+.nv-portrait {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.nv-portrait__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--nv-plate-well);
+}
+
+.nv-portrait__img {
+  transition: transform 1.6s var(--nv-ease-lux);
+}
+
+.nv-portrait__media:hover .nv-portrait__img {
+  transform: scale(1.03);
+}
+
+/* Scrim above the photograph so the badge stays legible over a light frame. */
+.nv-portrait__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--nv-scrim-rgb) / 0.28) 0%,
+    transparent 32%,
+    transparent 62%,
+    rgb(var(--nv-scrim-rgb) / 0.55) 100%
+  );
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-portrait__badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  padding: 5px 11px;
+  border: 1px solid var(--nv-metal-on-media-line);
+  border-radius: 999px;
+  background: rgb(var(--nv-scrim-rgb) / 0.62);
+  backdrop-filter: blur(6px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-metal-on-media);
+}
+
+.nv-portrait__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: clamp(3rem, 8vw, 4.6rem);
+  font-weight: 500;
+  color: rgb(var(--nv-metal-rgb) / 0.13);
+  user-select: none;
+}
+
+.nv-portrait__info {
+  position: relative;
+  padding: clamp(18px, 2vw, 24px);
+}
+
+.nv-portrait__info::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    var(--nv-hairline) 55%,
+    transparent
+  );
+}
+
+.nv-portrait__name {
+  font-family: var(--nv-font-display);
+  font-size: 1.12rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+.nv-portrait__role {
+  margin-top: 5px;
+  font-size: 0.875rem;
+  color: var(--nv-muted);
+}
+
+.nv-portrait__dept {
+  margin-top: 11px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+/* A panel's own header: a small framed icon, a mono kicker, a title. This is
+   what replaced the four coloured `--tone-N` panel variants — the icon plate
+   carries the distinction, and it does so in one warm tone. */
+.nv-dpanel__label {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--nv-hairline);
+}
+
+.nv-dpanel__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 11px;
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+.nv-dpanel__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nv-dpanel__kicker {
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-dpanel__title {
+  margin-top: 4px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.05rem, 1.5vw, 1.22rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+/* Plain (non-HTML) body copy inside a panel. */
+.nv-dplain {
+  font-size: 0.975rem;
+  line-height: 1.75;
+  white-space: pre-line;
+  color: var(--nv-text-dim);
+}
+
+/* Achievement / bullet list. The mark is a champagne rule rather than a dot,
+   matching the prose list, so an editor's <ul> and a structured list look the
+   same on the same page. */
+.nv-achieve {
+  display: grid;
+  gap: 11px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nv-achieve > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 13px;
+  font-size: 0.95rem;
+  line-height: 1.66;
+  color: var(--nv-text-dim);
+}
+
+.nv-achieve__dot {
+  width: 12px;
+  height: 1px;
+  margin-top: 0.62em;
+  background: var(--nv-champagne);
+}
+
+.nv-dfooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-portrait__img { transition: none; }
+  .nv-portrait__media:hover .nv-portrait__img { transform: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TWO-COLUMN DETAIL LAYOUT
+   Main column plus a sidebar of facts. Used by the partnership profile.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-dlayout {
+  display: grid;
+  gap: clamp(18px, 2.2vw, 28px);
+}
+
+@media (min-width: 1000px) {
+  .nv-dlayout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 330px);
+    align-items: start;
+  }
+}
+
+.nv-dcol {
+  display: grid;
+  gap: clamp(18px, 2.2vw, 26px);
+  min-width: 0;
+}
+
+/* ── Fact list ───────────────────────────────────────────────────────────
+   A <dl> of label/value rows. Labels are mono and faint, values sit right —
+   the alignment is what makes five rows scannable without a rule between each. */
+.nv-dl {
+  display: grid;
+}
+
+.nv-dl__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--nv-hairline);
+}
+
+.nv-dl__row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.nv-dl__row:first-child {
+  padding-top: 0;
+}
+
+.nv-dl__key {
+  flex: none;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-dl__val {
+  font-size: 0.875rem;
+  text-align: right;
+  color: var(--nv-text-dim);
+  overflow-wrap: anywhere;
+}
+
+.nv-dl__val a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nv-champagne);
+  text-decoration: none;
+  border-bottom: 1px solid var(--nv-champagne-line);
+  transition: border-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-dl__val a:hover {
+  border-bottom-color: var(--nv-champagne);
+}
+
+.nv-dl__val svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Tile grid ────────────────────────────────────────────────────────────
+   Short statements, two across. Each is a well rather than a plate, so a grid
+   of six does not read as six more cards on a page already made of cards. */
+.nv-tiles {
+  display: grid;
+  gap: 11px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (min-width: 620px) {
+  .nv-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.nv-tile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 11px;
+  padding: 14px 15px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 13px;
+  background: var(--nv-plate-well);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--nv-text-dim);
+  transition: border-color 0.45s var(--nv-ease-lux);
+}
+
+.nv-tile:hover {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-tile svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 0.15em;
+  color: var(--nv-champagne);
+}
+
+/* ── Mini row — related items in a sidebar ───────────────────────────────── */
+.nv-minirow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 12px;
+  background: var(--nv-plate-well);
+  font-size: 0.844rem;
+  color: var(--nv-text-dim);
+  text-decoration: none;
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux);
+}
+
+.nv-minirow:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-minirow span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nv-minirow svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-minirow:hover svg {
+  transform: translate3d(3px, 0, 0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TIMELINE — leadership history
+   A spine with a year node per entry. The spine is champagne fading out at both
+   ends rather than a saturated sky line, and the node for a serving officer is
+   filled while past officers are outlined — the distinction that used to be
+   carried by two different accent gradients.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-tl {
+  position: relative;
+  display: grid;
+  gap: clamp(14px, 1.8vw, 22px);
+}
+
+/* The spine sits under the nodes and stops short of both ends, so it reads as a
+   line the entries hang from rather than a border on the column. */
+.nv-tl::before {
+  content: "";
+  position: absolute;
+  top: 22px;
+  bottom: 22px;
+  left: 18px;
+  width: 1px;
+  display: none;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--nv-champagne-line) 7%,
+    var(--nv-champagne-line) 93%,
+    transparent
+  );
+}
+
+@media (min-width: 768px) {
+  .nv-tl::before { display: block; }
+}
+
+.nv-tl__row {
+  position: relative;
+  display: flex;
+  gap: clamp(16px, 2vw, 26px);
+}
+
+.nv-tl__node {
+  position: relative;
+  z-index: 1;
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  margin-top: 18px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 50%;
+  background: var(--nv-paper);
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--nv-champagne-dim);
+}
+
+@media (min-width: 768px) {
+  .nv-tl__node { display: flex; }
+}
+
+/* A serving officer. Filled, so the eye finds the present without reading. */
+.nv-tl__node--now {
+  border-color: var(--nv-champagne);
+  background: var(--nv-champagne);
+  color: #17130c;
+}
+
+.nv-tl-card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-tl-card:hover {
+  transform: translate3d(0, -2px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+@media (min-width: 1024px) {
+  .nv-tl-card { flex-direction: row; }
+}
+
+/* The leading accent. Champagne for a serving officer, a plain hairline for a
+   past one — it runs along the top on a phone and down the side on a desktop. */
+.nv-tl-card__edge {
+  flex: none;
+  height: 2px;
+  background: var(--nv-hairline-hi);
+}
+
+.nv-tl-card--now .nv-tl-card__edge {
+  background: linear-gradient(90deg, var(--nv-champagne), var(--nv-champagne-line));
+}
+
+@media (min-width: 1024px) {
+  .nv-tl-card__edge {
+    height: auto;
+    width: 2px;
+  }
+
+  .nv-tl-card--now .nv-tl-card__edge {
+    background: linear-gradient(180deg, var(--nv-champagne), var(--nv-champagne-line));
+  }
+}
+
+.nv-tl-card__media {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: var(--nv-plate-well);
+}
+
+@media (min-width: 1024px) {
+  .nv-tl-card__media {
+    width: 186px;
+    aspect-ratio: auto;
+    min-height: 190px;
+  }
+}
+
+.nv-tl-card__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 64%, rgb(var(--nv-scrim-rgb) / 0.4) 100%);
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-tl-card__img {
+  transition: transform 1.4s var(--nv-ease-lux);
+}
+
+.nv-tl-card:hover .nv-tl-card__img {
+  transform: scale(1.04);
+}
+
+.nv-tl-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  font-family: var(--nv-font-display);
+  font-size: 1.9rem;
+  color: rgb(var(--nv-metal-rgb) / 0.14);
+  user-select: none;
+}
+
+.nv-tl-card__body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(18px, 2.2vw, 24px);
+}
+
+.nv-tl-card__name {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.022em;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-tl-card:hover .nv-tl-card__name {
+  color: var(--nv-champagne-hi);
+}
+
+.nv-tl-card__name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nv-tl-card__bio {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: 9px;
+  font-size: 0.875rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+.nv-tl-card__foot {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-top: clamp(16px, 1.8vw, 20px);
+  padding-top: 15px;
+}
+
+.nv-tl-card__foot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--nv-hairline);
+}
+
+/* ── Status pills ─────────────────────────────────────────────────────────
+   Shared by the tenure range, the "active" marker and the officer count. A
+   hairline outline in every case; only the ink differs. */
+.nv-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  background: var(--nv-plate-well);
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+  white-space: nowrap;
+}
+
+.nv-pill svg {
+  width: 12px;
+  height: 12px;
+}
+
+.nv-pill--warm {
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+/* The only pulsing thing on the page, and it marks the one entry that is still
+   true — a serving officer. */
+.nv-pill__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--nv-champagne);
+  animation: nv-pill-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes nv-pill-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+.nv-pill--plain {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--nv-faint);
+}
+
+/* ── Search field ─────────────────────────────────────────────────────────── */
+.nv-search {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+.nv-search__ico {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--nv-faint);
+  pointer-events: none;
+}
+
+.nv-search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 34px 0 34px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 11px;
+  background: var(--nv-plate-flat);
+  font-size: 0.875rem;
+  color: var(--nv-text);
+  transition: border-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-search input::placeholder {
+  color: var(--nv-faint);
+}
+
+.nv-search input:focus {
+  outline: none;
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-search__clear {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--nv-faint);
+  transition: color 0.4s var(--nv-ease-lux);
+}
+
+.nv-search__clear svg { width: 14px; height: 14px; }
+
+.nv-search__clear:hover {
+  color: var(--nv-champagne);
+}
+
+/* ── Quick-view dialog ────────────────────────────────────────────────────── */
+.nv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 26px);
+}
+
+.nv-modal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--nv-scrim-rgb) / 0.72);
+  backdrop-filter: blur(7px);
+}
+
+.nv-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline-hi);
+  border-radius: 22px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 10px;
+  background: rgb(var(--nv-scrim-rgb) / 0.66);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  color: var(--nv-muted);
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    color 0.4s var(--nv-ease-lux);
+}
+
+.nv-modal__close svg { width: 15px; height: 15px; }
+
+.nv-modal__close:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-modal__grid {
+  display: grid;
+}
+
+@media (min-width: 640px) {
+  .nv-modal__grid {
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  }
+}
+
+.nv-modal__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--nv-plate-well);
+}
+
+.nv-modal__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-modal__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(20px, 2.4vw, 28px);
+}
+
+/* Long biographies scroll inside the panel rather than growing it past the
+   viewport. */
+.nv-modal__bio {
+  max-height: 168px;
+  overflow-y: auto;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--nv-text-dim);
+}
+
+.nv-modal__foot {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: clamp(20px, 2.4vw, 26px);
+  padding-top: 15px;
+}
+
+.nv-modal__foot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--nv-hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-pill__dot { animation: none; }
+  .nv-tl-card,
+  .nv-tl-card__img { transition: none; }
+  .nv-tl-card:hover { transform: none; }
+  .nv-tl-card:hover .nv-tl-card__img { transform: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ABOUT PAGE
+   Six sections of institutional copy. Nearly every unit here used to carry its
+   own colour — sky and emerald mission cards, four rotating value gradients,
+   four panel tones down the timeline. In Nova the distinction between them is
+   carried by the mono index and the icon, and every surface is the same plate,
+   which is what lets six sections read as one document.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* A floating band of figures that overlaps the hero's base seam. */
+.nv-statbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .nv-statbar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.nv-statcard {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(18px, 2vw, 24px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 16px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-statcard:hover {
+  transform: translate3d(0, -4px, 0);
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-statcard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+.nv-statcard__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 10px;
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+.nv-statcard__icon svg { width: 16px; height: 16px; }
+
+.nv-statcard__value {
+  display: block;
+  margin-top: 15px;
+  font-family: var(--nv-font-mono);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--nv-text);
+}
+
+.nv-statcard__label {
+  display: block;
+  margin-top: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+/* Section rhythm on a long document page. */
+.nv-asec + .nv-asec,
+.nv-asec {
+  scroll-margin-top: 90px;
+}
+
+.nv-asec__grid {
+  display: grid;
+  gap: clamp(26px, 3.4vw, 44px);
+  align-items: start;
+  margin-top: clamp(24px, 2.8vw, 34px);
+}
+
+@media (min-width: 820px) {
+  .nv-asec__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Plain-text paragraph stack, for copy that arrives without HTML. */
+.nv-copy {
+  display: grid;
+  gap: 1em;
+  font-size: 0.975rem;
+  line-height: 1.76;
+  color: var(--nv-text-dim);
+}
+
+/* ── Pull quote ───────────────────────────────────────────────────────────
+   The serif face at display size, with a warm rule under it. The mark is set
+   in the serif too rather than as an icon, so the glyph and the quote share a
+   drawing. */
+.nv-pull {
+  position: relative;
+  padding-left: clamp(18px, 2.2vw, 26px);
+}
+
+.nv-pull::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    var(--nv-champagne),
+    var(--nv-champagne-line) 62%,
+    transparent
+  );
+}
+
+.nv-pull__mark {
+  display: block;
+  font-family: var(--nv-font-serif);
+  font-size: 3rem;
+  line-height: 0.6;
+  color: rgb(var(--nv-metal-rgb) / 0.34);
+  user-select: none;
+}
+
+.nv-pull__text {
+  margin-top: 14px;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+}
+
+/* ── Mission / vision cards ───────────────────────────────────────────────
+   Two cards that used to be a sky one and an emerald one. They are now the same
+   plate; the icon and the kicker are what tell them apart. */
+.nv-mv {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(22px, 2.6vw, 30px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 18px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-mv:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+/* The accent that used to be a coloured bar is now the catch-light plus a warm
+   segment at its left end. */
+.nv-mv::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne) 0,
+    var(--nv-champagne-line) 16%,
+    var(--nv-edge) 45%,
+    transparent
+  );
+}
+
+.nv-mv__head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 16px;
+  margin-bottom: 17px;
+  border-bottom: 1px solid var(--nv-hairline);
+}
+
+.nv-mv__body {
+  font-size: 0.95rem;
+  line-height: 1.72;
+  color: var(--nv-text-dim);
+}
+
+/* ── Value cards ──────────────────────────────────────────────────────────
+   Four rotating gradients became one plate with a mono index. The index is what
+   makes a grid of six values read as a list rather than six unrelated tiles. */
+.nv-vgrid {
+  display: grid;
+  gap: clamp(14px, 1.6vw, 20px);
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: clamp(24px, 2.8vw, 34px);
+}
+
+@media (min-width: 640px) {
+  .nv-vgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .nv-vgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-vcard {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(20px, 2.2vw, 26px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 16px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-vcard:hover {
+  transform: translate3d(0, -4px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-vcard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+/* Colourless pass on hover, matching every other card in the system. */
+.nv-vcard::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 44%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.045) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.075) 52%,
+    transparent
+  );
+  transform: translate3d(-190%, 0, 0) rotate(12deg);
+  transition: transform 1.2s var(--nv-ease-io);
+}
+
+.nv-vcard:hover::after {
+  transform: translate3d(320%, 0, 0) rotate(12deg);
+}
+
+.nv-vcard__top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nv-vcard__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 11px;
+  background: var(--nv-plate-well);
+  color: var(--nv-champagne);
+  transition: border-color 0.5s var(--nv-ease-lux);
+}
+
+.nv-vcard__icon svg { width: 16px; height: 16px; }
+
+.nv-vcard:hover .nv-vcard__icon {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-vcard__index {
+  font-family: var(--nv-font-mono);
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: rgb(var(--nv-metal-rgb) / 0.16);
+  user-select: none;
+}
+
+.nv-vcard__title {
+  position: relative;
+  z-index: 1;
+  margin-top: 17px;
+  font-family: var(--nv-font-display);
+  font-size: 1.08rem;
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+.nv-vcard__desc {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  font-size: 0.875rem;
+  line-height: 1.64;
+  color: var(--nv-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-statcard,
+  .nv-mv,
+  .nv-vcard { transition: none; }
+
+  .nv-statcard:hover,
+  .nv-mv:hover,
+  .nv-vcard:hover { transform: none; }
+
+  .nv-vcard::after { display: none; }
+}
+
+/* ── Era timeline (about → history) ───────────────────────────────────────
+   A numbered list of eras, each a panel hanging off a spine. Distinct from the
+   leadership timeline: this one carries paragraphs, so the node stays small and
+   the panel does the work. */
+.nv-etl {
+  position: relative;
+  display: grid;
+  gap: clamp(16px, 2vw, 24px);
+  list-style: none;
+  padding: 0;
+  margin: clamp(24px, 2.8vw, 34px) 0 0;
+}
+
+.nv-etl__item {
+  position: relative;
+}
+
+.nv-etl__node {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nv-etl {
+    padding-left: 28px;
+  }
+
+  /* Drawn on the list rather than per item, so the spine is continuous. */
+  .nv-etl::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 4px;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--nv-champagne-line) 6%,
+      var(--nv-champagne-line) 94%,
+      transparent
+    );
+  }
+
+  .nv-etl__node {
+    display: block;
+    position: absolute;
+    top: 26px;
+    left: -28px;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--nv-champagne);
+    border-radius: 50%;
+    background: var(--nv-paper);
+  }
+}
+
+.nv-era__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.nv-era__year {
+  font-family: var(--nv-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--nv-champagne);
+}
+
+.nv-era__index {
+  margin-left: auto;
+  font-family: var(--nv-font-mono);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: rgb(var(--nv-metal-rgb) / 0.15);
+  user-select: none;
+}
+
+.nv-era__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+  color: var(--nv-text);
+}
+
+.nv-era__body {
+  margin-top: 12px;
+}
+
+.nv-era__bullets {
+  position: relative;
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.nv-era__bullets::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--nv-hairline);
+}
+
+/* A section head with a link opposite it — used above the leadership block. */
+.nv-lead-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(24px, 2.8vw, 32px);
+}
+
+.nv-about-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(26px, 3vw, 36px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONTACT PAGE
+   Four channel cards that each carried their own gradient and badge colour, a
+   white form on a white card, and a rose emergency banner. In Nova the channels
+   are one plate with a mono index, the form is a well with hairline fields, and
+   the emergency banner keeps a single warm accent — urgency is signalled by the
+   pulse on one mark, not by a red panel.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-chan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(20px, 2.2vw, 26px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 17px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  text-decoration: none;
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-chan:hover {
+  transform: translate3d(0, -4px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-chan::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+.nv-chan__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.nv-chan__ico {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 13px;
+  background: var(--nv-plate-well);
+  color: var(--nv-champagne);
+  transition: border-color 0.5s var(--nv-ease-lux);
+}
+
+.nv-chan__ico svg { width: 19px; height: 19px; }
+
+.nv-chan:hover .nv-chan__ico {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-chan__index {
+  font-family: var(--nv-font-mono);
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: rgb(var(--nv-metal-rgb) / 0.17);
+  user-select: none;
+}
+
+.nv-chan__label {
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-chan__value {
+  margin-top: 7px;
+  font-family: var(--nv-font-display);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+  overflow-wrap: anywhere;
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-chan:hover .nv-chan__value {
+  color: var(--nv-champagne-hi);
+}
+
+.nv-chan__foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: clamp(20px, 2.2vw, 26px);
+  padding-top: 14px;
+  font-size: 0.781rem;
+  color: var(--nv-muted);
+}
+
+.nv-chan__foot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--nv-hairline);
+}
+
+.nv-chan__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-chan__go svg { width: 12px; height: 12px; }
+
+.nv-chan:hover .nv-chan__go {
+  color: var(--nv-champagne);
+}
+
+/* ── Map frame ────────────────────────────────────────────────────────────
+   A thin plate around the embed. The 2px inset is what makes a third-party map
+   look mounted rather than pasted. */
+.nv-map-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 6px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 20px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+}
+
+/* ── Labelled fact row (address, hours) ─────────────────────────────────── */
+.nv-vrow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 13px;
+}
+
+.nv-vrow__ico {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 50%;
+  background: var(--nv-plate-well);
+  color: var(--nv-champagne);
+}
+
+.nv-vrow__ico svg { width: 14px; height: 14px; }
+
+.nv-vrow__key {
+  display: block;
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-vrow__val {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.925rem;
+  line-height: 1.58;
+  color: var(--nv-text);
+}
+
+/* ── Note ─────────────────────────────────────────────────────────────────
+   The two coloured advisories (a sky one and an amber one) are now the same
+   well; `--warn` warms the icon and the border, which is the whole distinction
+   the colour was carrying. */
+.nv-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px 17px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 15px;
+  background: var(--nv-plate-well);
+}
+
+.nv-note__ico {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 11px;
+  color: var(--nv-muted);
+}
+
+.nv-note__ico svg { width: 16px; height: 16px; }
+
+.nv-note--warn {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-note--warn .nv-note__ico {
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+.nv-note__title {
+  font-family: var(--nv-font-display);
+  font-size: 0.975rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+}
+
+.nv-note__desc {
+  margin-top: 6px;
+  font-size: 0.813rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+/* ── Form field ───────────────────────────────────────────────────────────
+   A floating label over a well. The label moves on :placeholder-shown, so the
+   whole thing works without JS and without tracking focus in React state.
+   `padding-top` leaves the label its room; the input never has a visible
+   placeholder, which is why one is set to a single space in the markup. */
+.nv-field {
+  position: relative;
+}
+
+.nv-field input,
+.nv-field textarea {
+  width: 100%;
+  padding: 25px 15px 9px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 13px;
+  background: var(--nv-plate-well);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--nv-text);
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    background-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-field textarea {
+  min-height: 118px;
+  resize: vertical;
+}
+
+.nv-field input::placeholder,
+.nv-field textarea::placeholder {
+  color: transparent;
+}
+
+.nv-field input:focus,
+.nv-field textarea:focus {
+  outline: none;
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-plate-flat);
+}
+
+.nv-field__label {
+  position: absolute;
+  top: 9px;
+  left: 16px;
+  pointer-events: none;
+  font-family: var(--nv-font-mono);
+  font-size: 0.563rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  transition:
+    top 0.32s var(--nv-ease-lux),
+    font-size 0.32s var(--nv-ease-lux),
+    color 0.32s var(--nv-ease-lux);
+}
+
+/* Resting state: the label sits where the text will be, at text size. */
+.nv-field input:placeholder-shown ~ .nv-field__label,
+.nv-field textarea:placeholder-shown ~ .nv-field__label {
+  top: 17px;
+  font-family: var(--nv-font-body);
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--nv-muted);
+}
+
+.nv-field input:focus ~ .nv-field__label,
+.nv-field textarea:focus ~ .nv-field__label {
+  top: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.563rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+}
+
+.nv-field__req {
+  color: var(--nv-champagne);
+}
+
+.nv-form__note {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--nv-faint);
+}
+
+/* ── Emergency banner ─────────────────────────────────────────────────────
+   The old version was a rose-to-slate gradient panel in white type. Urgency is
+   now carried by one warm mark that pulses and by the number itself being the
+   largest thing in the band — the panel is the same plate as everything else,
+   which is what stops the page ending in a block of unrelated colour. */
+.nv-alert {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(18px, 2.4vw, 26px);
+  overflow: hidden;
+  padding: clamp(22px, 2.8vw, 32px);
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 20px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+}
+
+@media (min-width: 700px) {
+  .nv-alert { flex-direction: row; }
+}
+
+.nv-alert::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne) 50%,
+    transparent
+  );
+}
+
+/* One wash, anchored behind the mark, so the band is lit from where the icon is
+   rather than tinted end to end. */
+.nv-alert::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: 0;
+  width: 46%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    54% 46% at 22% 50%,
+    rgb(var(--nv-metal-rgb) / 0.09),
+    transparent 72%
+  );
+}
+
+.nv-alert__main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nv-alert__ico {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 15px;
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+.nv-alert__ico svg {
+  width: 24px;
+  height: 24px;
+  animation: nv-pill-pulse 2.4s ease-in-out infinite;
+}
+
+.nv-alert__kicker {
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-alert__title {
+  margin-top: 7px;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.15rem, 1.9vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.024em;
+  color: var(--nv-text);
+}
+
+.nv-alert__cta {
+  position: relative;
+  z-index: 1;
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-chan { transition: none; }
+  .nv-chan:hover { transform: none; }
+  .nv-alert__ico svg { animation: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GALLERY
+   This page was already dark, but in a different dark: slate ground, sky and
+   teal accents, glass panels at white/5. It is now the same charcoal and the
+   same warm metal as everywhere else, and the tile frames are plates rather
+   than translucent panes — a photograph behind glass loses its own contrast.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.nv-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 12px;
+  background: var(--nv-plate-flat);
+  cursor: pointer;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    color 0.4s var(--nv-ease-lux),
+    background-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-filter svg { width: 13px; height: 13px; }
+
+.nv-filter:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+/* The selected filter. A warmed border and ink rather than a sky-to-teal fill —
+   with eight of these in a row, eight saturated pills would be the loudest
+   thing on a page made of photographs. */
+.nv-filter--on {
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne-hi);
+}
+
+.nv-filter__count {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgb(var(--nv-ink-rgb) / 0.08);
+  font-variant-numeric: tabular-nums;
+  color: var(--nv-faint);
+}
+
+.nv-filter--on .nv-filter__count {
+  background: rgb(var(--nv-metal-rgb) / 0.16);
+  color: var(--nv-champagne);
+}
+
+/* ── Gallery tile ─────────────────────────────────────────────────────────
+   A framed photograph with its caption over the base. The scrim and the frame
+   sit on ::after above the image; the hover actions are a separate overlay so
+   they can fade independently of the caption underneath. */
+.nv-gtile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--nv-plate-well);
+  box-shadow: var(--nv-lift);
+  transition:
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-gtile:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-gtile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 42%,
+    rgb(var(--nv-scrim-rgb) / 0.58) 82%,
+    rgb(var(--nv-scrim-rgb) / 0.86) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px var(--nv-hairline),
+    inset 0 1px 0 var(--nv-edge);
+  transition: box-shadow 0.55s var(--nv-ease-lux);
+}
+
+.nv-gtile:hover::after {
+  box-shadow:
+    inset 0 0 0 1px var(--nv-champagne-line),
+    inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-gtile__img {
+  object-fit: cover;
+  transition: transform 1.7s var(--nv-ease-lux);
+}
+
+.nv-gtile:hover .nv-gtile__img {
+  transform: scale(1.055);
+}
+
+.nv-gtile__frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+}
+
+.nv-gtile--hero .nv-gtile__frame {
+  aspect-ratio: 16 / 11;
+}
+
+.nv-gtile__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  color: rgb(var(--nv-metal-rgb) / 0.12);
+  user-select: none;
+}
+
+/* Category tag, top-left. */
+.nv-gtile__tag {
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  z-index: 4;
+  padding: 5px 11px;
+  border: 1px solid var(--nv-metal-on-media-line);
+  border-radius: 999px;
+  background: rgb(var(--nv-scrim-rgb) / 0.62);
+  backdrop-filter: blur(6px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.563rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-metal-on-media);
+}
+
+/* Caption, over the base of the frame. */
+.nv-gtile__cap {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 4;
+  padding: clamp(14px, 1.8vw, 22px);
+}
+
+/* The caption re-points the ink tokens in nova-core.css rather than setting a
+   colour per child, which matters because the markup reuses .nv-post__excerpt
+   here and that class is page-ink everywhere else. */
+
+.nv-gtile__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.018em;
+  color: var(--nv-on-media);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nv-gtile--hero .nv-gtile__title {
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+  white-space: normal;
+}
+
+.nv-gtile__meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-metal-on-media);
+}
+
+/* Hover actions. Hidden until hover on a pointer device; always available via
+   the tile's own link, so nothing here is the only route to the image. */
+.nv-gtile__acts {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  opacity: 0;
+  background: rgb(var(--nv-scrim-rgb) / 0.42);
+  backdrop-filter: blur(2px);
+  transition: opacity 0.4s var(--nv-ease-lux);
+}
+
+.nv-gtile:hover .nv-gtile__acts {
+  opacity: 1;
+}
+
+.nv-gtile__act {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgb(255 255 255 / 0.26);
+  border-radius: 13px;
+  background: rgb(var(--nv-scrim-rgb) / 0.78);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  color: var(--nv-on-media-dim);
+  transition:
+    border-color 0.35s var(--nv-ease-lux),
+    color 0.35s var(--nv-ease-lux),
+    transform 0.35s var(--nv-ease-lux);
+}
+
+.nv-gtile__act svg { width: 17px; height: 17px; }
+
+.nv-gtile__act:hover {
+  transform: scale(1.07);
+  border-color: var(--nv-metal-on-media);
+  color: var(--nv-metal-on-media);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-gtile,
+  .nv-gtile__img,
+  .nv-gtile__act { transition: none; }
+  .nv-gtile:hover { transform: none; }
+  .nv-gtile:hover .nv-gtile__img { transform: none; }
+  .nv-gtile__act:hover { transform: none; }
+}
+
+/* ── Lightbox ─────────────────────────────────────────────────────────────
+   Full-viewport image view. The scrim is near-opaque charcoal rather than a
+   translucent slate, because a photograph judged against a half-lit background
+   reads with the wrong contrast. */
+.nv-lb {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(14px, 3vw, 28px);
+  background: rgb(var(--nv-scrim-rgb) / 0.94);
+  backdrop-filter: blur(14px);
+}
+
+.nv-lb__panel {
+  position: relative;
+  width: 100%;
+  max-width: 1080px;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline-hi);
+  border-radius: 22px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-lb__frame {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--nv-plate-well);
+}
+
+.nv-lb__img {
+  object-fit: contain;
+}
+
+.nv-lb__tag {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 10;
+  padding: 6px 13px;
+  border: 1px solid var(--nv-metal-on-media-line);
+  border-radius: 999px;
+  background: rgb(var(--nv-scrim-rgb) / 0.7);
+  backdrop-filter: blur(6px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-metal-on-media);
+}
+
+/* Controls. One shape for close, previous and next, so the three read as one
+   set of instruments. */
+.nv-lb__ctl {
+  position: absolute;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgb(255 255 255 / 0.24);
+  border-radius: 14px;
+  background: rgb(var(--nv-scrim-rgb) / 0.8);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  color: var(--nv-on-media-dim);
+  transition:
+    border-color 0.35s var(--nv-ease-lux),
+    color 0.35s var(--nv-ease-lux),
+    transform 0.35s var(--nv-ease-lux);
+}
+
+.nv-lb__ctl svg { width: 19px; height: 19px; }
+
+.nv-lb__ctl:hover {
+  transform: scale(1.06);
+  border-color: var(--nv-metal-on-media);
+  color: var(--nv-metal-on-media);
+}
+
+.nv-lb__ctl--close { top: 18px; right: 18px; }
+.nv-lb__ctl--prev { top: 50%; left: 18px; transform: translateY(-50%); }
+.nv-lb__ctl--next { top: 50%; right: 18px; transform: translateY(-50%); }
+
+/* The hover scale has to preserve the centring translate, or the arrows jump to
+   the top of the panel when the pointer lands on them. */
+.nv-lb__ctl--prev:hover { transform: translateY(-50%) scale(1.06); }
+.nv-lb__ctl--next:hover { transform: translateY(-50%) scale(1.06); }
+
+.nv-lb__bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(18px, 2.2vw, 26px);
+}
+
+@media (min-width: 640px) {
+  .nv-lb__bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.nv-lb__bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 50%,
+    transparent
+  );
+}
+
+.nv-lb__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+.nv-lb__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-lb__ctl { transition: none; }
+  .nv-lb__ctl:hover { transform: none; }
+  .nv-lb__ctl--prev:hover { transform: translateY(-50%); }
+  .nv-lb__ctl--next:hover { transform: translateY(-50%); }
+}
+
+/* ── Related items strip (detail pages) ──────────────────────────────────── */
+.nv-drelated {
+  display: grid;
+  gap: 11px;
+}
+
+.nv-drelated__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  overflow: hidden;
+  padding: 11px 13px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 13px;
+  background: var(--nv-plate-well);
+  text-decoration: none;
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    background-color 0.45s var(--nv-ease-lux);
+}
+
+.nv-drelated__card:hover {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-drelated__media {
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--nv-plate-flat);
+}
+
+.nv-drelated__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-drelated__title {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--nv-text-dim);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-drelated__card:hover .nv-drelated__title {
+  color: var(--nv-champagne);
+}
+
+.nv-drelated__go {
+  flex: none;
+  color: var(--nv-faint);
+  transition:
+    color 0.45s var(--nv-ease-lux),
+    transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-drelated__go svg { width: 14px; height: 14px; }
+
+.nv-drelated__card:hover .nv-drelated__go {
+  transform: translate3d(3px, 0, 0);
+  color: var(--nv-champagne);
+}
+
+/* ── Image gallery inside a detail page ─────────────────────────────────── */
+.nv-dgallery {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 760px) {
+  .nv-dgallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-dgallery__frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--nv-plate-well);
+}
+
+.nv-dgallery__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+  transition: box-shadow 0.5s var(--nv-ease-lux);
+}
+
+.nv-dgallery__frame:hover::after {
+  box-shadow: inset 0 0 0 1px var(--nv-champagne-line);
+}
+
+.nv-dgallery__img {
+  object-fit: cover;
+  transition: transform 1.4s var(--nv-ease-lux);
+}
+
+.nv-dgallery__frame:hover .nv-dgallery__img {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-dgallery__img { transition: none; }
+  .nv-dgallery__frame:hover .nv-dgallery__img { transform: none; }
+  .nv-drelated__go { transition: none; }
+  .nv-drelated__card:hover .nv-drelated__go { transform: none; }
+}
+
+/* ── Map HUD ──────────────────────────────────────────────────────────────
+   Controls floating over a third-party map tile. These are the one place in the
+   system where a translucent panel is right: the surface underneath is a
+   photograph of terrain, and an opaque plate would hide it. They stay charcoal
+   with a warm hairline, so they read as instruments rather than as browser UI. */
+.nv-mhud {
+  position: absolute;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(12px, 1.6vw, 18px);
+  pointer-events: none;
+}
+
+.nv-mhud__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 13px;
+  border: 1px solid var(--nv-metal-on-media-line);
+  border-radius: 999px;
+  background: rgb(var(--nv-scrim-rgb) / 0.74);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-on-media);
+  text-decoration: none;
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    color 0.4s var(--nv-ease-lux);
+}
+
+.nv-mhud__chip svg { width: 13px; height: 13px; }
+
+.nv-mhud__chip--go:hover {
+  border-color: var(--nv-metal-on-media);
+  color: var(--nv-metal-on-media);
+}
+
+.nv-mhud__chip--coords {
+  border-color: rgb(255 255 255 / 0.24);
+  border-radius: 11px;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--nv-on-media-dim);
+}
+
+/* The live marker. One pulsing dot, and it is the only pulse on the page. */
+.nv-mhud__live {
+  position: relative;
+  display: inline-flex;
+  width: 8px;
+  height: 8px;
+  flex: none;
+}
+
+.nv-mhud__live::before,
+.nv-mhud__live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--nv-metal-on-media);
+}
+
+.nv-mhud__live::before {
+  animation: nv-mhud-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes nv-mhud-ping {
+  0% { transform: scale(1); opacity: 0.7; }
+  75%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+.nv-mhud__name {
+  max-width: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Loading and empty states behind the HUD. */
+.nv-mstate {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  padding: 0 clamp(20px, 4vw, 36px);
+  background: var(--nv-plate-well);
+  text-align: center;
+}
+
+.nv-mstate__ico {
+  color: var(--nv-champagne);
+}
+
+.nv-mstate__ico svg { width: 30px; height: 30px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-mhud__live::before { animation: none; }
+}
+
+/* ── Leaflet popup ────────────────────────────────────────────────────────
+   The marker bubble is Leaflet's own markup, so this restyles it by its class
+   names rather than ours. Both the wrapper and the tip need it: the tip is a
+   separate rotated square, and leaving it white puts a white arrow under a
+   charcoal bubble. */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  border: 1px solid var(--nv-champagne-line);
+  background: rgb(var(--nv-scrim-rgb) / 0.94);
+  box-shadow: var(--nv-lift);
+  color: var(--nv-text);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 13px;
+}
+
+.leaflet-popup-content {
+  margin: 13px 15px;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--nv-faint);
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: var(--nv-champagne);
+  background: transparent;
+}
+
+.nv-mpop__name {
+  display: block;
+  margin-bottom: 5px;
+  font-family: var(--nv-font-display);
+  font-size: 0.975rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+}
+
+.nv-mpop__addr {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 0.781rem;
+  line-height: 1.55;
+  color: var(--nv-muted);
+}
+
+.nv-mpop__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+  text-decoration: none;
+  border-bottom: 1px solid var(--nv-champagne-line);
+  transition: border-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-mpop__go:hover {
+  border-bottom-color: var(--nv-champagne);
+}
+
+/* ── Map pin ──────────────────────────────────────────────────────────────
+   Leaflet injects this as an HTML string, which is why the markup uses `class`
+   and not `className`: the previous version wrote `className=` inside that
+   string, so none of the pin styles ever applied and the marker rendered as a
+   bare SVG. The teardrop is champagne on charcoal — a warm mark on a light
+   basemap, which is the one place in the system where a filled warm shape is
+   right, because it has to be findable against terrain. */
+.nv-pin {
+  position: relative;
+  display: flex;
+  width: 52px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+}
+
+.nv-pin__pulse {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin-left: -23px;
+  border-radius: 50%;
+  background: rgb(var(--nv-metal-rgb) / 0.34);
+  animation: nv-pin-ripple 2.6s ease-out infinite;
+  pointer-events: none;
+}
+
+.nv-pin__pulse--delay {
+  animation-delay: 1.3s;
+}
+
+@keyframes nv-pin-ripple {
+  0% { transform: scale(0.25); opacity: 1; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+.nv-pin__marker {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 10px 18px rgb(var(--nv-scrim-rgb) / 0.55));
+  animation: nv-pin-bob 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes nv-pin-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+
+.nv-pin__head {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--nv-champagne-hi);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #16181f 0%, #0c0e14 100%);
+  color: var(--nv-champagne);
+}
+
+.nv-pin__head svg {
+  transform: rotate(45deg);
+}
+
+.nv-pin__tip {
+  width: 7px;
+  height: 7px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--nv-champagne);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-pin__pulse { animation: none; opacity: 0.45; }
+  .nv-pin__marker { animation: none; }
+}
+
+/* ── Shared form controls on a public page ────────────────────────────────
+   The `Input`/`Textarea` primitives in components/ui are white with slate
+   borders, and the admin panel still needs them that way. Rather than fork the
+   primitives, the public call sites add `.nv-input`. Tailwind v4 emits its
+   utilities inside `@layer utilities`, and an unlayered rule beats a layered one
+   whatever the source order — so these win over the base `bg-white/80` without
+   an `!important` anywhere. */
+.nv-input {
+  border: 1px solid var(--nv-hairline);
+  border-radius: 12px;
+  background: var(--nv-plate-well);
+  color: var(--nv-text);
+  transition:
+    border-color 0.4s var(--nv-ease-lux),
+    background-color 0.4s var(--nv-ease-lux);
+}
+
+.nv-input::placeholder {
+  color: var(--nv-faint);
+}
+
+.nv-input:focus,
+.nv-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-plate-flat);
+}
+
+/* A file input's button is its own shadow-DOM-ish part; without this it renders
+   as the platform's default grey slab on charcoal. */
+.nv-input::file-selector-button {
+  margin-right: 12px;
+  padding: 6px 12px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 8px;
+  background: var(--nv-plate-flat);
+  cursor: pointer;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+}
+
+.nv-input::file-selector-button:hover {
+  border-color: var(--nv-champagne-line);
+  color: var(--nv-champagne);
+}
+
+.nv-label {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
 }

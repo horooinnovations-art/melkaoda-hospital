@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { useGetResourceItemQuery, useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import { DetailSkeleton } from "@/components/shared/Skeleton";
 import PageTransition from "@/components/motion/PageTransition";
@@ -57,7 +58,7 @@ export default function PartnerDetailPage({
 
   if (isLoading && !partner) {
     return (
-      <div className="mx-auto max-w-5xl px-5 py-16">
+      <div className="nv-pb mx-auto max-w-5xl px-5 py-16">
         <DetailSkeleton />
       </div>
     );
@@ -65,14 +66,14 @@ export default function PartnerDetailPage({
 
   if (isError && !partner) {
     return (
-      <div className="mx-auto max-w-4xl px-5 py-16 text-center">
+      <div className="nv-pb mx-auto max-w-4xl px-5 py-16 text-center">
         <EmptyState
           title="Partner Profile Not Found"
           description="The requested partner profile could not be retrieved."
         />
         <Link
           href="/partnerships"
-          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-semibold text-white transition-all hover:bg-emerald-800"
+          className="nv-btn nv-btn--glass mt-5"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Partnerships
@@ -109,19 +110,12 @@ export default function PartnerDetailPage({
         ]}
       />
 
-      <div className="g-pagebody g-pagebody--detail">
-        <div className="g-pagebody__aura" aria-hidden />
-        <div className="g-pagebody__mesh" aria-hidden />
 
-        <div className="relative z-[1] mx-auto max-w-5xl px-5 py-12 lg:px-8 lg:py-16">
-          {/* Back Navigation Bar */}
-          <div className="mb-8 flex items-center justify-between">
-            <Link
-              href="/partnerships"
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-1.5 text-xs font-semibold text-emerald-800 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-100"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              All Partnerships
+      <PageBody narrow>
+          <div className="nv-toolbar">
+            <Link href="/partnerships" className="nv-toolbar__link">
+              <ChevronLeft aria-hidden />
+              All partnerships
             </Link>
 
             {partner.website && (
@@ -129,177 +123,179 @@ export default function PartnerDetailPage({
                 href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-emerald-700 bg-emerald-700 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-emerald-800"
+                className="nv-toolbar__link"
               >
-                <Globe2 className="h-3.5 w-3.5" />
-                Official Website
-                <ExternalLink className="h-3 w-3" />
+                <Globe2 aria-hidden />
+                Official website
+                <ExternalLink aria-hidden />
               </a>
             )}
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-12">
-            {/* Left Main Content */}
-            <div className="space-y-8 lg:col-span-8">
-              {/* Main Partner Header Card */}
-              <Reveal>
-                <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-                  <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-                    {/* Logo Box with refined hover movement strictly contained */}
-                    <div className="group flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-md transition-all duration-500 hover:-translate-y-1 hover:border-emerald-500/80 hover:shadow-xl hover:shadow-emerald-500/20 cursor-pointer isolate">
+          <div className="nv-dlayout">
+            <div className="nv-dcol">
+              <NovaReveal from="up">
+                {/* The partner's name and category are already the hero's <h1>
+                    and eyebrow directly above, so this panel leads with the logo
+                    and the overview rather than repeating both — which also
+                    removes a second <h1> from the document. */}
+                <div className="nv-dpanel">
+                  <div className="nv-dpanel__label">
+                    <span className="nv-logo-card__frame !h-14 !w-14 !rounded-xl">
                       {logo ? (
                         <SmartImage
                           src={logo}
-                          alt={partner.name}
-                          width={80}
-                          height={80}
-                          className="object-contain transition-transform duration-500 group-hover:scale-[1.05]"
+                          alt=""
+                          fill
+                          optimizeWidth={160}
+                          sizes="56px"
                         />
                       ) : (
-                        <HeartPulse className="h-10 w-10 text-emerald-400 transition-transform duration-500 group-hover:scale-[1.05]" />
-                      )}
-                    </div>
-
-                    <div>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
-                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-700" />
-                        {partner.category || "Verified Partner"}
-                      </span>
-                      <h1 className="mt-2 font-display text-2xl font-bold text-slate-900 sm:text-3xl">
-                        {partner.name}
-                      </h1>
-                      {partner.partnership_type && (
-                        <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                          {partner.partnership_type}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Overview Body */}
-                  <div className="mt-8 border-t border-slate-100 pt-6">
-                    <h2 className="font-display text-lg font-bold text-slate-900">
-                      About the Partnership
-                    </h2>
-                    <div className="mt-3 text-base leading-relaxed text-slate-600">
-                      {stripHtml(partner.description || partner.short_description || "")}
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-
-              {/* Collaboration Highlights */}
-              <Reveal delay={0.1}>
-                <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/40 p-6 shadow-sm sm:p-8">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-emerald-700" />
-                    <h2 className="font-display text-xl font-bold text-slate-900">
-                      Key Joint Initiatives & Impact
-                    </h2>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Strategic objectives and clinical milestones achieved in collaboration with {partner.name}.
-                  </p>
-
-                  <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-                    {highlights.map((h, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs"
-                      >
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                        <span className="text-xs font-medium text-slate-700 leading-relaxed">
-                          {h}
+                        <span className="nv-logo-card__initial !text-lg" aria-hidden>
+                          <HeartPulse />
                         </span>
+                      )}
+                    </span>
+                    <div>
+                      <p className="nv-dpanel__kicker">
+                        {partner.partnership_type || "Institutional partner"}
+                      </p>
+                      <h2 className="nv-dpanel__title">About the partnership</h2>
+                    </div>
+                  </div>
+
+                  <p className="nv-dplain">
+                    {stripHtml(partner.description || partner.short_description || "")}
+                  </p>
+                </div>
+              </NovaReveal>
+
+              <NovaReveal from="up" delay={0.1}>
+                <div className="nv-dpanel">
+                  <div className="nv-dpanel__label">
+                    <span className="nv-dpanel__icon" aria-hidden>
+                      <Sparkles />
+                    </span>
+                    <div>
+                      <p className="nv-dpanel__kicker">Joint initiatives</p>
+                      <h2 className="nv-dpanel__title">Collaboration &amp; impact</h2>
+                    </div>
+                  </div>
+
+                  <ul className="nv-tiles">
+                    {highlights.map((h, i) => (
+                      <li key={i} className="nv-tile">
+                        <CheckCircle2 aria-hidden />
+                        <span>{h}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-              </Reveal>
+              </NovaReveal>
             </div>
 
-            {/* Right Sidebar */}
-            <div className="space-y-6 lg:col-span-4">
-              {/* Partner Quick Info Box */}
-              <Reveal delay={0.12}>
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <h3 className="font-display text-base font-bold text-slate-900">
-                    Partner Information
-                  </h3>
+            <div className="nv-dcol">
+              <NovaReveal from="up" delay={0.12}>
+                <div className="nv-dpanel">
+                  <div className="nv-dpanel__label">
+                    <span className="nv-dpanel__icon" aria-hidden>
+                      <ShieldCheck />
+                    </span>
+                    <div>
+                      <p className="nv-dpanel__kicker">Reference</p>
+                      <h3 className="nv-dpanel__title">Partner information</h3>
+                    </div>
+                  </div>
 
-                  <dl className="mt-4 divide-y divide-slate-100 text-xs">
-                    <div className="py-3 flex justify-between">
-                      <dt className="text-slate-500 font-medium">Category</dt>
-                      <dd className="font-semibold text-slate-800 text-right">{partner.category || "—"}</dd>
+                  <dl className="nv-dl">
+                    <div className="nv-dl__row">
+                      <dt className="nv-dl__key">Category</dt>
+                      <dd className="nv-dl__val">{partner.category || "—"}</dd>
                     </div>
 
                     {partner.partnership_type && (
-                      <div className="py-3 flex justify-between">
-                        <dt className="text-slate-500 font-medium">Role</dt>
-                        <dd className="font-semibold text-slate-800 text-right">{partner.partnership_type}</dd>
+                      <div className="nv-dl__row">
+                        <dt className="nv-dl__key">Role</dt>
+                        <dd className="nv-dl__val">{partner.partnership_type}</dd>
                       </div>
                     )}
 
                     {partner.website && (
-                      <div className="py-3 flex justify-between">
-                        <dt className="text-slate-500 font-medium">Website</dt>
-                        <dd className="font-semibold text-emerald-700">
-                          <a href={partner.website} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
-                            Visit Site <ExternalLink className="h-3 w-3" />
+                      <div className="nv-dl__row">
+                        <dt className="nv-dl__key">Website</dt>
+                        <dd className="nv-dl__val">
+                          <a
+                            href={partner.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Visit site
+                            <ExternalLink aria-hidden />
                           </a>
                         </dd>
                       </div>
                     )}
 
                     {partner.contact_email && (
-                      <div className="py-3 flex justify-between">
-                        <dt className="text-slate-500 font-medium">Email</dt>
-                        <dd className="font-semibold text-slate-800">{partner.contact_email}</dd>
+                      <div className="nv-dl__row">
+                        <dt className="nv-dl__key">Email</dt>
+                        <dd className="nv-dl__val">
+                          <a href={"mailto:" + partner.contact_email}>
+                            <Mail aria-hidden />
+                            {partner.contact_email}
+                          </a>
+                        </dd>
                       </div>
                     )}
 
                     {partner.contact_phone && (
-                      <div className="py-3 flex justify-between">
-                        <dt className="text-slate-500 font-medium">Phone</dt>
-                        <dd className="font-semibold text-slate-800">{partner.contact_phone}</dd>
+                      <div className="nv-dl__row">
+                        <dt className="nv-dl__key">Phone</dt>
+                        <dd className="nv-dl__val">
+                          <a href={"tel:" + partner.contact_phone}>
+                            <Phone aria-hidden />
+                            {partner.contact_phone}
+                          </a>
+                        </dd>
                       </div>
                     )}
                   </dl>
                 </div>
-              </Reveal>
+              </NovaReveal>
 
-              {/* Related Partners in Same Category */}
               {relatedPartners.length > 0 && (
-                <Reveal delay={0.15}>
-                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 className="font-display text-base font-bold text-slate-900">
-                      Related Partners
-                    </h3>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Other institutions in {partner.category}.
-                    </p>
+                <NovaReveal from="up" delay={0.15}>
+                  <div className="nv-dpanel">
+                    <div className="nv-dpanel__label">
+                      <span className="nv-dpanel__icon" aria-hidden>
+                        <Building2 />
+                      </span>
+                      <div>
+                        <p className="nv-dpanel__kicker">
+                          {partner.category || "Same category"}
+                        </p>
+                        <h3 className="nv-dpanel__title">Related partners</h3>
+                      </div>
+                    </div>
 
-                    <div className="mt-4 space-y-3">
+                    <div className="grid gap-2">
                       {relatedPartners.map((rel) => (
                         <Link
                           key={rel.id}
-                          href={`/partnerships/${rel.slug || rel.id}`}
-                          className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-3 transition-all hover:border-emerald-300 hover:bg-emerald-50/50"
+                          href={"/partnerships/" + (rel.slug || rel.id)}
+                          className="nv-minirow"
                         >
-                          <span className="text-xs font-semibold text-slate-800 group-hover:text-emerald-800 truncate pr-2">
-                            {rel.name}
-                          </span>
-                          <ArrowRight className="h-3.5 w-3.5 shrink-0 text-slate-400 group-hover:text-emerald-700" />
+                          <span>{rel.name}</span>
+                          <ArrowRight aria-hidden />
                         </Link>
                       ))}
                     </div>
                   </div>
-                </Reveal>
+                </NovaReveal>
               )}
             </div>
           </div>
-        </div>
-      </div>
+      </PageBody>
     </PageTransition>
   );
 }

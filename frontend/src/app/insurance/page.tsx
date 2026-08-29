@@ -3,7 +3,8 @@
 import { Mail, Phone, Globe } from "lucide-react";
 import { useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/Skeleton";
 import PageTransition from "@/components/motion/PageTransition";
@@ -32,8 +33,7 @@ export default function InsurancePage() {
         breadcrumbs={[{ label: "Insurance" }]}
       />
 
-      <div className="v-home-light relative -mx-[calc((100vw-100%)/2)] w-screen">
-        <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+      <PageBody>
           {isLoading ? (
             <GridSkeleton count={6} />
           ) : isError ? (
@@ -41,7 +41,7 @@ export default function InsurancePage() {
           ) : items.length === 0 ? (
             <EmptyState title="Insurance information coming soon" />
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="nv-grid-3">
               {items.map((item, i) => {
                 const logo = getImageFromItem(item as unknown as Record<string, unknown>);
                 const phone = (item as { contact_phone?: string }).contact_phone || item.phone;
@@ -49,48 +49,45 @@ export default function InsurancePage() {
                 const website = item.website;
                 const desc = item.description ? stripHtml(item.description) : "";
                 return (
-                  <Reveal key={item.id} delay={Math.min(i, 8) * 0.05}>
-                    <article className="v-home-card group relative flex h-full flex-col items-center overflow-hidden px-7 py-9 text-center">
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-sky-700/70" />
-                      <div className="relative mb-5 grid h-24 w-24 place-items-center overflow-hidden rounded-2xl bg-[#122033] ring-1 ring-sky-300/25">
+                  <NovaReveal
+                    key={item.id}
+                    from="up"
+                    delay={Math.min(Math.floor(i / 3), 5) * 0.12}
+                  >
+                    <article className="nv-logo-card">
+                      <span className="nv-logo-card__frame">
                         {logo ? (
                           <SmartImage
                             src={logo}
-                            alt={item.name}
+                            // Decorative: .nv-logo-card__name prints the provider's
+                            // name directly under this frame.
+                            alt=""
                             fill
                             optimizeWidth={192}
-                            className="object-contain p-3"
-                            sizes="96px"
+                            sizes="92px"
                           />
                         ) : (
-                          <span className="font-display text-3xl text-sky-300">
+                          <span className="nv-logo-card__initial" aria-hidden>
                             {item.name.charAt(0)}
                           </span>
                         )}
-                      </div>
-                      <h3 className="font-display text-xl text-[#0c1b2a] transition-colors group-hover:text-teal-mid">
-                        {item.name}
-                      </h3>
-                      {desc && (
-                        <p className="mt-3 text-sm leading-relaxed text-[#5a6e6a]">{desc}</p>
-                      )}
+                      </span>
+
+                      <h3 className="nv-logo-card__name">{item.name}</h3>
+
+                      {desc && <p className="nv-logo-card__desc">{desc}</p>}
+
                       {(phone || email || website) && (
-                        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs">
+                        <div className="nv-logo-card__links">
                           {phone && (
-                            <a
-                              href={`tel:${phone}`}
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#0c1b2a]/10 bg-[#e8f4f0]/80 px-3 py-1.5 text-[#0c1b2a] transition hover:border-teal-mid/40"
-                            >
-                              <Phone className="h-3.5 w-3.5 text-teal-mid" />
+                            <a href={`tel:${phone}`} className="nv-logo-card__link">
+                              <Phone aria-hidden />
                               {phone}
                             </a>
                           )}
                           {email && (
-                            <a
-                              href={`mailto:${email}`}
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#0c1b2a]/10 bg-[#e8f4f0]/80 px-3 py-1.5 text-[#0c1b2a] transition hover:border-teal-mid/40"
-                            >
-                              <Mail className="h-3.5 w-3.5 text-teal-mid" />
+                            <a href={`mailto:${email}`} className="nv-logo-card__link">
+                              <Mail aria-hidden />
                               Email
                             </a>
                           )}
@@ -99,22 +96,22 @@ export default function InsurancePage() {
                               href={website}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-[#0c1b2a]/10 bg-[#e8f4f0]/80 px-3 py-1.5 text-[#0c1b2a] transition hover:border-teal-mid/40"
+                              className="nv-logo-card__link"
                             >
-                              <Globe className="h-3.5 w-3.5 text-teal-mid" />
+                              <Globe aria-hidden />
                               Website
                             </a>
                           )}
                         </div>
                       )}
                     </article>
-                  </Reveal>
+                  </NovaReveal>
                 );
               })}
             </div>
           )}
-        </div>
-      </div>
+      </PageBody>
+
     </PageTransition>
   );
 }

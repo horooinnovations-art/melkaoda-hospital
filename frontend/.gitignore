@@ -19,6 +19,8 @@
 # Isolated build dirs used to verify a build without disturbing a running dev server.
 /.next-verify*/
 /.nvtmp/
+/.nvout/
+/.nvwork/
 
 # production
 /build

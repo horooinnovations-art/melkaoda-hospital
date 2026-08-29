@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/Skeleton";
 import PageTransition from "@/components/motion/PageTransition";
@@ -34,18 +35,17 @@ export default function LeadershipPage() {
         breadcrumbs={[{ label: "Leadership" }]}
       />
 
-      <div className="g-board-page">
-        <div className="mx-auto max-w-5xl px-5 py-14 lg:px-8 lg:py-16">
-          <div className="g-board-page__toolbar">
+      <PageBody narrow>
+          <div className="nv-toolbar">
             <div>
-              <p className="g-board-page__kicker">Current board</p>
-              <p className="g-board-page__note">
+              <p className="nv-toolbar__kicker">Current board</p>
+              <p className="nv-toolbar__note">
                 Office holders guiding Gambo General Hospital.
               </p>
             </div>
-            <Link href="/leadership/history" className="g-board-page__history">
+            <Link href="/leadership/history" className="nv-toolbar__link">
               Leadership history
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight aria-hidden />
             </Link>
           </div>
 
@@ -56,13 +56,13 @@ export default function LeadershipPage() {
           ) : leaders.length === 0 ? (
             <EmptyState title="Leadership profiles coming soon" />
           ) : (
-            <div className="g-board-stack">
+            <div className="nv-board-stack">
               {leaders.map((leader, i) => {
                 const image = getImageFromItem(
                   leader as unknown as Record<string, unknown>
                 );
                 return (
-                  <Reveal key={leader.id} delay={Math.min(i, 6) * 0.04}>
+                  <NovaReveal key={leader.id} from="up" delay={Math.min(i, 6) * 0.08}>
                     <OfficerProfile
                       href={`/leadership/${leader.slug}`}
                       name={leader.name}
@@ -71,13 +71,12 @@ export default function LeadershipPage() {
                       image={image}
                       index={i}
                     />
-                  </Reveal>
+                  </NovaReveal>
                 );
               })}
             </div>
           )}
-        </div>
-      </div>
+      </PageBody>
     </PageTransition>
   );
 }

@@ -17,122 +17,183 @@
 }
 
 :root {
-  /* Depths */
-  --nv-void: #04050a;
-  --nv-abyss: #080a13;
-  --nv-deep: #0c0f1c;
-  --nv-slate: #131731;
-  --nv-line: rgba(148, 163, 255, 0.14);
-  --nv-line-soft: rgba(148, 163, 255, 0.08);
+  /* ══════════════════════════════════════════════════════════════════════
+     LIGHT GROUND
+     The system was built on charcoal: depth came from an edge catching light,
+     and shadows were nearly invisible because dark-on-dark does not read. On a
+     light ground both of those invert, so three things change here and the rest
+     of the sheets follow through these tokens.
 
-  /* Page surface — flat charcoal, no pattern.
-     The grid that used to live here was replaced because it competed with the
-     content: every card, row and band now carries its own 1px hairlines, and a
-     second grid behind them turned the page into crossed lines. Depth comes
-     from light instead — a wide champagne bloom at the top of the document and
-     a viewport vignette that lets the corners fall away — which leaves the
-     plates and their edges as the only detail on the page.
+       1. The ground is warm porcelain, not white. A pure #fff page has no
+          material — nothing for a plate to lift off of.
+       2. Plates are BRIGHTER than the ground and wells are DARKER, which gives
+          three luminance levels and lets a card sit on the page without a
+          border doing the work.
+       3. Shadow becomes the primary depth cue, so --nv-lift is a real layered
+          shadow rather than the almost-black smudge it was.
+     ══════════════════════════════════════════════════════════════════════ */
 
-     --nv-bloom is the outer wash, --nv-bloom-core the small warm centre inside
-     it, and --nv-vignette the corner falloff. All three are deliberately far
-     below the threshold where they would tint content sitting on top. */
-  --nv-paper: #101216;
-  --nv-bloom: rgba(217, 195, 154, 0.085);
-  --nv-bloom-core: rgba(240, 226, 194, 0.05);
-  --nv-vignette: rgba(4, 5, 8, 0.5);
+  /* Depths — kept for source compatibility. On a light ground these are the
+     inverted end of the scale: deep ink used for type and rules, not surfaces. */
+  --nv-void: #12151d;
+  --nv-abyss: #191d26;
+  --nv-deep: #232833;
+  --nv-slate: #333a48;
+  --nv-line: rgba(24, 27, 36, 0.12);
+  --nv-line-soft: rgba(24, 27, 36, 0.07);
 
-  /* Signal colours */
-  --nv-iris: #7c6cff;
-  --nv-iris-lo: #5b4bdb;
-  --nv-iris-hi: #a78bfa;
-  --nv-cyan: #22d3ee;
-  --nv-mint: #34e0a1;
-  --nv-rose: #fb5c7d;
-  --nv-amber: #ffb457;
+  /* Page surface. Warm porcelain — the single colour the body paints. The wash
+     tokens below are what give it depth; all three sit far under the threshold
+     where they would tint content on top. */
+  --nv-paper: #f6f4ef;
+  --nv-paper-deep: #efebe3;
+  --nv-bloom: rgb(129 104 54 / 0.075);
+  --nv-bloom-core: rgb(129 104 54 / 0.045);
+  --nv-vignette: rgba(24, 27, 36, 0.055);
 
-  /* Accent ink — flat, slightly desaturated. One cool tone and one warm tone
-     for headings, instead of the four-hue animated gradient mix. */
-  --nv-accent: #a7b4f2;
-  --nv-accent-warm: #e9bd94;
+  /* Signal colours — deepened so they hold their contrast on porcelain. */
+  --nv-iris: #5b4bdb;
+  --nv-iris-lo: #4536b8;
+  --nv-iris-hi: #7c6cff;
+  --nv-cyan: #0e7490;
+  --nv-mint: #0f766e;
+  --nv-rose: #be123c;
+  --nv-amber: #9a4a08;
 
-  /* Champagne & platinum — the accent metals.
-     One warm metal (champagne) and one cool one (platinum). They appear only as
-     hairlines, kickers and small marks: a thin warm line against near-black is
-     what reads as expensive, whereas a filled warm panel just reads as brown.
-     Never used as a wash over photography. */
-  --nv-champagne: #d9c39a;
-  --nv-champagne-hi: #ecdcb8;
-  --nv-champagne-dim: rgba(217, 195, 154, 0.72);
-  --nv-champagne-line: rgba(217, 195, 154, 0.26);
-  --nv-champagne-faint: rgba(217, 195, 154, 0.1);
-  --nv-platinum: #d8dde8;
+  /* Accent ink — one cool tone and one warm tone for headings. */
+  --nv-accent: #4a5580;
+  --nv-accent-warm: #8a5f34;
 
-  /* Plates — the card surface. A top-lit charcoal, i.e. very slightly lighter
-     at the top edge, the way a solid object under a ceiling light looks. This
-     is the only gradient in the system and it spans four levels of luminance,
-     so it never reads as a glow. */
-  --nv-plate: linear-gradient(180deg, #1a1d24 0%, #14161c 58%, #11131a 100%);
-  --nv-plate-hi: linear-gradient(180deg, #20242d 0%, #171a21 58%, #13151c 100%);
-  --nv-plate-flat: #14161c;
-  --nv-plate-well: #0f1116;
+  /* ── The warm metal ────────────────────────────────────────────────────
+     Champagne (#d9c39a) was chosen to read as a thin warm line against
+     near-black. On porcelain it is almost the same luminance as the page and
+     disappears, so the metal deepens to an antique bronze.
 
-  /* Edges. --nv-edge is the 1px catch-light along the top of every plate; the
-     hairline pair replaces the blue-tinted borders. */
-  --nv-edge: rgba(255, 255, 255, 0.075);
-  --nv-edge-soft: rgba(255, 255, 255, 0.045);
-  --nv-hairline: rgba(216, 221, 232, 0.095);
-  --nv-hairline-hi: rgba(216, 221, 232, 0.17);
+     Note that --nv-champagne-hi is now DARKER than the base, where on charcoal
+     it was brighter. Every hover state in the system moves from base to -hi, so
+     inverting the direction here keeps all of them reading as "more emphasis"
+     without touching a single hover rule. */
+  --nv-champagne: #816836;
+  --nv-champagne-hi: #64512a;
+  /* On charcoal, "dim" meant a step lighter than the base metal. Here every
+     step lighter drops below 4.5:1 at the mono sizes this is used for — kickers,
+     dates, small labels — so it collapses into the base. One warm ink, and the
+     softer feel comes from size and letter-spacing rather than from luminance. */
+  --nv-champagne-dim: #816836;
+  --nv-champagne-line: rgb(129 104 54 / 0.34);
+  --nv-champagne-faint: rgb(129 104 54 / 0.085);
+  --nv-platinum: #4b525f;
 
-  /* Depth. Two long, very dark shadows rather than one coloured halo — a card
-     at rest is already seated, and a hover deepens the same shadow instead of
-     switching on a light. */
-  --nv-lift: 0 1px 1px rgba(0, 0, 0, 0.5), 0 18px 44px -26px rgba(0, 0, 0, 0.9);
+  /* ── Plates ────────────────────────────────────────────────────────────
+     Brighter than the ground and lit from the top, so a card still reads as a
+     solid object under a ceiling light — the direction of the gradient is
+     unchanged, only its range moved up to the white end. */
+  --nv-plate: linear-gradient(180deg, #ffffff 0%, #fefdfb 58%, #fbf9f5 100%);
+  --nv-plate-hi: linear-gradient(180deg, #ffffff 0%, #fffefd 58%, #fdfcf9 100%);
+  --nv-plate-flat: #ffffff;
+  /* A well is RECESSED, so on a light ground it goes darker than the plate —
+     on charcoal it went darker too, which is why this token needed no change of
+     role, only of value. */
+  --nv-plate-well: #f0ede5;
+
+  /* Edges. --nv-edge was a white catch-light along the top of a dark plate; on
+     white there is nothing brighter to catch, so it becomes a fine ink line and
+     reads as a crisp printed edge instead. */
+  --nv-edge: rgba(24, 27, 36, 0.075);
+  --nv-edge-soft: rgba(24, 27, 36, 0.045);
+  --nv-hairline: rgba(24, 27, 36, 0.1);
+  --nv-hairline-hi: rgba(24, 27, 36, 0.185);
+
+  /* Depth. This is the big one: on charcoal a shadow is invisible and the edge
+     did the work, so --nv-lift was a near-black smudge. Here the shadow IS the
+     depth, so it is a real layered one — a tight contact shadow plus a long
+     soft ambient. */
+  --nv-lift:
+    0 1px 2px rgba(24, 27, 36, 0.05),
+    0 12px 28px -14px rgba(24, 27, 36, 0.16);
   --nv-lift-hi:
-    0 2px 2px rgba(0, 0, 0, 0.55),
-    0 34px 70px -30px rgba(0, 0, 0, 0.95),
-    0 0 0 1px rgba(217, 195, 154, 0.05);
+    0 2px 4px rgba(24, 27, 36, 0.07),
+    0 26px 54px -20px rgba(24, 27, 36, 0.2),
+    0 0 0 1px rgb(129 104 54 / 0.1);
 
   /* One slow, heavy ease for everything expensive. Long tail, no bounce. */
   --nv-ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
 
+  /* ── Text over media ───────────────────────────────────────────────────
+     A caption sitting on a dark scrim over a photograph still needs light ink,
+     and that did not change when the page did. On the charcoal theme these were
+     just --nv-text and --nv-text-dim, which is exactly why they had to be split
+     out: inverting the page inverted them too, and every caption over an image
+     went black on black. */
+  --nv-on-media: #ffffff;
+  --nv-on-media-dim: rgb(255 255 255 / 0.78);
+  --nv-on-media-faint: rgb(255 255 255 / 0.6);
+  /* The metal, for marks that also sit on a scrim. The page metal deepened to
+     bronze so it would read on porcelain; against a photograph it has to go the
+     other way, back to a pale champagne. */
+  --nv-metal-on-media: #dcc59d;
+  --nv-metal-on-media-line: rgb(220 197 157 / 0.42);
+
   /* Type */
-  --nv-text: #eceffb;
-  --nv-text-dim: #c2c9e4;
-  --nv-muted: #9aa2c4;
-  --nv-faint: #7b83a7;
+  --nv-text: #191d26;
+  --nv-text-dim: #3c4351;
+  --nv-muted: #5d6473;
+  --nv-faint: #676c75;
+
+  /* ── Triplet tokens ────────────────────────────────────────────────────
+     The sheets need these colours at a dozen different alphas each (a rail at
+     4%, a ghost numeral at 12%, a bloom at 7%). Holding the channels rather
+     than a finished colour lets `rgb(var(--x) / 0.04)` cover every one of them
+     from a single definition, so retheming is this block and nothing else.
+
+     Two of them exist because a family had to change ROLE, not just value:
+
+       --nv-ink-rgb    the page rails. They were the warm metal at 4% on black,
+                       which on porcelain would be a warm smudge; a faint ink
+                       line is what reads as a ruled sheet.
+       --nv-glaze-rgb  the pass that crosses a card on hover. It was near-white
+                       light sweeping over a dark plate; over a white plate
+                       nothing lighter exists, so it becomes a warm glaze —
+                       slightly darker than the card, which still reads as a
+                       sheen travelling across it.
+
+     --nv-scrim-rgb deliberately stays dark: it sits under white caption text on
+     top of a photograph, and that job did not change with the page. */
+  --nv-metal-rgb: 129 104 54;
+  --nv-ink-rgb: 24 27 36;
+  --nv-glaze-rgb: 129 104 54;
+  --nv-scrim-rgb: 14 16 22;
+  --nv-edge-rgb: 255 255 255;
 
   /* Gradients */
-  --nv-grad: linear-gradient(120deg, #7c6cff 0%, #22d3ee 48%, #a78bfa 100%);
-  --nv-grad-warm: linear-gradient(120deg, #fb5c7d 0%, #ffb457 100%);
-  --nv-grad-cool: linear-gradient(160deg, #22d3ee 0%, #7c6cff 100%);
+  --nv-grad: linear-gradient(120deg, #5b4bdb 0%, #0e7490 48%, #7c6cff 100%);
+  --nv-grad-warm: linear-gradient(120deg, #be123c 0%, #b45309 100%);
+  --nv-grad-cool: linear-gradient(160deg, #0e7490 0%, #5b4bdb 100%);
   --nv-grad-metal: linear-gradient(
     100deg,
-    #c8ae7f 0%,
-    #f0e2c2 32%,
-    #d3bb90 62%,
-    #ede0bd 100%
+    #7a6130 0%,
+    #b39456 32%,
+    #8a6f38 62%,
+    #a98c4f 100%
   );
 
-  /* Surfaces — nearly opaque and only faintly blue. Cards used to be 72%
-     translucent over a tinted, glowing base, which is why body copy sat too
-     close to the background. */
+  /* Surfaces. Opaque white with the faintest warm cast, so a panel over a
+     photograph stays readable without a blur. */
   --nv-glass: linear-gradient(
     165deg,
-    rgba(19, 23, 43, 0.94) 0%,
-    rgba(10, 13, 25, 0.97) 100%
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(251, 249, 245, 0.98) 100%
   );
   --nv-glass-hi: linear-gradient(
     165deg,
-    rgba(28, 33, 58, 0.96) 0%,
-    rgba(14, 18, 33, 0.98) 100%
+    rgba(255, 255, 255, 0.985) 0%,
+    rgba(253, 252, 249, 0.99) 100%
   );
 
   /* Shadows */
-  --nv-shadow-sm: 0 2px 10px rgba(2, 3, 8, 0.5);
-  --nv-shadow: 0 18px 50px -18px rgba(2, 3, 10, 0.9);
-  /* Card hover lift. Was a saturated iris halo; now neutral depth, so a hover
-     reads as the card rising rather than switching a light on. */
-  --nv-shadow-iris: 0 22px 60px -28px rgba(2, 3, 10, 0.95);
+  --nv-shadow-sm: 0 2px 8px rgba(24, 27, 36, 0.07);
+  --nv-shadow: 0 16px 44px -18px rgba(24, 27, 36, 0.2);
+  --nv-shadow-iris: 0 22px 56px -26px rgba(24, 27, 36, 0.24);
 
   /* Rhythm */
   --nv-r-sm: 14px;
@@ -206,24 +267,24 @@ body::after {
 
 /* Selection + scrollbar */
 ::selection {
-  background: rgba(217, 195, 154, 0.3);
-  color: #fff;
+  background: rgb(var(--nv-metal-rgb) / 0.3);
+  color: var(--nv-text);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(217, 195, 154, 0.35) transparent;
+  scrollbar-color: rgb(var(--nv-metal-rgb) / 0.35) transparent;
 }
 
 *::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-track { background: rgba(8, 9, 12, 0.6); }
+*::-webkit-scrollbar-track { background: rgb(var(--nv-ink-rgb) / 0.05); }
 *::-webkit-scrollbar-thumb {
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
-  background-color: rgba(217, 195, 154, 0.32);
+  background-color: rgb(var(--nv-metal-rgb) / 0.32);
 }
-*::-webkit-scrollbar-thumb:hover { background-color: rgba(217, 195, 154, 0.6); }
+*::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--nv-metal-rgb) / 0.6); }
 
 /* ── Layout primitives ──────────────────────────────────────────────────── */
 .nv-shell {
@@ -409,7 +470,7 @@ body::after {
   background: linear-gradient(
     100deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.32) 48%,
+    rgb(var(--nv-glaze-rgb) / 0.1) 48%,
     transparent 66%
   );
   transform: translateX(-120%);
@@ -425,8 +486,8 @@ body::after {
   background-size: 200% 100%;
   background-position: 0% 50%;
   box-shadow:
-    0 10px 28px -14px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    0 10px 28px -14px rgb(var(--nv-ink-rgb) / 0.19),
+    inset 0 1px 0 var(--nv-edge);
   transition:
     transform 0.42s var(--nv-ease),
     background-position 0.7s var(--nv-ease),
@@ -436,14 +497,14 @@ body::after {
 .nv-btn--primary:hover {
   background-position: 100% 50%;
   box-shadow:
-    0 20px 46px -16px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    0 20px 46px -16px rgb(var(--nv-ink-rgb) / 0.20),
+    inset 0 1px 0 var(--nv-edge);
 }
 
 /* Glass — hairline surface */
 .nv-btn--glass {
   color: var(--nv-text);
-  background: rgba(255, 255, 255, 0.045);
+  background: rgb(var(--nv-metal-rgb) / 0.090);
   /* Neutral hairline, not the old periwinkle: the glass button sits in the hero
      beside a champagne-edged chip, and two cool borders there were the last
      visible trace of the earlier palette above the fold. */
@@ -468,7 +529,7 @@ body::after {
 .nv-btn--ghost:hover {
   color: var(--nv-champagne-hi);
   border-color: var(--nv-champagne-line);
-  background: rgba(217, 195, 154, 0.055);
+  background: rgb(var(--nv-metal-rgb) / 0.055);
 }
 
 /* Signal — emergency */
@@ -478,7 +539,7 @@ body::after {
   background-size: 200% 100%;
   box-shadow:
     0 10px 30px -12px rgba(251, 92, 125, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    inset 0 1px 0 var(--nv-edge);
 }
 
 .nv-btn--signal:hover { background-position: 100% 50%; }
@@ -520,7 +581,7 @@ body::after {
   padding: 7px 14px;
   border-radius: 999px;
   border: 1px solid var(--nv-hairline);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(var(--nv-metal-rgb) / 0.078);
   box-shadow: inset 0 1px 0 var(--nv-edge-soft);
   font-family: var(--nv-font-mono);
   font-size: 0.68rem;
@@ -536,7 +597,7 @@ body::after {
   background: var(--nv-champagne-faint);
   color: var(--nv-champagne);
 }
-.nv-chip--rose { border-color: rgba(251, 92, 125, 0.34); color: #ffa8bb; }
+.nv-chip--rose { border-color: rgba(251, 92, 125, 0.34); color: var(--nv-rose); }
 
 /* ── Glass panel + rotating beam border ─────────────────────────────────── */
 .nv-panel {
@@ -579,9 +640,9 @@ body::after {
   background: conic-gradient(
     from var(--nv-angle),
     transparent 0deg,
-    rgba(217, 195, 154, 0.45) 40deg,
-    rgba(240, 226, 194, 0.95) 74deg,
-    rgba(217, 195, 154, 0.3) 104deg,
+    rgb(var(--nv-metal-rgb) / 0.45) 40deg,
+    rgb(var(--nv-glaze-rgb) / 0.95) 74deg,
+    rgb(var(--nv-metal-rgb) / 0.3) 104deg,
     transparent 136deg,
     transparent 360deg
   );
@@ -617,8 +678,8 @@ body::after {
   border-radius: inherit;
   background: radial-gradient(
     420px circle at var(--mx, 50%) var(--my, 0%),
-    rgba(217, 195, 154, 0.07),
-    rgba(217, 195, 154, 0.025) 44%,
+    rgb(var(--nv-metal-rgb) / 0.07),
+    rgb(var(--nv-metal-rgb) / 0.025) 44%,
     transparent 70%
   );
   opacity: 0;
@@ -713,10 +774,12 @@ body::after {
 }
 
 /* ── Legacy compatibility ───────────────────────────────────────────────── */
-/* Public pages built for the previous dark canvas still need light headings,
-   but nova's own headings manage their own colour. */
+/* A heading on a public page that carries no nv- class gets the page ink. This
+   used to force #eceffb, which was right when the canvas was charcoal and made
+   every such heading invisible the moment it went porcelain — so it reads the
+   token now instead of a literal. */
 main:not(.admin-shell-content) h2:not([class*="nv-"]) {
-  color: #eceffb !important;
+  color: var(--nv-text) !important;
 }
 
 .g-header-spacer { display: none !important; }
@@ -747,3 +810,44 @@ main:not(.admin-shell-content) h2:not([class*="nv-"]) {
 
 
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ISLANDS OF DARK ON A LIGHT PAGE
+   A photographic hero, a caption over an image, a fullscreen viewer: each is a
+   dark region inside a light document, and every rule inside them already reads
+   its colours through the ink tokens. So instead of overriding fifteen rules per
+   region, each region re-points the tokens themselves — one block, and the whole
+   subtree goes back to light ink on its own.
+
+   This is why the palette is tokens rather than literals. Adding a new dark
+   island is now this class and nothing else.
+   ═════════════════════════════════════════════════════════════════════════ */
+.nv-on-media,
+.nv-hero,
+.nv-lb,
+.nv-gtile__cap,
+.nv-card__badge,
+.nv-partner__cat,
+.nv-portrait__badge,
+.nv-lb__tag,
+.nv-mhud__chip,
+.nv-stack__meta,
+.nv-footer {
+  --nv-text: var(--nv-on-media);
+  --nv-text-dim: var(--nv-on-media-dim);
+  --nv-muted: var(--nv-on-media-dim);
+  --nv-faint: var(--nv-on-media-faint);
+  --nv-champagne: var(--nv-metal-on-media);
+  --nv-champagne-hi: #f2e6c8;
+  --nv-champagne-dim: rgb(220 197 157 / 0.88);
+  --nv-champagne-line: var(--nv-metal-on-media-line);
+  --nv-champagne-faint: rgb(220 197 157 / 0.12);
+  --nv-hairline: rgb(255 255 255 / 0.15);
+  --nv-hairline-hi: rgb(255 255 255 / 0.26);
+  --nv-edge: rgb(255 255 255 / 0.13);
+  --nv-edge-soft: rgb(255 255 255 / 0.08);
+  --nv-ink-rgb: 255 255 255;
+  --nv-metal-rgb: 220 197 157;
+  --nv-glaze-rgb: 255 249 236;
+  --nv-platinum: #e6e9ef;
+}

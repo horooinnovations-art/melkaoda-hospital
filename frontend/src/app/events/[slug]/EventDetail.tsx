@@ -14,7 +14,6 @@ import DetailShell, {
   DetailSectionHeader,
   type DetailBadge,
 } from "@/components/shared/DetailShell";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
@@ -89,19 +88,19 @@ export default function EventDetail({ slug }: { slug: string }) {
 
       {event.description ? (
         <DetailPanel tone={2}>
-          <div className="g-detail-panel__label">
-            <span className="g-detail-panel__icon" aria-hidden>
+          <div className="nv-dpanel__label">
+            <span className="nv-dpanel__icon" aria-hidden>
               <FileText className="h-4 w-4" />
             </span>
             <div>
-              <p className="g-detail-panel__kicker">About the event</p>
-              <h3 className="g-detail-panel__title">What to expect</h3>
+              <p className="nv-dpanel__kicker">About the event</p>
+              <h3 className="nv-dpanel__title">What to expect</h3>
             </div>
           </div>
           {event.description.includes("<") ? (
             <Prose html={event.description} />
           ) : (
-            <p className="g-detail-plain">{event.description}</p>
+            <p className="nv-dplain">{event.description}</p>
           )}
         </DetailPanel>
       ) : null}
@@ -109,46 +108,46 @@ export default function EventDetail({ slug }: { slug: string }) {
       <DetailDivider />
 
       <DetailPanel delay={0.14} tone={3}>
-        <div className="g-detail-panel__label">
-          <span className="g-detail-panel__icon" aria-hidden>
+        <div className="nv-dpanel__label">
+          <span className="nv-dpanel__icon" aria-hidden>
             <CalendarCheck className="h-4 w-4" />
           </span>
           <div>
-            <p className="g-detail-panel__kicker">Reserve your place</p>
-            <h3 className="g-detail-panel__title">Register for this event</h3>
+            <p className="nv-dpanel__kicker">Reserve your place</p>
+            <h3 className="nv-dpanel__title">Register for this event</h3>
           </div>
         </div>
         <form onSubmit={handleRegister} className="mt-2 space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Name *</label>
-              <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <label className="nv-label">Name *</label>
+              <Input className="nv-input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Email *</label>
-              <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <label className="nv-label">Email *</label>
+              <Input className="nv-input" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Phone *</label>
-              <Input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <label className="nv-label">Phone *</label>
+              <Input className="nv-input" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Organization</label>
-              <Input value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
+              <label className="nv-label">Organization</label>
+              <Input className="nv-input" value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-ink-muted">Notes</label>
-            <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <label className="nv-label">Notes</label>
+            <Textarea className="nv-input" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           </div>
-          <Button type="submit" disabled={registering}>
+          <button type="submit" disabled={registering} className="nv-btn nv-btn--primary">
             {registering ? "Submitting…" : "Register"}
-          </Button>
+          </button>
         </form>
       </DetailPanel>
 
       <DetailDivider delay={0.12} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/events">All events</DetailLinkChip>
       </div>
     </DetailShell>

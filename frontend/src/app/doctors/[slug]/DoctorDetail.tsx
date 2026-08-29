@@ -124,7 +124,7 @@ export default function DoctorDetail({ slug }: { slug: string }) {
       </article>
 
       <DetailDivider delay={0.08} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/doctors">Browse all doctors</DetailLinkChip>
       </div>
     </DetailShell>

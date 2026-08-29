@@ -14,10 +14,10 @@ const LocationMapCanvas = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="grid h-full w-full place-items-center bg-slate-50">
-        <span className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-emerald-800 font-semibold">
-          <Compass className="h-4 w-4 animate-spin text-emerald-600" />
-          Locating Hospital Gate…
+      <div className="nv-mstate">
+        <span className="nv-mhud__chip">
+          <Compass className="animate-spin" aria-hidden />
+          Locating hospital gate…
         </span>
       </div>
     ),
@@ -50,7 +50,7 @@ export default function LocationMap({
   return (
     <div
       className={cn(
-        "v-map relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-md",
+        "relative overflow-hidden rounded-[15px] bg-[var(--nv-plate-well)]",
         className
       )}
     >
@@ -74,13 +74,13 @@ export default function LocationMap({
             allowFullScreen
           />
         ) : (
-          <div className="grid h-full place-items-center bg-slate-50 px-8 text-center">
+          <div className="nv-mstate">
             <div>
-              <MapPin className="mx-auto h-8 w-8 text-emerald-600" />
-              <p className="mt-4 font-display text-xl font-bold text-slate-900">
-                Map coordinates not set
-              </p>
-              <p className="mt-2 text-sm text-slate-600">
+              <span className="nv-mstate__ico" aria-hidden>
+                <MapPin />
+              </span>
+              <p className="nv-state__title mt-4">Map coordinates not set</p>
+              <p className="nv-state__desc mt-2">
                 Add a latitude and longitude in Admin → Settings → Contact to drop
                 the pin here.
               </p>
@@ -89,24 +89,21 @@ export default function LocationMap({
         )}
       </div>
 
-      {/* Modern High-Contrast Floating HUD Header & Controls */}
-      <div className="v-map__hud pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-5 z-[400]">
-        {/* Top Floating Badge */}
+      {/* Controls floating over the tile. Translucent on purpose — the surface
+          underneath is terrain, and an opaque plate would hide the thing the
+          reader came to look at. */}
+      <div className="nv-mhud">
         <div className="flex justify-end">
-          <span className="pointer-events-auto inline-flex items-center gap-2.5 rounded-full border border-emerald-500/20 bg-white/95 px-4 py-2 text-xs font-semibold text-slate-900 shadow-md backdrop-blur-md">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
-            </span>
-            <span className="max-w-[24ch] truncate font-bold text-slate-900">{label}</span>
+          <span className="nv-mhud__chip">
+            <span className="nv-mhud__live" aria-hidden />
+            <span className="nv-mhud__name">{label}</span>
           </span>
         </div>
 
-        {/* Bottom Bar: Coordinates pill & Direct Google Maps CTA */}
-        <div className="flex flex-wrap items-end justify-between gap-3 pb-1">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           {coords ? (
-            <span className="pointer-events-auto rounded-xl border border-slate-200 bg-white/95 px-3.5 py-1.5 font-mono text-[11px] font-medium tracking-wide text-slate-700 shadow-sm backdrop-blur-md">
-              📍 {coords.lat.toFixed(5)}° N, {coords.lng.toFixed(5)}° E
+            <span className="nv-mhud__chip nv-mhud__chip--coords">
+              {coords.lat.toFixed(5)}° N, {coords.lng.toFixed(5)}° E
             </span>
           ) : (
             <span />
@@ -117,11 +114,11 @@ export default function LocationMap({
               href={openUrl}
               target="_blank"
               rel="noreferrer"
-              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-800 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all hover:bg-emerald-900 hover:scale-105"
+              className="nv-mhud__chip nv-mhud__chip--go"
             >
-              <Navigation className="h-4 w-4" />
+              <Navigation aria-hidden />
               Open in Maps
-              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+              <ExternalLink aria-hidden />
             </a>
           )}
         </div>

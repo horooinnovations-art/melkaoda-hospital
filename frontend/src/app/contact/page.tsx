@@ -3,28 +3,27 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowUpRight,
   Clock,
   Mail,
   MapPin,
+  ArrowUpRight,
   MessageSquare,
   Navigation,
   Phone,
   Send,
   Siren,
   Sparkles,
-  CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import {
   useGetSettingsQuery,
   useSubmitContactMutation,
 } from "@/store/slices/apiSlice";
 import { SITE_NAME } from "@/lib/api";
-import { cn, formatPublicAddress, stripHtml, truncate } from "@/lib/utils";
+import { formatPublicAddress, stripHtml, truncate } from "@/lib/utils";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import PageTransition from "@/components/motion/PageTransition";
 import LocationMap from "@/components/shared/LocationMap";
 import WorkingHoursDisplay from "@/components/shared/WorkingHoursDisplay";
@@ -35,40 +34,6 @@ import {
 } from "@/components/shared/DetailShell";
 
 /* ─── Channel Card Theme Config ─── */
-const CHANNEL_THEMES = [
-  {
-    gradient: "linear-gradient(145deg, rgba(236, 253, 245, 0.95), rgba(209, 250, 229, 0.6))",
-    border: "1px solid rgba(16, 185, 129, 0.25)",
-    iconBg: "linear-gradient(135deg, #059669, #10b981)",
-    iconColor: "#ffffff",
-    badgeBg: "rgba(16, 185, 129, 0.12)",
-    badgeColor: "#047857",
-  },
-  {
-    gradient: "linear-gradient(145deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.6))",
-    border: "1px solid rgba(59, 130, 246, 0.25)",
-    iconBg: "linear-gradient(135deg, #2563eb, #3b82f6)",
-    iconColor: "#ffffff",
-    badgeBg: "rgba(59, 130, 246, 0.12)",
-    badgeColor: "#1d4ed8",
-  },
-  {
-    gradient: "linear-gradient(145deg, rgba(245, 243, 255, 0.95), rgba(237, 233, 254, 0.6))",
-    border: "1px solid rgba(139, 92, 246, 0.25)",
-    iconBg: "linear-gradient(135deg, #7c3aed, #8b5cf6)",
-    iconColor: "#ffffff",
-    badgeBg: "rgba(139, 92, 246, 0.12)",
-    badgeColor: "#6d28d9",
-  },
-  {
-    gradient: "linear-gradient(145deg, rgba(254, 243, 199, 0.85), rgba(253, 230, 138, 0.5))",
-    border: "1px solid rgba(245, 158, 11, 0.25)",
-    iconBg: "linear-gradient(135deg, #d97706, #f59e0b)",
-    iconColor: "#ffffff",
-    badgeBg: "rgba(245, 158, 11, 0.12)",
-    badgeColor: "#b45309",
-  },
-];
 
 export default function ContactPage() {
   const { data: settings } = useGetSettingsQuery();
@@ -177,14 +142,10 @@ export default function ContactPage() {
         breadcrumbs={[{ label: "Contact" }]}
       />
 
-      <div className="g-pagebody g-pagebody--detail">
-        <div className="g-pagebody__aura" aria-hidden />
-        <div className="g-pagebody__mesh" aria-hidden />
-
-        <div className="g-pagebody__inner g-detail-stack g-contact relative z-[1] mx-auto max-w-6xl px-5 py-12 lg:px-8 lg:py-16">
+      <PageBody className="nv-dstack !max-w-6xl">
           
           {/* ═══ SECTION 01: Channels ═══ */}
-          <section className="g-contact-section">
+          <section className="nv-asec">
             <DetailSectionHeader
               eyebrow="01 · Ways to reach us"
               title="Pick the channel that suits you best"
@@ -194,71 +155,49 @@ export default function ContactPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-8">
               {channels.map((channel, i) => {
                 const Icon = channel.icon;
-                const theme = CHANNEL_THEMES[i % CHANNEL_THEMES.length];
-                
                 const cardContent = (
-                  <motion.div
-                    whileHover={{ y: -5, scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md"
-                    style={{
-                      background: theme.gradient,
-                      border: theme.border,
-                    }}
-                  >
+                  <>
                     <div>
-                      <div className="flex items-center justify-between mb-5">
-                        <div
-                          className="flex h-12 w-12 items-center justify-center rounded-xl shadow-sm"
-                          style={{ background: theme.iconBg, color: theme.iconColor }}
-                        >
-                          <Icon className="h-6 w-6" />
-                        </div>
-                        <span
-                          className="rounded-full px-3 py-1 text-[11px] font-bold tracking-wider uppercase"
-                          style={{ background: theme.badgeBg, color: theme.badgeColor }}
-                        >
-                          0{i + 1}
+                      <div className="nv-chan__top">
+                        <span className="nv-chan__ico" aria-hidden>
+                          <Icon />
+                        </span>
+                        <span className="nv-chan__index" aria-hidden>
+                          {String(i + 1).padStart(2, "0")}
                         </span>
                       </div>
 
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                        {channel.label}
-                      </p>
-                      <h3 className="font-display text-base font-bold leading-snug text-slate-900 mb-2">
-                        {channel.value}
-                      </h3>
+                      <p className="nv-chan__label">{channel.label}</p>
+                      <p className="nv-chan__value">{channel.value}</p>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-slate-900/10 flex items-center justify-between">
-                      <span className="text-xs text-slate-600 font-medium">
-                        {channel.hint}
-                      </span>
+                    <div className="nv-chan__foot">
+                      <span>{channel.hint}</span>
                       {channel.action && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-900">
+                        <span className="nv-chan__go">
                           {channel.action}
-                          <ArrowUpRight className="h-3.5 w-3.5" />
+                          <ArrowUpRight aria-hidden />
                         </span>
                       )}
                     </div>
-                  </motion.div>
+                  </>
                 );
 
                 return (
-                  <Reveal key={channel.label} delay={i * 0.06}>
+                  <NovaReveal key={channel.label} from="up" delay={i * 0.08}>
                     {channel.href ? (
                       <a
                         href={channel.href}
                         target={channel.href.startsWith("http") ? "_blank" : undefined}
                         rel="noreferrer"
-                        className="block h-full"
+                        className="nv-chan"
                       >
                         {cardContent}
                       </a>
                     ) : (
-                      cardContent
+                      <div className="nv-chan">{cardContent}</div>
                     )}
-                  </Reveal>
+                  </NovaReveal>
                 );
               })}
             </div>
@@ -267,160 +206,133 @@ export default function ContactPage() {
           <DetailDivider delay={0.02} />
 
           {/* ═══ SECTION 02: Find Us (Map & Visit Checklist) ═══ */}
-          <section className="g-contact-section">
+          <section className="nv-asec">
             <DetailSectionHeader
               eyebrow="02 · Location & Map"
               title="Pinned exactly at the hospital main entrance"
               description="Use the interactive map below or get instant turn-by-turn navigation."
             />
 
-            <div className="grid gap-8 lg:grid-cols-12 items-stretch mt-8">
-              
-              {/* Map Card */}
-              <div className="lg:col-span-7 flex flex-col">
-                <Reveal delay={0.06} className="h-full">
-                  <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-                    <LocationMap
-                      label={name}
-                      latitude={settings?.latitude}
-                      longitude={settings?.longitude}
-                      mapsUrl={settings?.google_maps_url as string | undefined}
-                      address={address}
-                      className="h-full min-h-[26rem] w-full rounded-xl"
-                    />
-                  </div>
-                </Reveal>
-              </div>
+            <div className="nv-dlayout mt-8">
+              <NovaReveal from="up" delay={0.06} className="h-full">
+                <div className="nv-map-frame">
+                  <LocationMap
+                    label={name}
+                    latitude={settings?.latitude}
+                    longitude={settings?.longitude}
+                    mapsUrl={settings?.google_maps_url as string | undefined}
+                    address={address}
+                    className="h-full min-h-[25rem] w-full rounded-[15px]"
+                  />
+                </div>
+              </NovaReveal>
 
-              {/* Planning Visit Card */}
-              <div className="lg:col-span-5 flex flex-col">
-                <Reveal delay={0.1} className="h-full">
-                  <div className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-emerald-600/20 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/60 p-6 sm:p-8 shadow-sm">
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
-                          <Navigation className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                            Planning your visit
-                          </p>
-                          <h3 className="font-display text-lg font-bold text-slate-900">
-                            Arrival Details
-                          </h3>
-                        </div>
-                      </div>
-
-                      <div className="space-y-5 my-6">
-                        {address && (
-                          <div className="flex items-start gap-3 text-sm">
-                            <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-600/30 bg-emerald-50 text-emerald-700">
-                              <Navigation className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-500">
-                                Campus Address
-                              </span>
-                              <span className="font-bold text-slate-900">{address}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Working & Visiting Hours Matching Image 2 */}
-                        <WorkingHoursDisplay variant="light" />
+              <NovaReveal from="up" delay={0.12} className="h-full">
+                <div className="nv-dpanel flex h-full flex-col justify-between">
+                  <div>
+                    <div className="nv-dpanel__label">
+                      <span className="nv-dpanel__icon" aria-hidden>
+                        <Navigation />
+                      </span>
+                      <div>
+                        <p className="nv-dpanel__kicker">Planning your visit</p>
+                        <h3 className="nv-dpanel__title">Arrival details</h3>
                       </div>
                     </div>
 
-                    {/* Emergency Call Box */}
-                    {emergency && (
-                      <a
-                        href={`tel:${emergency}`}
-                        className="group relative flex items-center justify-between overflow-hidden rounded-xl border border-rose-200 bg-gradient-to-r from-rose-50 to-rose-100/80 p-4 transition-all hover:border-rose-300 hover:shadow-md"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-600 text-white shadow-sm">
-                            <Siren className="h-5 w-5 animate-pulse" />
-                          </div>
-                          <div>
-                            <span className="block text-xs font-bold uppercase tracking-wider text-rose-700">
-                              24/7 Emergency Hotline
-                            </span>
-                            <span className="font-display text-base font-extrabold text-slate-900">
-                              {emergency}
-                            </span>
-                          </div>
+                    <div className="grid gap-5">
+                      {address && (
+                        <div className="nv-vrow">
+                          <span className="nv-vrow__ico" aria-hidden>
+                            <Navigation />
+                          </span>
+                          <span>
+                            <span className="nv-vrow__key">Campus address</span>
+                            <span className="nv-vrow__val">{address}</span>
+                          </span>
                         </div>
-                        <ArrowUpRight className="h-5 w-5 text-rose-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </a>
-                    )}
-                  </div>
-                </Reveal>
-              </div>
+                      )}
 
+                      <WorkingHoursDisplay />
+                    </div>
+                  </div>
+
+                  {emergency && (
+                    <a href={`tel:${emergency}`} className="nv-note nv-note--warn mt-6">
+                      <span className="nv-note__ico" aria-hidden>
+                        <Siren />
+                      </span>
+                      <span>
+                        <span className="nv-vrow__key">24/7 emergency hotline</span>
+                        <span className="nv-alert__title !mt-1 !text-[1.15rem]">
+                          {emergency}
+                        </span>
+                      </span>
+                    </a>
+                  )}
+                </div>
+              </NovaReveal>
             </div>
           </section>
 
           <DetailDivider delay={0.02} />
 
           {/* ═══ SECTION 03: Contact Form ═══ */}
-          <section className="g-contact-section">
-            <div className="grid gap-8 lg:grid-cols-12 items-start">
-              
-              {/* Left Info & Badges */}
-              <div className="lg:col-span-5 space-y-6">
+          <section className="nv-asec">
+            <div className="nv-dlayout">
+              <div className="grid gap-6">
                 <DetailSectionHeader
                   eyebrow="03 · Send a message"
                   title="Tell us what you need and we'll route it"
                   description="Messages land directly with the patient liaison desk, who forward them to the right department the same day."
                 />
 
-                <div className="space-y-4 pt-2">
-                  <Reveal delay={0.06}>
-                    <div className="flex items-start gap-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-5">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-sky-600 text-white shadow-sm">
-                        <MessageSquare className="h-5 w-5" />
-                      </div>
+                <div className="grid gap-3">
+                  <NovaReveal from="up" delay={0.06}>
+                    <div className="nv-note">
+                      <span className="nv-note__ico" aria-hidden>
+                        <MessageSquare />
+                      </span>
                       <div>
-                        <h4 className="font-bold text-slate-900">General Enquiries</h4>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                          Appointments, medical records, billing questions, or general hospital feedback.
+                        <p className="nv-note__title">General enquiries</p>
+                        <p className="nv-note__desc">
+                          Appointments, medical records, billing questions, or general
+                          hospital feedback.
                         </p>
                       </div>
                     </div>
-                  </Reveal>
+                  </NovaReveal>
 
-                  <Reveal delay={0.1}>
-                    <div className="flex items-start gap-4 rounded-2xl border border-amber-100 bg-amber-50/70 p-5">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow-sm">
-                        <Siren className="h-5 w-5" />
-                      </div>
+                  <NovaReveal from="up" delay={0.12}>
+                    <div className="nv-note nv-note--warn">
+                      <span className="nv-note__ico" aria-hidden>
+                        <Siren />
+                      </span>
                       <div>
-                        <h4 className="font-bold text-slate-900">Urgent Medical Need?</h4>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                          Please do not send a web form. Call our emergency hotline or visit emergency triage immediately.
+                        <p className="nv-note__title">Urgent medical need?</p>
+                        <p className="nv-note__desc">
+                          Please do not send a web form. Call our emergency hotline or
+                          visit emergency triage immediately.
                         </p>
                       </div>
                     </div>
-                  </Reveal>
+                  </NovaReveal>
                 </div>
 
                 <DetailLinkChip href="/emergency">View Emergency Protocol</DetailLinkChip>
               </div>
 
-              {/* Form Card */}
-              <div className="lg:col-span-7">
-                <Reveal delay={0.08}>
-                  <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-                    <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <NovaReveal from="up" delay={0.08}>
+                  <div className="nv-dpanel">
+                    <div className="nv-dpanel__label">
+                      <span className="nv-dpanel__icon" aria-hidden>
+                        <Sparkles />
+                      </span>
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-                          Direct Messaging
-                        </span>
-                        <h3 className="font-display text-xl font-bold text-slate-900">
-                          Contact Form
-                        </h3>
+                        <p className="nv-dpanel__kicker">Direct messaging</p>
+                        <h3 className="nv-dpanel__title">Contact form</h3>
                       </div>
-                      <Sparkles className="h-5 w-5 text-emerald-500" />
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
@@ -472,7 +384,7 @@ export default function ContactPage() {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-800 disabled:opacity-60"
+                        className="nv-btn nv-btn--primary nv-btn--block nv-btn--lg"
                       >
                         {isLoading ? (
                           <>Sending message…</>
@@ -484,14 +396,13 @@ export default function ContactPage() {
                         )}
                       </button>
 
-                      <p className="text-center text-xs text-slate-400">
-                        🔒 Your personal information is kept strictly confidential.
+                      <p className="nv-form__note">
+                        Your personal information is kept strictly confidential.
                       </p>
                     </form>
                   </div>
-                </Reveal>
+                </NovaReveal>
               </div>
-
             </div>
           </section>
 
@@ -499,36 +410,34 @@ export default function ContactPage() {
           {emergency && (
             <>
               <DetailDivider delay={0.02} />
-              <Reveal delay={0.05} fadeOut={false}>
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 rounded-3xl border border-rose-200 bg-gradient-to-r from-rose-900 via-rose-800 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-md">
-                      <Siren className="h-7 w-7 text-rose-300 animate-pulse" />
-                    </div>
+              <NovaReveal from="up" delay={0.05}>
+                <div className="nv-alert">
+                  <div className="nv-alert__main">
+                    <span className="nv-alert__ico" aria-hidden>
+                      <Siren />
+                    </span>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-rose-300">
-                        24 Hours / 7 Days Emergency Services
+                      <p className="nv-alert__kicker">
+                        24 hours / 7 days emergency services
                       </p>
-                      <p className="font-display text-xl sm:text-2xl font-black text-white">
-                        Need Immediate Medical Attention?
+                      <p className="nv-alert__title">
+                        Need immediate medical attention?
                       </p>
                     </div>
                   </div>
 
                   <a
                     href={`tel:${emergency}`}
-                    className="inline-flex flex-shrink-0 items-center gap-2 rounded-full bg-rose-500 px-6 py-3.5 text-sm font-black text-white shadow-lg transition-all hover:bg-rose-600 hover:scale-105"
+                    className="nv-btn nv-btn--primary nv-btn--lg nv-alert__cta"
                   >
-                    <Phone className="h-4 w-4 fill-current" />
+                    <Phone className="h-4 w-4" />
                     Call {emergency}
                   </a>
                 </div>
-              </Reveal>
+              </NovaReveal>
             </>
           )}
-
-        </div>
-      </div>
+      </PageBody>
     </PageTransition>
   );
 }
@@ -542,6 +451,13 @@ interface FloatingFieldProps {
   multiline?: boolean;
 }
 
+/**
+ * A floating-label field.
+ *
+ * The label moves on `:placeholder-shown`, which is why the inputs carry a
+ * single-space placeholder — nova-page.css keys the resting and raised states
+ * off it, so nothing here has to track focus in React state.
+ */
 function FloatingField({
   label,
   value,
@@ -551,7 +467,7 @@ function FloatingField({
   multiline,
 }: FloatingFieldProps) {
   return (
-    <div className="relative">
+    <div className="nv-field">
       {multiline ? (
         <textarea
           rows={4}
@@ -559,7 +475,6 @@ function FloatingField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder=" "
-          className="peer w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 pt-6 pb-2 text-sm text-slate-900 font-medium placeholder-transparent focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
         />
       ) : (
         <input
@@ -568,11 +483,11 @@ function FloatingField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder=" "
-          className="peer w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 pt-6 pb-2 text-sm text-slate-900 font-medium placeholder-transparent focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
         />
       )}
-      <label className="pointer-events-none absolute left-4 top-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-xs peer-placeholder-shown:font-medium peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:text-slate-500 peer-focus:top-2 peer-focus:text-[10px] peer-focus:font-bold peer-focus:uppercase peer-focus:tracking-wider peer-focus:text-emerald-700">
-        {label} {required && <span className="text-rose-500">*</span>}
+      <label className="nv-field__label">
+        {label}
+        {required && <span className="nv-field__req"> *</span>}
       </label>
     </div>
   );

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Globe2,
   HeartPulse,
@@ -10,7 +9,8 @@ import {
 } from "lucide-react";
 import { useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import { GridSkeleton } from "@/components/shared/Skeleton";
 import PageTransition from "@/components/motion/PageTransition";
 import SmartImage from "@/components/shared/SmartImage";
@@ -55,103 +55,82 @@ export default function PartnershipsPage() {
         breadcrumbs={[{ label: "Partnerships" }]}
       />
 
-      {/* Standard site canvas background with subtle mint tint matching sample design */}
-      <div className="g-pagebody relative -mx-[calc((100vw-100%)/2)] w-screen">
-        <div className="g-pagebody__aura" aria-hidden />
-        <div className="g-pagebody__mesh" aria-hidden />
-
-        <div className="relative z-[1] mx-auto max-w-6xl px-5 py-12 lg:px-8 lg:py-16">
+      <PageBody>
           {showSkeleton ? (
             <GridSkeleton count={6} />
           ) : (
-            /* Clean 3-Column Grid of Chamfered Bevel Cards */
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="nv-grid-3">
               {partners
                 .filter((p) => isPublicItemActive(p as unknown as Record<string, unknown>))
                 .map((partner, i) => {
-                const logo = getImageFromItem(
-                  partner as unknown as Record<string, unknown>
-                );
-                const linkHref = `/partnerships/${partner.slug || partner.id}`;
-                const hasWebsite = Boolean(partner.website);
+                  const logo = getImageFromItem(
+                    partner as unknown as Record<string, unknown>
+                  );
+                  const linkHref = `/partnerships/${partner.slug || partner.id}`;
+                  const blurb =
+                    partner.short_description ||
+                    partner.description ||
+                    "Institutional partner supporting quality healthcare delivery.";
 
-                return (
-                  <Reveal key={partner.id || partner.slug || i} delay={i * 0.05}>
-                    <motion.div
-                      whileHover={{ y: -4 }}
-                      transition={{ duration: 0.25 }}
-                      className="group relative flex h-full flex-col overflow-hidden p-6 transition-all duration-300"
-                      style={{
-                        background:
-                          "linear-gradient(155deg, rgba(238, 247, 245, 0.95), rgba(230, 242, 238, 0.85))",
-                        border: "1px solid rgba(16, 185, 129, 0.18)",
-                        boxShadow: "0 10px 25px -12px rgba(15, 23, 42, 0.06)",
-                        borderRadius: "1.25rem 2.25rem 1.25rem 1.25rem",
-                      }}
+                  return (
+                    <NovaReveal
+                      key={partner.id || partner.slug || i}
+                      from="up"
+                      delay={Math.min(Math.floor(i / 3), 5) * 0.12}
                     >
-                      {/* Bevel Chamfer Top Accent */}
-                      <div className="absolute top-0 right-0 h-8 w-8 rounded-bl-xl bg-emerald-500/10 border-b border-l border-emerald-500/20" />
+                      {/* Same unit as the insurance directory: two pages listing
+                          institutional partners should not carry two cards. */}
+                      <article className="nv-logo-card">
+                        <span className="nv-logo-card__frame">
+                          {logo ? (
+                            <SmartImage
+                              src={logo}
+                              // Decorative: .nv-logo-card__name prints the partner's
+                              // name directly under this frame.
+                              alt=""
+                              fill
+                              optimizeWidth={192}
+                              sizes="92px"
+                            />
+                          ) : (
+                            <span className="nv-logo-card__initial" aria-hidden>
+                              <HeartPulse />
+                            </span>
+                          )}
+                        </span>
 
-                      {/* Central Black Logo Container Box */}
-                      <div className="mx-auto mb-5 flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-3 shadow-md transition-transform duration-300 group-hover:scale-105">
-                        {logo ? (
-                          <SmartImage
-                            src={logo}
-                            alt={partner.name}
-                            width={70}
-                            height={70}
-                            className="object-contain"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-emerald-400">
-                            <HeartPulse className="h-8 w-8" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Partner Content */}
-                      <div className="flex flex-1 flex-col text-center">
-                        <h3 className="font-display text-lg font-bold leading-snug text-slate-900 transition-colors group-hover:text-emerald-800">
+                        <h3 className="nv-logo-card__name">
                           <Link href={linkHref}>{partner.name}</Link>
                         </h3>
 
-                        <p className="mt-2 text-xs leading-relaxed text-slate-600 line-clamp-3">
-                          {partner.short_description ||
-                            partner.description ||
-                            "Institutional partner supporting quality healthcare delivery."}
-                        </p>
+                        <p className="nv-logo-card__desc">{blurb}</p>
 
-                        {/* Bottom Action Pill Buttons (Website / Details) */}
-                        <div className="mt-auto pt-6 flex flex-wrap items-center justify-center gap-2">
-                          {hasWebsite && (
+                        <div className="nv-logo-card__links">
+                          {partner.website && (
                             <a
                               href={partner.website}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-white/80 px-3.5 py-1 text-xs font-semibold text-emerald-800 shadow-sm transition-all hover:border-emerald-600 hover:bg-emerald-700 hover:text-white"
+                              className="nv-logo-card__link"
                             >
-                              <Globe2 className="h-3.5 w-3.5" />
+                              <Globe2 aria-hidden />
                               Website
                             </a>
                           )}
 
-                          <Link
-                            href={linkHref}
-                            className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white/60 px-3.5 py-1 text-xs font-semibold text-slate-700 transition-all hover:border-slate-400 hover:bg-white hover:text-slate-900"
-                          >
+                          <Link href={linkHref} className="nv-logo-card__link">
                             Details
-                            <ArrowRight className="h-3 w-3" />
+                            <ArrowRight aria-hidden />
                           </Link>
                         </div>
-                      </div>
-                    </motion.div>
-                  </Reveal>
-                );
-              })}
+                      </article>
+                    </NovaReveal>
+                  );
+                })}
             </div>
           )}
-        </div>
-      </div>
+      </PageBody>
+
     </PageTransition>
   );
 }

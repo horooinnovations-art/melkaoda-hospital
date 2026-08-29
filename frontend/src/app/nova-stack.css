@@ -82,7 +82,7 @@
   overflow: hidden;
   border-radius: clamp(16px, 1.7vw, 24px);
   box-shadow:
-    0 24px 60px -30px rgba(0, 0, 0, 0.9),
+    0 24px 60px -30px rgb(var(--nv-ink-rgb) / 0.20),
     inset 0 0 0 1px var(--nv-hairline);
   transition: box-shadow 1s var(--nv-ease-lux);
 }
@@ -92,10 +92,10 @@
    1px catch-light along the top edge that every other surface on the page has. */
 .nv-stack__slot[data-active] .nv-stack__card {
   box-shadow:
-    0 3px 3px rgba(0, 0, 0, 0.4),
-    0 54px 110px -34px rgba(0, 0, 0, 1),
+    0 3px 3px rgb(var(--nv-ink-rgb) / 0.09),
+    0 54px 110px -34px rgb(var(--nv-ink-rgb) / 0.22),
     inset 0 0 0 1px var(--nv-champagne-line),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    inset 0 1px 0 var(--nv-edge);
 }
 
 .nv-stack__card:focus-visible {
@@ -141,10 +141,10 @@
   opacity: 0;
   background: linear-gradient(
     0deg,
-    rgba(6, 7, 10, 0.94) 0%,
-    rgba(6, 7, 10, 0.72) 26%,
-    rgba(6, 7, 10, 0.24) 52%,
-    rgba(6, 7, 10, 0) 74%
+    rgb(var(--nv-scrim-rgb) / 0.94) 0%,
+    rgb(var(--nv-scrim-rgb) / 0.72) 26%,
+    rgb(var(--nv-scrim-rgb) / 0.24) 52%,
+    rgb(var(--nv-scrim-rgb) / 0) 74%
   );
   transition: opacity 1s var(--nv-ease-lux);
   pointer-events: none;
@@ -179,6 +179,8 @@
 
 /* Champagne mono label with the short leading rule the card kickers use, so a
    gallery caption and a card caption are recognisably the same object. */
+/* Inside .nv-stack__meta, so over the photograph: the pale champagne, not the
+   bronze the page uses. */
 .nv-stack__label {
   display: inline-flex;
   align-items: center;
@@ -188,7 +190,7 @@
   font-weight: 600;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--nv-champagne-hi);
+  color: var(--nv-metal-on-media);
 }
 
 .nv-stack__label::before {
@@ -196,23 +198,25 @@
   width: 26px;
   height: 1px;
   flex: none;
-  background: var(--nv-champagne);
+  background: var(--nv-metal-on-media);
 }
 
+/* Over the photograph, so this takes --nv-on-media rather than --nv-text: the
+   page ink inverted when the theme did, and this did not. */
 .nv-stack__title {
   font-family: var(--nv-font-display);
   font-size: clamp(1.28rem, 2.2vw, 1.95rem);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.028em;
-  color: #fff;
+  color: var(--nv-on-media);
   text-wrap: balance;
 }
 
 .nv-stack__desc {
   font-size: 0.875rem;
   line-height: 1.72;
-  color: rgba(255, 255, 255, 0.74);
+  color: var(--nv-on-media-dim);
   max-width: 48ch;
 }
 
@@ -224,13 +228,13 @@
   gap: 9px;
   margin-top: 8px;
   padding-top: 14px;
-  border-top: 1px solid rgba(217, 195, 154, 0.28);
+  border-top: 1px solid rgb(var(--nv-metal-rgb) / 0.28);
   font-family: var(--nv-font-mono);
   font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--nv-champagne-hi);
+  color: var(--nv-metal-on-media);
   transition: color 0.6s var(--nv-ease-lux);
 }
 

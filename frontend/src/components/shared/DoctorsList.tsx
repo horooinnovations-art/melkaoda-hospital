@@ -37,14 +37,14 @@ export default function DoctorsList() {
 
   return (
     <PageTransition>
-      <div className="g-clinic-list space-y-8">
-        <div className="g-clinic-list__head">
-          <p className="g-clinic-list__label">Clinical directory</p>
-          <p className="g-clinic-list__count">
+      <div className="space-y-7">
+        <div className="nv-dir__head">
+          <p className="nv-dir__label">Clinical directory</p>
+          <p className="nv-dir__count">
             {total} specialist{total === 1 ? "" : "s"}
           </p>
         </div>
-        <ul className="g-clinic-list__rows">
+        <ul className="nv-dir__rows">
           {doctors.map((doc, i) => {
             const image = getImageFromItem(
               doc as unknown as Record<string, unknown>

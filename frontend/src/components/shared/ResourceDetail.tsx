@@ -153,10 +153,10 @@ export default function ResourceDetail({
       />
 
       {(metaItems.length > 0 || shortDesc) && (
-        <DetailPanel tone={1} className="g-detail-panel--overview">
+        <DetailPanel tone={1} className="nv-dpanel--overview">
           <DetailMetaRow items={metaItems} />
           {shortDesc && (
-            <p className="g-detail-lede">{shortDesc}</p>
+            <p className="nv-dhead__desc">{shortDesc}</p>
           )}
         </DetailPanel>
       )}
@@ -165,19 +165,19 @@ export default function ResourceDetail({
 
       {content ? (
         <DetailPanel tone={2}>
-          <div className="g-detail-panel__label">
-            <span className="g-detail-panel__icon" aria-hidden>
+          <div className="nv-dpanel__label">
+            <span className="nv-dpanel__icon" aria-hidden>
               <FileText className="h-4 w-4" />
             </span>
             <div>
-              <p className="g-detail-panel__kicker">Narrative</p>
-              <h3 className="g-detail-panel__title">About this page</h3>
+              <p className="nv-dpanel__kicker">Narrative</p>
+              <h3 className="nv-dpanel__title">About this page</h3>
             </div>
           </div>
           {content.includes("<") ? (
             <Prose html={content} />
           ) : (
-            <p className="g-detail-plain">{content}</p>
+            <p className="nv-dplain">{content}</p>
           )}
         </DetailPanel>
       ) : (
@@ -192,7 +192,7 @@ export default function ResourceDetail({
       {backHref && (
         <>
           <DetailDivider delay={0.08} />
-          <div className="g-detail-footer">
+          <div className="nv-dfooter">
             <DetailLinkChip href={backHref}>{backLabel}</DetailLinkChip>
           </div>
         </>

@@ -102,7 +102,7 @@ function GalleryFullscreenImage({
             fill
             priority
             optimizeWidth={2000}
-            className="object-cover g-detail-gallery__img"
+            className="object-cover nv-dgallery__img"
             sizes="100vw"
           />
         </button>
@@ -213,8 +213,8 @@ export default function GalleryDetail({ slug }: { slug: string }) {
       />
 
       {image ? (
-        <DetailPanel tone={1} className="g-detail-gallery">
-          <div className="g-detail-gallery__frame">
+        <DetailPanel tone={1} className="nv-dgallery">
+          <div className="nv-dgallery__frame">
             {/* Fullscreen API implementation */}
             <GalleryFullscreenImage src={image} alt={item.title || "Gallery photo"} />
           </div>
@@ -229,13 +229,13 @@ export default function GalleryDetail({ slug }: { slug: string }) {
         <>
           <DetailDivider />
           <DetailPanel tone={2}>
-            <div className="g-detail-panel__label">
-              <span className="g-detail-panel__icon" aria-hidden>
+            <div className="nv-dpanel__label">
+              <span className="nv-dpanel__icon" aria-hidden>
                 <Images className="h-4 w-4" />
               </span>
               <div>
-                <p className="g-detail-panel__kicker">Caption</p>
-                <h3 className="g-detail-panel__title">About this photo</h3>
+                <p className="nv-dpanel__kicker">Caption</p>
+                <h3 className="nv-dpanel__title">About this photo</h3>
               </div>
             </div>
             <Prose html={item.description} />
@@ -251,7 +251,7 @@ export default function GalleryDetail({ slug }: { slug: string }) {
             title="More from the gallery"
             delay={0.1}
           />
-          <div className="g-detail-related">
+          <div className="nv-drelated">
             {related.map((g, i) => {
               const thumb = getImageFromItem(
                 g as unknown as Record<string, unknown>
@@ -259,8 +259,8 @@ export default function GalleryDetail({ slug }: { slug: string }) {
               if (!thumb) return null;
               return (
                 <Reveal key={g.id} delay={0.05 + i * 0.04}>
-                  <Link href={galleryHref(g)} className="g-detail-related__card">
-                    <span className="g-detail-related__media">
+                  <Link href={galleryHref(g)} className="nv-drelated__card">
+                    <span className="nv-drelated__media">
                       <SmartImage
                         src={thumb}
                         alt={g.title || "Gallery"}
@@ -270,10 +270,10 @@ export default function GalleryDetail({ slug }: { slug: string }) {
                         sizes="(max-width: 768px) 50vw, 25vw"
                       />
                     </span>
-                    <span className="g-detail-related__title">
+                    <span className="nv-drelated__title">
                       {g.title}
                     </span>
-                    <span className="g-detail-related__go" aria-hidden>
+                    <span className="nv-drelated__go" aria-hidden>
                       <ArrowUpRight className="h-4 w-4" />
                     </span>
                   </Link>
@@ -285,7 +285,7 @@ export default function GalleryDetail({ slug }: { slug: string }) {
       )}
 
       <DetailDivider delay={0.12} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/gallery">Back to gallery</DetailLinkChip>
       </div>
     </DetailShell>

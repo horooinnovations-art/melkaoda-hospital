@@ -1,26 +1,24 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Loading placeholders.
+ *
+ * `.nv-skel` is a plate well crossed by one colourless sweep — the same motion
+ * the cards use on hover. The previous version tinted slate and sky over white,
+ * which disappeared entirely once the canvas went charcoal.
+ */
 export function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        "animate-pulse rounded-2xl bg-gradient-to-br from-slate-900/8 via-sky-700/10 to-sky-700/5",
-        className
-      )}
-    />
-  );
+  return <div className={cn("nv-skel", className)} />;
 }
 
 export function GridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="nv-grid-3">
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="v-frame overflow-hidden rounded-[1.5rem] bg-[#cfe7e1]/70 p-3"
-          style={{ animationDelay: `${i * 60}ms` }}
-        >
-          <Skeleton className="aspect-[5/4] w-full rounded-[1.1rem]" />
+        // The frame matches `.nv-card`'s edges and radius, so the grid does not
+        // reflow when the real data lands.
+        <div key={i} className="nv-skel-card p-3">
+          <Skeleton className="aspect-[5/4] w-full rounded-[14px]" />
           <div className="space-y-3 px-2 py-4">
             <Skeleton className="h-5 w-2/3" />
             <Skeleton className="h-3.5 w-full" />
@@ -34,13 +32,13 @@ export function GridSkeleton({ count = 6 }: { count?: number }) {
 
 export function DetailSkeleton() {
   return (
-    <div className="space-y-8">
-      <Skeleton className="aspect-[21/9] w-full rounded-[1.75rem]" />
+    <div className="space-y-7">
+      <Skeleton className="aspect-[21/9] w-full rounded-[18px]" />
       <div className="flex gap-3">
         <Skeleton className="h-8 w-28 rounded-full" />
         <Skeleton className="h-8 w-24 rounded-full" />
       </div>
-      <Skeleton className="h-12 w-3/4" />
+      <Skeleton className="h-11 w-3/4" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-2/3" />

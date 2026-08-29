@@ -4,59 +4,49 @@ import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import PageBody from "@/components/layout/PageBody";
+import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import Prose from "@/components/shared/Prose";
 import { GridSkeleton } from "@/components/shared/Skeleton";
 import PageTransition from "@/components/motion/PageTransition";
 import type { FAQ } from "@/lib/types";
-import { cn, cleanPublicText, isPublicItemActive } from "@/lib/utils";
+import { cleanPublicText, isPublicItemActive } from "@/lib/utils";
 
+/**
+ * One question.
+ *
+ * `data-open` on the wrapper is the single switch: nova-page.css keys the
+ * warmed border, the rotated toggle and the panel's grid-rows transition off
+ * that one attribute, so this component holds state and nothing else.
+ */
 function FaqItem({ faq, index }: { faq: FAQ; index: number }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Reveal delay={Math.min(index, 8) * 0.04}>
-      <div
-        className={cn(
-          "v-home-card relative overflow-hidden transition duration-300",
-          open && "shadow-[0_24px_50px_-28px_rgba(6,78,74,0.28)]"
-        )}
-      >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-sky-700/70" />
+    <NovaReveal from="up" delay={Math.min(index, 8) * 0.06}>
+      <div className="nv-faq" data-open={open ? "true" : "false"}>
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+          aria-expanded={open}
+          className="nv-faq__q"
         >
-          <span className="font-display text-lg leading-snug text-[#0c1b2a] md:text-xl">
-            {faq.question}
-          </span>
-          <span
-            className={cn(
-              "grid h-9 w-9 shrink-0 place-items-center rounded-xl transition duration-300",
-              open
-                ? "rotate-180 bg-gradient-to-br from-[#0c1b2a] to-[#1d4ed8] text-white"
-                : "bg-[#e8f4f0] text-teal-mid"
-            )}
-          >
-            <ChevronDown className="h-4 w-4" />
+          <span>{cleanPublicText(faq.question) || faq.question}</span>
+          <span className="nv-faq__toggle" aria-hidden>
+            <ChevronDown />
           </span>
         </button>
-        <div
-          className={cn(
-            "grid transition-[grid-template-rows] duration-300 ease-out",
-            open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-          )}
-        >
-          <div className="overflow-hidden">
-            <div className="border-t border-[#0c1b2a]/8 px-6 pb-6 pt-4">
-              <Prose html={faq.answer} className="text-sm md:text-base" />
+
+        <div className="nv-faq__panel">
+          <div>
+            <div className="nv-faq__a">
+              <Prose html={faq.answer} />
             </div>
           </div>
         </div>
       </div>
-    </Reveal>
+    </NovaReveal>
   );
 }
 
@@ -92,8 +82,7 @@ export default function FaqsPage() {
         breadcrumbs={[{ label: "FAQs" }]}
       />
 
-      <div className="v-home-light relative -mx-[calc((100vw-100%)/2)] w-screen">
-        <div className="mx-auto max-w-3xl px-5 py-20 lg:px-8">
+      <PageBody narrow>
           {isLoading ? (
             <GridSkeleton count={5} />
           ) : isError ? (
@@ -101,13 +90,11 @@ export default function FaqsPage() {
           ) : faqs.length === 0 ? (
             <EmptyState title="FAQs coming soon" />
           ) : (
-            <div className="space-y-12">
+            <div>
               {grouped.map(([category, items]) => (
-                <section key={category}>
-                  <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-teal-mid">
-                    {category}
-                  </p>
-                  <div className="space-y-3">
+                <section key={category} className="nv-faq-group">
+                  <p className="nv-faq-group__label">{category}</p>
+                  <div className="nv-faq-list">
                     {items.map((faq, i) => (
                       <FaqItem key={faq.id} faq={faq} index={i} />
                     ))}
@@ -116,8 +103,8 @@ export default function FaqsPage() {
               ))}
             </div>
           )}
-        </div>
-      </div>
+      </PageBody>
+
     </PageTransition>
   );
 }

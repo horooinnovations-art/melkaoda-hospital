@@ -46,18 +46,22 @@ export default function LocationMapCanvas({
   const icon = useMemo(
     () =>
       L.divIcon({
-        className: "v-pin-wrapper",
+        className: "nv-pin-wrapper",
+        // Raw HTML, not JSX: Leaflet injects this string into the DOM directly,
+        // so the attribute must be `class`. It said `className` before, which is
+        // why every pin style in the sheet was dead and the marker rendered as a
+        // bare SVG on the tile.
         html: `
-          <div className="v-pin-container">
-            <span className="v-pin-pulse"></span>
-            <span className="v-pin-pulse v-pin-pulse--delay"></span>
-            <div className="v-pin-marker">
-              <div className="v-pin-marker__head">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <div class="nv-pin">
+            <span class="nv-pin__pulse"></span>
+            <span class="nv-pin__pulse nv-pin__pulse--delay"></span>
+            <div class="nv-pin__marker">
+              <div class="nv-pin__head">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
                 </svg>
               </div>
-              <div className="v-pin-marker__tip"></div>
+              <div class="nv-pin__tip"></div>
             </div>
           </div>
         `,
@@ -86,18 +90,20 @@ export default function LocationMapCanvas({
       />
       <Recenter lat={lat} lng={lng} zoom={zoom} />
       <Marker position={[lat, lng]} icon={icon}>
-        <Popup className="v-map-popup">
-          <div className="p-1 text-slate-900">
-            <strong className="block text-base font-bold text-emerald-950 mb-1">{label}</strong>
-            {address && <span className="block text-xs text-slate-600 leading-relaxed mb-2">{address}</span>}
+        {/* Leaflet supplies the bubble; nova-page.css restyles its wrapper and
+            tip to charcoal, so only the contents are ours. */}
+        <Popup>
+          <div>
+            <strong className="nv-mpop__name">{label}</strong>
+            {address && <span className="nv-mpop__addr">{address}</span>}
             {directionsUrl && (
               <a
                 href={directionsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline"
+                className="nv-mpop__go"
               >
-                Get Directions →
+                Get directions
               </a>
             )}
           </div>

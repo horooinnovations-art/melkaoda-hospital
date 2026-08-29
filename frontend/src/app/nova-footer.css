@@ -8,22 +8,34 @@
    scoped .nv-footer-* names.
    ========================================================================== */
 
+/* The footer is a deliberate band of deep ink at the foot of a porcelain page.
+   Two reasons it did not simply go light with everything else: a dark close is
+   what stops a light document from trailing off, and the footer already carried
+   its own near-white ink in --nvf-txt — on `background: transparent` that ink
+   became invisible the moment the page turned, so the band is also the fix.
+
+   Its accent was a mint-to-blue gradient inherited from another design. On the
+   band it becomes the pale champagne the hero uses over photography, so the two
+   dark regions of the site speak with one metal. */
 .nv-footer {
-  /* poisely's footer palette, kept local so the rest of nova is untouched */
-  --nvf-line: #1f1f29;
+  --nvf-bg: #1a1e27;
+  --nvf-line: rgb(255 255 255 / 0.11);
   --nvf-txt: #f4f6fb;
-  --nvf-mut: #969fb4;
-  --nvf-faint: #6a6f80;
-  --nvf-accent: #2dd4a7;
-  --nvf-grad: linear-gradient(115deg, #2dd4a7, #1fbfd6 60%, #3a9bf0);
+  --nvf-mut: #a8aebd;
+  --nvf-faint: #838a99;
+  --nvf-accent: var(--nv-metal-on-media);
+  --nvf-grad: var(--nv-grad-metal);
 
   position: relative;
   z-index: 1;
   border-top: 1px solid var(--nvf-line);
   margin-top: 90px;
-  padding: 52px 0 64px;
-  background: transparent;
+  padding: 62px 0 64px;
+  /* Full-bleed: the footer sits outside <main>, so it spans the viewport on its
+     own without the negative-margin trick the in-page bands need. */
+  background: var(--nvf-bg);
   font-family: var(--nv-font-body);
+  color: var(--nvf-txt);
 }
 
 /* poisely's .wrap */
@@ -89,7 +101,7 @@
   place-items: center;
   overflow: hidden;
   background: var(--nvf-grad);
-  box-shadow: 0 6px 20px rgba(31, 191, 214, 0.45);
+  box-shadow: 0 6px 18px rgb(220 197 157 / 0.22);
 }
 
 .nv-footer__mark svg {
@@ -108,7 +120,7 @@
   background: linear-gradient(
     120deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.5),
+    rgb(var(--nv-glaze-rgb) / 0.12),
     transparent 70%
   );
   transform: translateX(-120%);
@@ -141,7 +153,7 @@
 }
 
 .nv-footer__blurb + .nv-footer__accent { margin-top: 16px; }
-.nv-footer__accent:hover { color: #46e6c8; }
+.nv-footer__accent:hover { color: #f2e6c8; }
 .nv-footer__accent svg { width: 15px; height: 15px; flex: none; }
 
 .nv-footer__where {
@@ -178,8 +190,8 @@
 
 .nv-footer__social:hover {
   color: var(--nvf-accent);
-  border-color: rgba(45, 212, 167, 0.45);
-  background: rgba(45, 212, 167, 0.1);
+  border-color: var(--nv-metal-on-media-line);
+  background: rgb(220 197 157 / 0.12);
 }
 
 /* ── Bottom bar ─────────────────────────────────────────────────────────── */

@@ -14,7 +14,6 @@ import DetailShell, {
   DetailSectionHeader,
   type DetailBadge,
 } from "@/components/shared/DetailShell";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Career } from "@/lib/types";
@@ -97,19 +96,19 @@ export default function CareerDetail({ slug }: { slug: string }) {
 
       {job.description ? (
         <DetailPanel tone={2}>
-          <div className="g-detail-panel__label">
-            <span className="g-detail-panel__icon" aria-hidden>
+          <div className="nv-dpanel__label">
+            <span className="nv-dpanel__icon" aria-hidden>
               <Briefcase className="h-4 w-4" />
             </span>
             <div>
-              <p className="g-detail-panel__kicker">Position brief</p>
-              <h3 className="g-detail-panel__title">Role description</h3>
+              <p className="nv-dpanel__kicker">Position brief</p>
+              <h3 className="nv-dpanel__title">Role description</h3>
             </div>
           </div>
           {job.description.includes("<") ? (
             <Prose html={job.description} />
           ) : (
-            <p className="g-detail-plain">{job.description}</p>
+            <p className="nv-dplain">{job.description}</p>
           )}
         </DetailPanel>
       ) : null}
@@ -117,50 +116,50 @@ export default function CareerDetail({ slug }: { slug: string }) {
       <DetailDivider />
 
       <DetailPanel delay={0.14} tone={3}>
-        <div className="g-detail-panel__label">
-          <span className="g-detail-panel__icon" aria-hidden>
+        <div className="nv-dpanel__label">
+          <span className="nv-dpanel__icon" aria-hidden>
             <FileText className="h-4 w-4" />
           </span>
           <div>
-            <p className="g-detail-panel__kicker">Join the team</p>
-            <h3 className="g-detail-panel__title">Apply for this position</h3>
+            <p className="nv-dpanel__kicker">Join the team</p>
+            <h3 className="nv-dpanel__title">Apply for this position</h3>
           </div>
         </div>
         <form onSubmit={handleApply} className="mt-2 space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">First name *</label>
-              <Input required value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+              <label className="nv-label">First name *</label>
+              <Input className="nv-input" required value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Last name *</label>
-              <Input required value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+              <label className="nv-label">Last name *</label>
+              <Input className="nv-input" required value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Email *</label>
-              <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <label className="nv-label">Email *</label>
+              <Input className="nv-input" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-ink-muted">Phone *</label>
-              <Input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <label className="nv-label">Phone *</label>
+              <Input className="nv-input" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-ink-muted">Cover letter</label>
-            <Textarea rows={4} value={form.cover_letter} onChange={(e) => setForm({ ...form, cover_letter: e.target.value })} />
+            <label className="nv-label">Cover letter</label>
+            <Textarea className="nv-input" rows={4} value={form.cover_letter} onChange={(e) => setForm({ ...form, cover_letter: e.target.value })} />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-ink-muted">Resume *</label>
-            <Input type="file" accept=".pdf,.doc,.docx" required onChange={(e) => setResume(e.target.files?.[0] ?? null)} />
+            <label className="nv-label">Resume *</label>
+            <Input className="nv-input" type="file" accept=".pdf,.doc,.docx" required onChange={(e) => setResume(e.target.files?.[0] ?? null)} />
           </div>
-          <Button type="submit" disabled={applying}>
-            {applying ? "Submitting…" : "Submit Application"}
-          </Button>
+          <button type="submit" disabled={applying} className="nv-btn nv-btn--primary">
+            {applying ? "Submitting…" : "Submit application"}
+          </button>
         </form>
       </DetailPanel>
 
       <DetailDivider delay={0.12} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/careers">All openings</DetailLinkChip>
       </div>
     </DetailShell>

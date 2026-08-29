@@ -49,7 +49,7 @@
   pointer-events: none;
   background-image: repeating-linear-gradient(
     90deg,
-    rgba(217, 195, 154, 0.042) 0 1px,
+    rgb(var(--nv-ink-rgb) / 0.055) 0 1px,
     transparent 1px clamp(118px, 12vw, 196px)
   );
   -webkit-mask-image: linear-gradient(
@@ -90,7 +90,7 @@
   pointer-events: none;
   background: radial-gradient(
     68% 52% at 12% 50%,
-    rgba(217, 195, 154, 0.055),
+    rgb(var(--nv-metal-rgb) / 0.055),
     transparent 70%
   );
   animation: nv-flow-breathe 28s ease-in-out infinite alternate;
@@ -103,7 +103,7 @@
   right: 0;
   background: radial-gradient(
     68% 52% at 88% 50%,
-    rgba(240, 226, 194, 0.042),
+    rgb(var(--nv-glaze-rgb) / 0.042),
     transparent 70%
   );
   animation-delay: -14s;
@@ -170,7 +170,7 @@
   left: 0;
   width: clamp(66px, 7vw, 108px);
   height: 1px;
-  background: linear-gradient(90deg, var(--nv-champagne), rgba(217, 195, 154, 0));
+  background: linear-gradient(90deg, var(--nv-champagne), rgb(var(--nv-metal-rgb) / 0));
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.2s var(--nv-ease-lux) 0.18s;
@@ -347,7 +347,7 @@
   transition: background 0.7s var(--nv-ease-lux);
 }
 
-.nv-index__row:hover { background: rgba(255, 255, 255, 0.018); }
+.nv-index__row:hover { background: rgb(var(--nv-metal-rgb) / 0.047); }
 
 /* Champagne bar in the left margin, scaling out from the vertical centre - the
    same hover mark the news list uses, so the two read as one system. */
@@ -382,8 +382,8 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgba(240, 226, 194, 0.045) 46%,
-    rgba(255, 249, 236, 0.075) 52%,
+    rgb(var(--nv-glaze-rgb) / 0.045) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.075) 52%,
     transparent
   );
   transform: translate3d(-160%, 0, 0);
@@ -417,7 +417,7 @@
   transition: color 0.6s var(--nv-ease-lux);
 }
 
-.nv-index__row:hover .nv-index__name { color: #fff; }
+.nv-index__row:hover .nv-index__name { color: var(--nv-text); }
 
 .nv-index__desc {
   margin-top: 11px;
@@ -516,7 +516,7 @@
   overflow: hidden;
   border: 1px solid var(--nv-champagne-line);
   background: var(--nv-plate-well);
-  box-shadow: 0 34px 78px -34px rgba(0, 0, 0, 1);
+  box-shadow: 0 34px 78px -34px rgb(var(--nv-ink-rgb) / 0.22);
   opacity: 0;
   transform: scale(0.94);
   transition: opacity 0.3s var(--nv-ease), transform 0.36s var(--nv-ease);
@@ -534,12 +534,12 @@
   pointer-events: none;
   background: radial-gradient(
     120% 90% at 50% 0%,
-    rgba(255, 255, 255, 0.06),
+    rgb(var(--nv-glaze-rgb) / 0.07),
     transparent 58%
   );
   box-shadow:
     inset 0 1px 0 var(--nv-edge),
-    inset 0 0 46px rgba(0, 0, 0, 0.55);
+    inset 0 0 46px rgb(var(--nv-ink-rgb) / 0.12);
 }
 
 .nv-peek__tag {
@@ -547,7 +547,7 @@
   inset-inline: 0;
   bottom: 0;
   padding: 11px 13px;
-  background: linear-gradient(180deg, transparent, rgba(5, 6, 9, 0.94));
+  background: linear-gradient(180deg, transparent, rgb(var(--nv-scrim-rgb) / 0.94));
   font-family: var(--nv-font-mono);
   font-size: 8.5px;
   font-weight: 600;
@@ -593,7 +593,7 @@
     90deg,
     transparent,
     var(--nv-champagne-line) 20%,
-    rgba(217, 195, 154, 0.45) 50%,
+    rgb(var(--nv-metal-rgb) / 0.45) 50%,
     var(--nv-champagne-line) 80%,
     transparent
   );
@@ -614,12 +614,12 @@
   background-image:
     radial-gradient(
       46% 58% at 22% 76%,
-      rgba(217, 195, 154, 0.075),
+      rgb(var(--nv-metal-rgb) / 0.075),
       transparent 70%
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(217, 195, 154, 0.03) 0 1px,
+      rgb(var(--nv-ink-rgb) / 0.055) 0 1px,
       transparent 1px clamp(118px, 12vw, 196px)
     );
   animation: nv-metrics-pool 24s ease-in-out infinite alternate;
@@ -779,7 +779,7 @@
     90deg,
     transparent,
     var(--nv-champagne-line) 20%,
-    rgba(217, 195, 154, 0.5) 50%,
+    rgb(var(--nv-metal-rgb) / 0.5) 50%,
     var(--nv-champagne-line) 80%,
     transparent
   );
@@ -799,12 +799,12 @@
   background-image:
     radial-gradient(
       52% 62% at 78% 18%,
-      rgba(217, 195, 154, 0.085),
+      rgb(var(--nv-metal-rgb) / 0.085),
       transparent 72%
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(217, 195, 154, 0.028) 0 1px,
+      rgb(var(--nv-ink-rgb) / 0.055) 0 1px,
       transparent 1px clamp(118px, 12vw, 196px)
     );
   animation: nv-visit-pool 26s ease-in-out infinite alternate;
@@ -830,9 +830,9 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgba(240, 226, 194, 0.05) 44%,
-    rgba(255, 249, 236, 0.09) 51%,
-    rgba(240, 226, 194, 0.05) 58%,
+    rgb(var(--nv-glaze-rgb) / 0.05) 44%,
+    rgb(var(--nv-glaze-rgb) / 0.09) 51%,
+    rgb(var(--nv-glaze-rgb) / 0.05) 58%,
     transparent
   );
   transform: translate3d(-180%, 0, 0) rotate(14deg);
@@ -930,7 +930,7 @@
   flex: none;
   border-radius: 11px;
   border: 1px solid var(--nv-hairline);
-  background: rgba(255, 255, 255, 0.022);
+  background: rgb(var(--nv-metal-rgb) / 0.057);
   box-shadow: inset 0 1px 0 var(--nv-edge-soft);
   color: var(--nv-champagne-dim);
   transition:

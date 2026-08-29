@@ -73,13 +73,13 @@ export default function NewsDetail({ slug }: { slug: string }) {
 
       {item.content || image ? (
         <DetailPanel>
-          <div className="g-detail-panel__label">
-            <span className="g-detail-panel__icon" aria-hidden>
+          <div className="nv-dpanel__label">
+            <span className="nv-dpanel__icon" aria-hidden>
               <Newspaper className="h-4 w-4" />
             </span>
             <div>
-              <p className="g-detail-panel__kicker">Story</p>
-              <h3 className="g-detail-panel__title">Full article</h3>
+              <p className="nv-dpanel__kicker">Story</p>
+              <h3 className="nv-dpanel__title">Full article</h3>
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export default function NewsDetail({ slug }: { slug: string }) {
             item.content.includes("<") ? (
               <Prose html={item.content} />
             ) : (
-              <p className="g-detail-plain">{item.content}</p>
+              <p className="nv-dplain">{item.content}</p>
             )
           ) : (
             <p className="text-sm text-slate-500">No additional text content available.</p>
@@ -127,7 +127,7 @@ export default function NewsDetail({ slug }: { slug: string }) {
       )}
 
       <DetailDivider delay={0.08} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/news">More news</DetailLinkChip>
       </div>
     </DetailShell>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import PageHero from "@/components/layout/PageHero";
 import PageBody from "@/components/layout/PageBody";
 import ResourceList from "@/components/shared/ResourceList";
-import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
 import { fetchSettings } from "@/lib/api";
 
@@ -30,20 +29,19 @@ export default async function EmergencyPage() {
         subtitle="Immediate, expert emergency care around the clock. Our rapid-response teams are always ready when every second counts."
         breadcrumbs={[{ label: "Emergency" }]}
       >
+        {/* `nv-btn` rather than the shared Button's "brass" variant, which is
+            bg-emerald-700 — the last saturated fill left on a public page. The
+            Button primitive is untouched because the admin panel still uses it. */}
         {emergencyPhone ? (
-          <Button variant="brass" size="lg" asChild>
-            <a href={`tel:${emergencyPhone}`}>
-              <Phone className="h-4 w-4" />
-              {emergencyPhone}
-            </a>
-          </Button>
+          <a href={`tel:${emergencyPhone}`} className="nv-btn nv-btn--primary nv-btn--lg">
+            <Phone className="h-4 w-4" />
+            {emergencyPhone}
+          </a>
         ) : (
-          <Button variant="brass" size="lg" asChild>
-            <Link href="/contact">
-              <Phone className="h-4 w-4" />
-              Contact Emergency
-            </Link>
-          </Button>
+          <Link href="/contact" className="nv-btn nv-btn--primary nv-btn--lg">
+            <Phone className="h-4 w-4" />
+            Contact emergency
+          </Link>
         )}
       </PageHero>
       <PageBody>

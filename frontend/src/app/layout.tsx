@@ -121,15 +121,15 @@ export default function RootLayout({
       <body
         className="site-canvas flex min-h-screen flex-col antialiased"
         style={{
-          backgroundColor: "#04050a",
-          color: "#eceffb",
+          backgroundColor: "#f6f4ef",
+          color: "#191d26",
         }}
       >
         <NextTopLoader
-          color="#7c6cff"
+          color="#96793f"
           height={2}
           showSpinner={false}
-          shadow="0 0 12px rgba(124,108,255,0.7)"
+          shadow="0 0 10px rgba(150,121,63,0.55)"
         />
         <StoreProvider>
           <DynamicFavicon />

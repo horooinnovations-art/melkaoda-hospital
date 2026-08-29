@@ -65,19 +65,19 @@ export default function CmsPage({ slug }: { slug: string }) {
 
       {page.content ? (
         <DetailPanel>
-          <div className="g-detail-panel__label">
-            <span className="g-detail-panel__icon" aria-hidden>
+          <div className="nv-dpanel__label">
+            <span className="nv-dpanel__icon" aria-hidden>
               <FileText className="h-4 w-4" />
             </span>
             <div>
-              <p className="g-detail-panel__kicker">Document</p>
-              <h3 className="g-detail-panel__title">Full page</h3>
+              <p className="nv-dpanel__kicker">Document</p>
+              <h3 className="nv-dpanel__title">Full page</h3>
             </div>
           </div>
           {page.content.includes("<") ? (
             <Prose html={page.content} />
           ) : (
-            <p className="g-detail-plain whitespace-pre-line">{page.content}</p>
+            <p className="nv-dplain whitespace-pre-line">{page.content}</p>
           )}
         </DetailPanel>
       ) : (
@@ -90,7 +90,7 @@ export default function CmsPage({ slug }: { slug: string }) {
       )}
 
       <DetailDivider delay={0.08} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/">Back to home</DetailLinkChip>
       </div>
     </DetailShell>

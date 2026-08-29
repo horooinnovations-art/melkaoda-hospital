@@ -11,7 +11,6 @@ import {
   HeartHandshake,
   Landmark,
   Medal,
-  Quote,
   Scale,
   Sparkles,
   Target,
@@ -20,13 +19,11 @@ import {
   Eye,
   Star,
   Shield,
-  Zap,
   type LucideIcon,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { useGetSettingsQuery, useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
-import Reveal from "@/components/motion/Reveal";
+import NovaReveal from "@/components/nova/NovaReveal";
 import Prose from "@/components/shared/Prose";
 import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/Skeleton";
@@ -390,7 +387,7 @@ function RichBody({ value }: { value: string }) {
 
   const paragraphs = toPlainParagraphs(value);
   return (
-    <div className="g-about-copy">
+    <div className="nv-copy">
       {paragraphs.map((p, i) => (
         <p key={i}>{p}</p>
       ))}
@@ -408,13 +405,13 @@ function PanelLabel({
   title: string;
 }) {
   return (
-    <div className="g-detail-panel__label">
-      <span className="g-detail-panel__icon" aria-hidden>
-        <Icon className="h-5 w-5" />
+    <div className="nv-dpanel__label">
+      <span className="nv-dpanel__icon" aria-hidden>
+        <Icon />
       </span>
       <div>
-        <p className="g-detail-panel__kicker">{kicker}</p>
-        <h3 className="g-detail-panel__title">{title}</h3>
+        <p className="nv-dpanel__kicker">{kicker}</p>
+        <h3 className="nv-dpanel__title">{title}</h3>
       </div>
     </div>
   );
@@ -422,16 +419,6 @@ function PanelLabel({
 
 /* ─── Stat Card Icons ─── */
 const STAT_ICONS: LucideIcon[] = [Shield, Users, Star, Award];
-
-/* ─── Gradient Color Pairs ─── */
-const VALUE_GRADIENTS = [
-  { from: "rgba(56, 189, 248, 0.12)", to: "rgba(14, 165, 233, 0.04)", accent: "#0ea5e9" },
-  { from: "rgba(52, 211, 153, 0.12)", to: "rgba(16, 185, 129, 0.04)", accent: "#10b981" },
-  { from: "rgba(251, 191, 36, 0.12)", to: "rgba(245, 158, 11, 0.04)", accent: "#f59e0b" },
-  { from: "rgba(167, 139, 250, 0.12)", to: "rgba(139, 92, 246, 0.04)", accent: "#8b5cf6" },
-  { from: "rgba(244, 114, 182, 0.12)", to: "rgba(236, 72, 153, 0.04)", accent: "#ec4899" },
-  { from: "rgba(251, 146, 60, 0.12)", to: "rgba(249, 115, 22, 0.04)", accent: "#f97316" },
-];
 
 /* ─── Main Component ─── */
 export default function AboutPage() {
@@ -443,9 +430,9 @@ export default function AboutPage() {
 
   if (settingsLoading) {
     return (
-      <div>
-        <div className="h-[42vh] bg-teal-deep/10" />
-        <div className="mx-auto max-w-4xl px-5 py-16">
+      <div className="nv-pb">
+        <div className="nv-skel h-[38vh] !rounded-none" />
+        <div className="nv-pb__inner mx-auto max-w-4xl px-5 py-16">
           <GridSkeleton count={3} />
         </div>
       </div>
@@ -502,66 +489,59 @@ export default function AboutPage() {
         breadcrumbs={[{ label: "About" }]}
       />
 
-      {/* ═══ Premium Floating Stats Bar ═══ */}
-      <div className="mx-auto max-w-5xl px-5 lg:px-8 mt-12 relative z-10">
-        <div className="g-about-hero-stats grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map((stat, i) => {
-            const Icon = STAT_ICONS[i % STAT_ICONS.length];
-            return (
-              <Reveal key={stat.label} delay={0.1 + i * 0.08}>
-                <motion.div
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="g-about-stat-card"
-                >
-                  <div className="g-about-stat-card__glow" aria-hidden />
-                  <div className="g-about-stat-card__icon">
-                    <Icon className="h-5 w-5" />
+      {/* A band of figures that sits over the hero's base seam. `-mt` pulls it
+          up into the seam so the opening and the document are joined by it
+          rather than separated by a gap. */}
+      <div className="nv-pb relative -mx-[calc((100vw-100%)/2)] w-screen">
+        <span className="nv-pb__glow" aria-hidden />
+
+        <div className="nv-pb__inner mx-auto max-w-5xl px-5 pt-12 lg:px-8">
+          <div className="nv-statbar">
+            {stats.map((stat, i) => {
+              const Icon = STAT_ICONS[i % STAT_ICONS.length];
+              return (
+                <NovaReveal key={stat.label} from="up" delay={0.08 + i * 0.09}>
+                  <div className="nv-statcard">
+                    <span className="nv-statcard__icon" aria-hidden>
+                      <Icon />
+                    </span>
+                    <span className="nv-statcard__value">
+                      <Counter value={stat.value} />
+                      {stat.suffix}
+                    </span>
+                    <span className="nv-statcard__label">{stat.label}</span>
                   </div>
-                  <span className="g-about-stat-card__value">
-                    <Counter value={stat.value} />{stat.suffix}
-                  </span>
-                  <span className="g-about-stat-card__label">{stat.label}</span>
-                </motion.div>
-              </Reveal>
-            );
-          })}
+                </NovaReveal>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* ═══ Main Content Canvas ═══ */}
-      <div className="g-pagebody g-pagebody--detail">
-        <div className="g-pagebody__aura" aria-hidden />
-        <div className="g-pagebody__mesh" aria-hidden />
-        <div className="g-pagebody__rail g-pagebody__rail--l" aria-hidden />
-        <div className="g-pagebody__rail g-pagebody__rail--r" aria-hidden />
-
-        <div className="g-pagebody__inner g-detail-stack g-about relative z-[1] mx-auto max-w-5xl px-5 py-12 lg:px-8 lg:py-16">
+        <div className="nv-pb__inner nv-dstack mx-auto max-w-5xl px-5 py-12 lg:px-8 lg:py-16">
 
           {/* ═══ SECTION 01: Our Story ═══ */}
           {showStory && (
-            <section className="g-about-section">
+            <section className="nv-asec">
               <DetailSectionHeader
                 eyebrow="01 · Our story"
                 title={tagline || siteName}
                 description="Who we are and the communities we serve."
               />
-              <Reveal delay={0.06}>
-                <div className="g-about-story-grid grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start mt-8">
-                  <div className="g-about-story-pull">
+              <NovaReveal from="up" delay={0.06}>
+                <div className="nv-asec__grid">
+                  <div>
                     {pullQuote && (
-                      <blockquote className="g-about-quote g-about-quote--premium">
-                        <div className="g-about-quote__mark" aria-hidden>
-                          <Quote className="h-8 w-8" />
-                        </div>
-                        <p className="text-2xl md:text-3xl font-bold leading-tight text-slate-800">
-                          &ldquo;{pullQuote.replace(/^[""]|[""]$/g, "")}&rdquo;
+                      <blockquote className="nv-pull">
+                        <span className="nv-pull__mark" aria-hidden>
+                          &ldquo;
+                        </span>
+                        <p className="nv-pull__text">
+                          {pullQuote.replace(/^[""]|[""]$/g, "")}
                         </p>
-                        <div className="g-about-quote__line" aria-hidden />
                       </blockquote>
                     )}
                   </div>
-                  <div className="g-about-story-body text-slate-600 space-y-4">
+                  <div>
                     {(aboutIsHtml || aboutBodyPlain) && (
                       <RichBody value={aboutIsHtml ? about! : aboutBodyPlain} />
                     )}
@@ -570,7 +550,7 @@ export default function AboutPage() {
                     )}
                   </div>
                 </div>
-              </Reveal>
+              </NovaReveal>
             </section>
           )}
 
@@ -578,58 +558,48 @@ export default function AboutPage() {
           {(mission || vision) && (
             <>
               {showStory && <DetailDivider delay={0.02} />}
-              <section className="g-about-section">
+              <section className="nv-asec">
                 <DetailSectionHeader
                   eyebrow="02 · Purpose"
                   title="Mission & vision"
                   description="What guides every decision, ward, and clinical pathway."
                 />
-                <div className="g-about-mv-grid grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <div className="nv-asec__grid">
                   {mission && (
-                    <Reveal delay={0.06}>
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        className="g-about-mv-card g-about-mv-card--mission"
-                      >
-                        <div className="g-about-mv-card__accent" />
-                        <div className="g-about-mv-card__header">
-                          <div className="g-about-mv-card__icon-wrap g-about-mv-card__icon-wrap--sky">
-                            <Target className="w-5 h-5" />
-                          </div>
+                    <NovaReveal from="up" delay={0.06}>
+                      <div className="nv-mv">
+                        <div className="nv-mv__head">
+                          <span className="nv-dpanel__icon" aria-hidden>
+                            <Target />
+                          </span>
                           <div>
-                            <p className="g-about-mv-card__kicker">Our Purpose</p>
-                            <h3 className="g-about-mv-card__title">Mission</h3>
+                            <p className="nv-dpanel__kicker">Our purpose</p>
+                            <h3 className="nv-dpanel__title">Mission</h3>
                           </div>
                         </div>
-                        <div className="g-about-mv-card__body">
+                        <div className="nv-mv__body">
                           <RichBody value={mission} />
                         </div>
-                      </motion.div>
-                    </Reveal>
+                      </div>
+                    </NovaReveal>
                   )}
                   {vision && (
-                    <Reveal delay={0.1}>
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        className="g-about-mv-card g-about-mv-card--vision"
-                      >
-                        <div className="g-about-mv-card__accent g-about-mv-card__accent--emerald" />
-                        <div className="g-about-mv-card__header">
-                          <div className="g-about-mv-card__icon-wrap g-about-mv-card__icon-wrap--emerald">
-                            <Eye className="w-5 h-5" />
-                          </div>
+                    <NovaReveal from="up" delay={0.14}>
+                      <div className="nv-mv">
+                        <div className="nv-mv__head">
+                          <span className="nv-dpanel__icon" aria-hidden>
+                            <Eye />
+                          </span>
                           <div>
-                            <p className="g-about-mv-card__kicker">Our Aspiration</p>
-                            <h3 className="g-about-mv-card__title">Vision</h3>
+                            <p className="nv-dpanel__kicker">Our aspiration</p>
+                            <h3 className="nv-dpanel__title">Vision</h3>
                           </div>
                         </div>
-                        <div className="g-about-mv-card__body">
+                        <div className="nv-mv__body">
                           <RichBody value={vision} />
                         </div>
-                      </motion.div>
-                    </Reveal>
+                      </div>
+                    </NovaReveal>
                   )}
                 </div>
               </section>
@@ -640,48 +610,40 @@ export default function AboutPage() {
           {showValues && (
             <>
               <DetailDivider delay={0.02} />
-              <section className="g-about-section">
+              <section className="nv-asec">
                 <DetailSectionHeader
                   eyebrow="03 · Core values"
                   title="What guides our care"
                   description={parsedValues.intro || undefined}
                 />
                 {parsedValues.items.length > 0 ? (
-                  <div className="g-about-values-grid">
+                  <div className="nv-vgrid">
                     {parsedValues.items.map((item, index) => {
                       const Icon = iconForValue(item.title);
-                      const gradient = VALUE_GRADIENTS[index % VALUE_GRADIENTS.length];
                       return (
-                        <Reveal
+                        <NovaReveal
                           key={`${item.title}-${index}`}
-                          delay={Math.min(0.04 + index * 0.04, 0.28)}
-                          fadeOut={false}
+                          from="up"
+                          delay={Math.min(0.05 + index * 0.06, 0.4)}
                         >
-                          <motion.article
-                            whileHover={{ y: -6, scale: 1.02 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            className="g-about-value-card"
-                            style={{
-                              "--value-gradient-from": gradient.from,
-                              "--value-gradient-to": gradient.to,
-                              "--value-accent": gradient.accent,
-                            } as React.CSSProperties}
-                          >
-                            <div className="g-about-value-card__shine" aria-hidden />
-                            <div className="g-about-value-card__top">
-                              <span className="g-about-value-card__icon" aria-hidden>
-                                <Icon className="h-5 w-5" />
+                          {/* The four rotating gradients are gone: the mono index
+                              is what tells one value from the next, and it keeps a
+                              grid of six reading as one list. */}
+                          <article className="nv-vcard">
+                            <div className="nv-vcard__top">
+                              <span className="nv-vcard__icon" aria-hidden>
+                                <Icon />
                               </span>
-                              <span className="g-about-value-card__index">
+                              <span className="nv-vcard__index" aria-hidden>
                                 {String(index + 1).padStart(2, "0")}
                               </span>
                             </div>
-                            <h3 className="g-about-value-card__title">{item.title}</h3>
+                            <h3 className="nv-vcard__title">{item.title}</h3>
                             {item.description && (
-                              <p className="g-about-value-card__desc">{item.description}</p>
+                              <p className="nv-vcard__desc">{item.description}</p>
                             )}
-                          </motion.article>
-                        </Reveal>
+                          </article>
+                        </NovaReveal>
                       );
                     })}
                   </div>
@@ -698,43 +660,42 @@ export default function AboutPage() {
           {history && (
             <>
               <DetailDivider delay={0.02} />
-              <section className="g-about-section">
+              <section className="nv-asec">
                 <DetailSectionHeader
                   eyebrow="04 · History"
                   title="Our journey"
                   description={parsedHistory.intro || undefined}
                 />
                 {parsedHistory.eras.length > 0 ? (
-                  <ol className="g-about-timeline">
+                  <ol className="nv-etl">
                     {parsedHistory.eras.map((era, index) => {
                       const Icon = iconForHistory(era.title);
-                      const tone = ((index % 4) + 1) as 1 | 2 | 3 | 4;
                       return (
-                        <li key={`${era.title}-${index}`} className="g-about-timeline__item">
-                          <span className="g-about-timeline__node" aria-hidden />
-                          <DetailPanel delay={Math.min(0.04 + index * 0.04, 0.24)} tone={tone}>
-                            <div className="g-about-era__meta">
-                              <span className="g-detail-panel__icon" aria-hidden>
-                                <Icon className="h-5 w-5" />
+                        <li key={`${era.title}-${index}`} className="nv-etl__item">
+                          <span className="nv-etl__node" aria-hidden />
+                          <DetailPanel delay={Math.min(0.05 + index * 0.05, 0.3)}>
+                            <div className="nv-era__meta">
+                              <span className="nv-dpanel__icon" aria-hidden>
+                                <Icon />
                               </span>
                               {era.year && (
-                                <span className="g-about-era__year">{era.year}</span>
+                                <span className="nv-era__year">{era.year}</span>
                               )}
-                              <span className="g-about-era__index">
+                              <span className="nv-era__index" aria-hidden>
                                 {String(index + 1).padStart(2, "0")}
                               </span>
                             </div>
-                            <h3 className="g-about-era__title">{era.title}</h3>
-                            <div className="g-about-copy">
-                              {era.paragraphs.map((p, pi) => (
-                                <p key={pi}>{p}</p>
+                            <h3 className="nv-era__title">{era.title}</h3>
+                            <div className="nv-copy nv-era__body">
+                              {era.paragraphs.map((para, pi) => (
+                                <p key={pi}>{para}</p>
                               ))}
                             </div>
                             {era.bullets.length > 0 && (
-                              <ul className="g-detail-achievements g-about-era__bullets">
+                              <ul className="nv-achieve nv-era__bullets">
                                 {era.bullets.map((b, bi) => (
                                   <li key={bi}>
-                                    <span className="g-detail-achievements__dot" aria-hidden />
+                                    <span className="nv-achieve__dot" aria-hidden />
                                     <span>{b}</span>
                                   </li>
                                 ))}
@@ -758,17 +719,16 @@ export default function AboutPage() {
           {awards && (
             <>
               <DetailDivider delay={0.02} />
-              <section className="g-about-section">
+              <section className="nv-asec">
                 <DetailSectionHeader
                   eyebrow="05 · Recognition"
                   title="Awards & excellence"
                   description={parsedAwards.intro || undefined}
                 />
                 {parsedAwards.items.length > 0 ? (
-                  <div className="g-about-awards grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                  <div className="nv-asec__grid">
                     {parsedAwards.items.map((item, index) => {
                       const Icon = iconForAward(item.title);
-                      const tone = (index % 2 === 0 ? 2 : 1) as 1 | 2;
                       const cleanDesc = item.description
                         ? item.description.replace(/:\s+([A-Z])/g, ". $1").replace(/:\s*$/, ".").trim()
                         : "";
@@ -777,8 +737,7 @@ export default function AboutPage() {
                         <DetailPanel
                           key={`${item.title}-${index}`}
                           delay={Math.min(0.05 + index * 0.05, 0.28)}
-                          tone={tone}
-                          className="h-full flex flex-col justify-between"
+                          className="flex h-full flex-col justify-between"
                         >
                           <div>
                             <PanelLabel
@@ -787,14 +746,14 @@ export default function AboutPage() {
                               title={item.title}
                             />
                             {cleanDesc && (
-                              <p className="g-detail-lede mb-4 text-slate-600 leading-relaxed">{cleanDesc}</p>
+                              <p className="nv-dhead__desc mb-4">{cleanDesc}</p>
                             )}
                           </div>
                           {item.highlights.length > 0 && (
-                            <ul className="g-detail-achievements pt-3 border-t border-slate-200/60 dark:border-slate-800/60">
+                            <ul className="nv-achieve nv-era__bullets">
                               {item.highlights.map((h, hi) => (
                                 <li key={hi}>
-                                  <span className="g-detail-achievements__dot" aria-hidden />
+                                  <span className="nv-achieve__dot" aria-hidden />
                                   <span>{h}</span>
                                 </li>
                               ))}
@@ -805,7 +764,7 @@ export default function AboutPage() {
                     })}
                   </div>
                 ) : (
-                  <DetailPanel delay={0.06} tone={2}>
+                  <DetailPanel delay={0.06}>
                     <RichBody value={awards} />
                   </DetailPanel>
                 )}
@@ -815,8 +774,8 @@ export default function AboutPage() {
 
           {/* ═══ SECTION 06: Leadership ═══ */}
           <DetailDivider delay={0.02} />
-          <section className="g-about-section">
-            <div className="g-about-lead-head">
+          <section className="nv-asec">
+            <div className="nv-lead-head">
               <DetailSectionHeader
                 eyebrow="06 · Leadership"
                 title="Guided by experienced visionaries"
@@ -830,13 +789,13 @@ export default function AboutPage() {
             ) : leaders.length === 0 ? (
               <EmptyState title="Leadership profiles coming soon" />
             ) : (
-              <div className="g-board-stack">
+              <div className="nv-board-stack">
                 {leaders.map((leader, i) => {
                   const image = getImageFromItem(
                     leader as unknown as Record<string, unknown>
                   );
                   return (
-                    <Reveal key={leader.id} delay={0.05 * i} fadeOut={false}>
+                    <NovaReveal key={leader.id} from="up" delay={Math.min(i, 6) * 0.08}>
                       <OfficerProfile
                         href={`/leadership/${leader.slug}`}
                         name={leader.name}
@@ -845,17 +804,17 @@ export default function AboutPage() {
                         image={image}
                         index={i}
                       />
-                    </Reveal>
+                    </NovaReveal>
                   );
                 })}
               </div>
             )}
 
-            <div className="g-about-cta">
-              <Link href="/leadership" className="g-detail-link">
+            <div className="nv-about-cta">
+              <Link href="/leadership" className="nv-dlink">
                 <span>Explore full leadership</span>
-                <span className="g-detail-link__ico">
-                  <ArrowUpRight className="h-3.5 w-3.5" />
+                <span className="nv-dlink__ico" aria-hidden>
+                  <ArrowUpRight />
                 </span>
               </Link>
             </div>

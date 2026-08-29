@@ -123,69 +123,71 @@ export default function LeadershipHistoryDetailPage({
         description="Tenure, biography, and lasting contributions."
       />
 
-      <div className="g-detail-split">
-        <DetailPanel tone={1} className="g-detail-portrait" delay={0.04}>
-          <div className="g-detail-portrait__media">
+      <div className="nv-dsplit">
+        <DetailPanel className="nv-portrait" delay={0.04}>
+          <div className="nv-portrait__media">
             {image ? (
               <SmartImage
                 src={image}
-                alt={name}
+                // Decorative: .nv-portrait__name prints this person's name under
+                // the frame, and the page <h1> carries it too.
+                alt=""
                 fill
                 optimizeWidth={720}
-                className="object-cover object-top g-detail-portrait__img"
+                className="nv-portrait__img object-cover object-top"
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 priority
               />
             ) : (
-              <div className="g-detail-portrait__fallback" aria-hidden>
+              <div className="nv-portrait__fallback" aria-hidden>
                 {name.charAt(0)}
               </div>
             )}
-            <span className="g-detail-portrait__veil" aria-hidden />
-            <span className="g-detail-portrait__badge">Leader</span>
+            <span className="nv-portrait__veil" aria-hidden />
+            <span className="nv-portrait__badge">Leader</span>
           </div>
-          <div className="g-detail-portrait__info">
-            <p className="g-detail-portrait__name">{name}</p>
-            {position && <p className="g-detail-portrait__role">{position}</p>}
-            <p className="g-detail-portrait__dept">{tenure}</p>
+          <div className="nv-portrait__info">
+            <p className="nv-portrait__name">{name}</p>
+            {position && <p className="nv-portrait__role">{position}</p>}
+            <p className="nv-portrait__dept">{tenure}</p>
           </div>
         </DetailPanel>
 
-        <div className="g-detail-stack !gap-4">
+        <div className="nv-dstack">
           {bio ? (
-            <DetailPanel tone={2} delay={0.1}>
-              <div className="g-detail-panel__label">
-                <span className="g-detail-panel__icon" aria-hidden>
-                  <UserRound className="h-4 w-4" />
+            <DetailPanel delay={0.1}>
+              <div className="nv-dpanel__label">
+                <span className="nv-dpanel__icon" aria-hidden>
+                  <UserRound />
                 </span>
                 <div>
-                  <p className="g-detail-panel__kicker">Biography</p>
-                  <h3 className="g-detail-panel__title">{name}</h3>
+                  <p className="nv-dpanel__kicker">Biography</p>
+                  <h3 className="nv-dpanel__title">{name}</h3>
                 </div>
               </div>
               {bio.includes("<") ? (
                 <Prose html={bio} />
               ) : (
-                <p className="g-detail-plain">{bio}</p>
+                <p className="nv-dplain">{bio}</p>
               )}
             </DetailPanel>
           ) : null}
 
           {achievements.length > 0 ? (
-            <DetailPanel tone={3} delay={0.16}>
-              <div className="g-detail-panel__label">
-                <span className="g-detail-panel__icon" aria-hidden>
-                  <Award className="h-4 w-4" />
+            <DetailPanel delay={0.16}>
+              <div className="nv-dpanel__label">
+                <span className="nv-dpanel__icon" aria-hidden>
+                  <Award />
                 </span>
                 <div>
-                  <p className="g-detail-panel__kicker">Highlights</p>
-                  <h3 className="g-detail-panel__title">Key achievements</h3>
+                  <p className="nv-dpanel__kicker">Highlights</p>
+                  <h3 className="nv-dpanel__title">Key achievements</h3>
                 </div>
               </div>
-              <ul className="g-detail-achievements">
+              <ul className="nv-achieve">
                 {achievements.map((item, j) => (
                   <li key={j}>
-                    <span className="g-detail-achievements__dot" aria-hidden />
+                    <span className="nv-achieve__dot" aria-hidden />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -205,7 +207,7 @@ export default function LeadershipHistoryDetailPage({
       </div>
 
       <DetailDivider delay={0.12} />
-      <div className="g-detail-footer">
+      <div className="nv-dfooter">
         <DetailLinkChip href="/leadership/history">Back to History</DetailLinkChip>
       </div>
     </DetailShell>

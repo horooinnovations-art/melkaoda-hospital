@@ -41,34 +41,34 @@ export function ClinicianRow({
       .join("") || "DR";
 
   return (
-    <Link href={href} className={cn("g-clinic group", className)}>
-      <span className="g-clinic__index" aria-hidden>
+    <Link href={href} className={cn("nv-clin group", className)}>
+      <span className="nv-clin__index" aria-hidden>
         {String(index + 1).padStart(2, "0")}
       </span>
 
-      <span className="g-clinic__photo" aria-hidden={!portrait}>
+      <span className="nv-clin__photo" aria-hidden={!portrait}>
         {portrait ? (
           <SmartImage
             src={portrait}
             alt=""
             fill
             optimizeWidth={240}
-            className="object-cover object-top g-clinic__img"
+            className="nv-clin__img object-cover object-top"
             sizes="72px"
           />
         ) : (
-          <span className="g-clinic__fallback">{initials}</span>
+          <span className="nv-clin__fallback">{initials}</span>
         )}
       </span>
 
-      <span className="g-clinic__copy">
-        <span className="g-clinic__name">{cleanName}</span>
-        {metaRole && <span className="g-clinic__role">{metaRole}</span>}
+      <span className="nv-clin__copy">
+        <span className="nv-clin__name">{cleanName}</span>
+        {metaRole && <span className="nv-clin__role">{metaRole}</span>}
       </span>
 
-      {metaDept && <span className="g-clinic__dept">{metaDept}</span>}
+      {metaDept && <span className="nv-clin__dept">{metaDept}</span>}
 
-      <span className="g-clinic__go">
+      <span className="nv-clin__go">
         Profile
         <ArrowRight className="h-3.5 w-3.5" />
       </span>
@@ -112,30 +112,33 @@ export function OfficerProfile({
   return (
     <Link
       href={href}
-      className={cn("g-board group", flip && "g-board--flip", className)}
+      className={cn("nv-board group", flip && "nv-board--flip", className)}
     >
-      <div className="g-board__main">
-        <p className="g-board__office">{office}</p>
-        <h3 className="g-board__name">{cleanName}</h3>
-        {blurb ? <p className="g-board__summary">{blurb}</p> : null}
-        <span className="g-board__cta">
+      <div className="nv-board__main">
+        <p className="nv-board__office">{office}</p>
+        <h3 className="nv-board__name">{cleanName}</h3>
+        {blurb ? <p className="nv-board__summary">{blurb}</p> : null}
+        <span className="nv-board__cta">
           View leadership profile
           <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </div>
 
-      <div className="g-board__media" aria-hidden={!portrait}>
+      <div className="nv-board__media" aria-hidden={!portrait}>
         {portrait ? (
           <SmartImage
             src={portrait}
-            alt={cleanName}
+            // Decorative: .nv-board__name prints this person's name beside the
+            // frame, so a non-empty alt would render it twice whenever the
+            // candidate URL 404s and the img falls back to its alt text.
+            alt=""
             fill
             optimizeWidth={640}
-            className="object-cover object-[center_20%] g-board__img"
+            className="nv-board__img object-cover object-[center_20%]"
             sizes="(max-width: 768px) 100vw, 280px"
           />
         ) : (
-          <span className="g-board__fallback">{initials}</span>
+          <span className="nv-board__fallback">{initials}</span>
         )}
       </div>
     </Link>
