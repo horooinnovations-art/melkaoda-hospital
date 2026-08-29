@@ -87,11 +87,19 @@ const mediaHost =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "") ||
   apiOrigin;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetched here as well as in generateMetadata so the header's mark is in the
+  // first paint. The header's own settings query still runs and supersedes this,
+  // which is what lets an admin change the logo without a redeploy.
+  const settings = (await getSiteSettings()) || {};
+  const initialLogo = (settings.logo_url as string) || null;
+  const initialName =
+    (settings.site_name as string) || (settings.organization_name as string) || null;
+
   return (
     <html
       lang="en"
@@ -137,7 +145,9 @@ export default function RootLayout({
         />
         <StoreProvider>
           <DynamicFavicon />
-          <PublicShell>{children}</PublicShell>
+          <PublicShell initialLogo={initialLogo} initialName={initialName}>
+            {children}
+          </PublicShell>
           <Toaster position="top-right" richColors closeButton />
         </StoreProvider>
       </body>

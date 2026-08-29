@@ -88,10 +88,11 @@
   transform: scale(1.08);
 }
 
+/* Deep, for the same reason as the carousel's: the hero copy over it is white. */
 .nv-hero__shot-fallback {
   position: absolute;
   inset: 0;
-  background: var(--nv-plate-well);
+  background: #1b1f28;
 }
 
 /* ── Scrim ──────────────────────────────────────────────────────────────────

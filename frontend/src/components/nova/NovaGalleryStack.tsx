@@ -218,6 +218,10 @@ export default function NovaGalleryStack({
                       optimizeWidth={1100}
                       className="nv-stack__reflect-img"
                       sizes="(max-width: 900px) 86vw, 620px"
+                      // A missing photograph gets no reflection. Without this the
+                      // shared placeholder would render here and the card would
+                      // appear to be standing on a second empty plate.
+                      fallback={null}
                     />
                   </span>
                 ) : null}

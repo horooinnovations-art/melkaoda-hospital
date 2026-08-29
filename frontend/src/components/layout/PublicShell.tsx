@@ -6,7 +6,16 @@ import NovaFooter from "@/components/nova/NovaFooter";
 import NovaAtmosphere from "@/components/nova/NovaAtmosphere";
 import ScrollFade from "@/components/motion/ScrollFade";
 
-export default function PublicShell({ children }: { children: React.ReactNode }) {
+export default function PublicShell({
+  children,
+  initialLogo,
+  initialName,
+}: {
+  children: React.ReactNode;
+  /** Server-fetched so the header's mark is present on first paint. */
+  initialLogo?: string | null;
+  initialName?: string | null;
+}) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
 
@@ -20,7 +29,7 @@ export default function PublicShell({ children }: { children: React.ReactNode })
       <ScrollFade />
       <NovaAtmosphere />
 
-      <NovaHeader />
+      <NovaHeader initialLogo={initialLogo} initialName={initialName} />
       <main className="g-public-main nv-main relative z-[1] flex-1">
         <div key={pathname} className="nv-page">
           {children}

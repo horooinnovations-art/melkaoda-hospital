@@ -126,10 +126,23 @@
   to { transform: scale(1); }
 }
 
+/* A deep well, not the page's light one. The card's caption sits in
+   .nv-stack__meta, which is in the on-media token scope and therefore white — on
+   a light plate that text disappears. Whatever stands in for a missing
+   photograph here has to stay dark for the same reason the photograph did. */
 .nv-stack__fallback {
   position: absolute;
   inset: 0;
-  background: var(--nv-plate-well);
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgb(220 197 157 / 0.07),
+      transparent 62%
+    ),
+    #1b1f28;
+  color: rgb(220 197 157 / 0.34);
 }
 
 /* Only the focused card gets the scrim, so the neighbours stay clean image.

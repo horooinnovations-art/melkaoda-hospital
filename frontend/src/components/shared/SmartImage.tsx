@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image, { type ImageProps } from "next/image";
+import { ImageOff } from "lucide-react";
 import {
   optimizeImageUrl,
   shouldBypassImageOptimizer,
@@ -38,15 +39,14 @@ export default function SmartImage({
 
   if (failed) {
     if (fallback) return <>{fallback}</>;
+    // Every candidate host 404'd. The old default here was a teal gradient left
+    // over from the pre-Nova palette, which put a green smear where a photograph
+    // should be; `.nv-imgfail` is the same well the empty states use, with a mark
+    // in it, so a missing file reads as missing rather than as a broken renderer.
     return (
-      <span
-        aria-hidden
-        className={
-          className
-            ? `${className} bg-gradient-to-br from-teal-mist to-teal-deep/20`
-            : "absolute inset-0 bg-gradient-to-br from-teal-mist to-teal-deep/20"
-        }
-      />
+      <span aria-hidden className="nv-imgfail">
+        <ImageOff strokeWidth={1.5} />
+      </span>
     );
   }
 

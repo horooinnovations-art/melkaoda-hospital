@@ -133,7 +133,20 @@ const CLOSE_DELAY = 160;
 /** Must outlast the panel's own transform transition in nova-nav.css. */
 const PANEL_EXIT = 420;
 
-export default function NovaHeader() {
+/**
+ * `initialLogo` / `initialName` come from the server, where layout.tsx has
+ * already fetched settings. Without them the first paint had no logo at all —
+ * the settings query is client-side, so the header rendered its generic icon and
+ * only swapped in the hospital's mark after hydration. That flash is what made
+ * the logo look like it was never fetched.
+ */
+export default function NovaHeader({
+  initialLogo,
+  initialName,
+}: {
+  initialLogo?: string | null;
+  initialName?: string | null;
+} = {}) {
   const pathname = usePathname();
   const { data: settings } = useGetSettingsQuery();
 
@@ -150,8 +163,12 @@ export default function NovaHeader() {
   const exitTimer = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
-  const name = (settings?.site_name as string) || SITE_NAME;
-  const logo = resolveMediaUrl(settings?.logo_url as string);
+  // Server value first so the mark is in the HTML, then the query supersedes it
+  // once it lands (an admin can change the logo without a redeploy).
+  const name = (settings?.site_name as string) || initialName || SITE_NAME;
+  const logo =
+    resolveMediaUrl((settings?.logo_url as string) || initialLogo || "") ||
+    undefined;
   const emergency =
     (settings?.emergency_phone as string) || (settings?.phone as string);
   const phone = settings?.phone as string | undefined;

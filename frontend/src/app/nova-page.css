@@ -5084,3 +5084,45 @@
   text-transform: uppercase;
   color: var(--nv-faint);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MISSING IMAGE
+   What SmartImage shows once every candidate host has 404'd.
+
+   It used to be `bg-gradient-to-br from-teal-mist to-teal-deep/20` — a leftover
+   from the pre-Nova palette, so a missing photograph rendered as a teal smear
+   in the middle of a porcelain page. This is the same well the empty states and
+   the card frames use, with a faint mark in it: it reads as "no photograph here"
+   rather than as a rendering fault, and it holds the layout at the exact size the
+   image would have occupied.
+   ═════════════════════════════════════════════════════════════════════════ */
+.nv-imgfail {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgb(var(--nv-metal-rgb) / 0.05),
+      transparent 62%
+    ),
+    var(--nv-plate-well);
+  color: rgb(var(--nv-metal-rgb) / 0.38);
+}
+
+/* A hairline inside the box rather than a border on it, so the placeholder can
+   sit inside a frame that already has its own radius without doubling it. */
+.nv-imgfail::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-imgfail svg {
+  width: clamp(20px, 2.4vw, 30px);
+  height: clamp(20px, 2.4vw, 30px);
+}
