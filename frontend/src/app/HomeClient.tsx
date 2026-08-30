@@ -11,7 +11,6 @@ import {
   Siren,
   Sparkles,
   Stethoscope,
-  Users,
 } from "lucide-react";
 import { useGetHomeQuery } from "@/store/slices/apiSlice";
 import { SITE_NAME, DEFAULT_TAGLINE } from "@/lib/api";
@@ -19,7 +18,6 @@ import type { HomeData, Partner } from "@/lib/types";
 import { getImageFromItem } from "@/lib/media";
 import {
   cleanPublicText,
-  formatDate,
   formatPublicAddress,
   isPublicItemActive,
   truncate,
@@ -29,22 +27,28 @@ import NovaHero from "@/components/nova/NovaHero";
 import NovaSectionHead from "@/components/nova/NovaSectionHead";
 import NovaReveal from "@/components/nova/NovaReveal";
 import NovaWords from "@/components/nova/NovaWords";
+import NovaServiceLedger, {
+  type ServiceEntry,
+} from "@/components/nova/NovaServiceLedger";
 import NovaStaffGallery, {
   type StaffMember,
 } from "@/components/nova/NovaStaffGallery";
-import NovaDeptIndex, {
-  type IndexEntry,
-} from "@/components/nova/NovaDeptIndex";
+import NovaDeptBoard, {
+  type BoardUnit,
+} from "@/components/nova/NovaDeptBoard";
+import NovaFigures, { type Figure } from "@/components/nova/NovaFigures";
 import NovaGalleryStack, {
   type StackSlide,
 } from "@/components/nova/NovaGalleryStack";
-import NovaTestimonials from "@/components/nova/NovaTestimonials";
+import NovaVoices, {
+  type VoiceAssurance,
+} from "@/components/nova/NovaVoices";
+import NovaDispatch, {
+  type DispatchEntry,
+  type DispatchNote,
+} from "@/components/nova/NovaDispatch";
 import {
-  NovaContentCard,
   NovaEmpty,
-  NovaFact,
-  NovaMetricCard,
-  NovaNewsRow,
   NovaPartnerCard,
 } from "@/components/nova/NovaCards";
 
@@ -65,6 +69,29 @@ const WELCOME_PLEDGES = [
   {
     title: "Open every hour of the year",
     desc: "The emergency desk is staffed overnight, at weekends, and through holidays.",
+  },
+];
+
+/**
+ * The three standing assurances ruled into the foot of the voices folio. Static
+ * for the same reason the welcome pledges are: these are the hospital's own
+ * commitments, and the quotes above them are what evidences each one.
+ */
+const VOICE_ASSURANCES: VoiceAssurance[] = [
+  {
+    icon: HeartPulse,
+    title: "Treated with dignity",
+    desc: "Every ward runs on the same standard of respect, privacy, and clear explanation.",
+  },
+  {
+    icon: Sparkles,
+    title: "Continuously improving",
+    desc: "Patient feedback feeds directly into how our departments plan the next quarter.",
+  },
+  {
+    icon: Stethoscope,
+    title: "Second opinions welcome",
+    desc: "Ask any clinician for a referral — our specialists review cases together.",
   },
 ];
 
@@ -146,14 +173,31 @@ export default function HomeClient({
     stats?.years_experience != null && Number(stats.years_experience) > 0
       ? { value: Number(stats.years_experience), label: "Years of service" }
       : null,
-  ].filter(Boolean) as Array<{ value: number; label: string }>;
+  ].filter(Boolean) as Figure[];
 
-  const departmentEntries: IndexEntry[] = departments.map((dept) => ({
+  // Units for the wayfinding board. No image is passed: the department records
+  // hold three copies of one stock operating theatre between them, so the board
+  // identifies each unit by its glyph instead. NovaDeptBoard has the long
+  // version of that reasoning.
+  const departmentUnits: BoardUnit[] = departments.map((dept) => ({
     key: String(dept.id),
     href: `/departments/${dept.slug}`,
     title: dept.name,
     description: dept.short_description || dept.description || undefined,
-    image: getImageFromItem(dept as unknown as Record<string, unknown>),
+  }));
+
+  // Cells for the service ledger. The description is trimmed here and clamped
+  // again in CSS: this cap only guards against a record long enough to be
+  // absurd, the clamp is what decides how much of it a cell shows.
+  const serviceLedger: ServiceEntry[] = services.map((service) => ({
+    id: String(service.id),
+    href: `/services/${service.slug}`,
+    title: cleanPublicText(service.name) || service.name,
+    description:
+      truncate(
+        cleanPublicText(service.short_description || service.description || ""),
+        240
+      ) || undefined,
   }));
 
   // Subjects for the clinical staff board. The title is part of the name here —
@@ -172,6 +216,45 @@ export default function HomeClient({
     department: cleanPublicText(doctor.department?.name || "") || undefined,
     photo: getImageFromItem(doctor as unknown as Record<string, unknown>),
   }));
+
+  // Notices for the dispatch sheet. The raw timestamp is passed through rather
+  // than a formatted string: the sheet sets the day, month and year as three
+  // separate marks in its rail, and it reads them off the ISO string so the
+  // server and the browser cannot disagree about which calendar day it is.
+  const dispatchEntries: DispatchEntry[] = newsPosts.map((post) => ({
+    id: String(post.id),
+    href: `/news/${post.slug}`,
+    date: post.created_at || undefined,
+    title: cleanPublicText(post.title || post.name || ""),
+    excerpt:
+      truncate(
+        cleanPublicText(
+          post.excerpt || post.short_description || post.content || ""
+        ),
+        190
+      ) || undefined,
+  }));
+
+  // The two standing notes in the foot of that sheet. The emergency one carries
+  // the live mark and a tel: href, so on a phone the number is one tap rather
+  // than something to copy out by hand.
+  const dispatchNotes: DispatchNote[] = [
+    {
+      icon: Siren,
+      title: "Emergency line",
+      desc: emergency
+        ? `Call ${emergency} — the emergency desk answers day and night.`
+        : "Our emergency desk answers day and night, every day of the year.",
+      href: emergency ? `tel:${emergency}` : undefined,
+      live: true,
+    },
+    {
+      icon: MapPin,
+      title: "Find the campus",
+      desc:
+        address || "Siraro District, West Arsi Zone, Oromia Region, Ethiopia.",
+    },
+  ];
 
   // Cards for the stacked carousel under the hero. Gallery entries first; the
   // hero image list is the fallback for tenants that have not filled a gallery.
@@ -324,40 +407,20 @@ export default function HomeClient({
             }
           />
 
-          <div className="nv-grid-3 mt-12">
+          <div className="mt-12">
             {services.length ? (
-              services.map((service, i) => (
-                <NovaReveal
-                  key={service.id}
-                  from="up"
-                  delay={Math.min(i, 5) * 0.14}
-                >
-                  <NovaContentCard
-                    href={`/services/${service.slug}`}
-                    title={service.name}
-                    description={
-                      service.short_description || service.description || undefined
-                    }
-                    image={getImageFromItem(
-                      service as unknown as Record<string, unknown>
-                    )}
-                    kicker="Clinical service"
-                  />
-                </NovaReveal>
-              ))
+              <NovaServiceLedger items={serviceLedger} />
             ) : (
-              <div className="sm:col-span-2 lg:col-span-3">
-                <NovaEmpty
-                  title="Services coming soon"
-                  description="This list fills in as the hospital publishes its service catalogue."
-                />
-              </div>
+              <NovaEmpty
+                title="Services coming soon"
+                description="This list fills in as the hospital publishes its service catalogue."
+              />
             )}
           </div>
         </div>
       </section>
 
-      {/* ── Departments index ───────────────────────────────────────────── */}
+      {/* ── Departments board ───────────────────────────────────────────── */}
       <section className="nv-section nv-section--tight">
         <div className="nv-shell nv-shell--wide">
           <NovaSectionHead
@@ -365,6 +428,7 @@ export default function HomeClient({
             title="Clinical units under one roof"
             accentFrom={2}
             lede="Specialty teams working side by side, so a patient can move from triage to theatre without leaving the campus."
+            count={`· ${String(departments.length).padStart(2, "0")}`}
             action={
               <Link href="/departments" className="nv-btn nv-btn--glass">
                 View all departments
@@ -374,8 +438,8 @@ export default function HomeClient({
           />
 
           <div className="mt-12">
-            {departmentEntries.length ? (
-              <NovaDeptIndex entries={departmentEntries} />
+            {departmentUnits.length ? (
+              <NovaDeptBoard units={departmentUnits} />
             ) : (
               <NovaEmpty title="Departments coming soon" />
             )}
@@ -383,33 +447,16 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* ── Metrics ─────────────────────────────────────────────────────── */}
+      {/* ── Figures ─────────────────────────────────────────────────────── */}
       {metricItems.length > 0 && (
         <section className="nv-section nv-section--tight">
           <div className="nv-shell nv-shell--wide">
-            <NovaReveal className="nv-metrics" from="up">
-
-              <div className="relative z-10">
-                <p className="nv-eyebrow">At a glance</p>
-                <h2 className="nv-h2 mt-4">
-                  <NovaWords text="Hospital figures" accentFrom={1} />
-                </h2>
-                <p className="nv-lede mt-3 max-w-[56ch]">
-                  People, years, and capacity behind everyday clinical care.
-                </p>
-              </div>
-
-              <div className="nv-figs">
-                {metricItems.map((item, i) => (
-                  <NovaMetricCard
-                    key={item.label}
-                    index={i}
-                    value={item.value}
-                    label={item.label}
-                  />
-                ))}
-              </div>
-            </NovaReveal>
+            <NovaFigures
+              eyebrow="At a glance"
+              title="Hospital figures"
+              lede="People, years, and capacity behind everyday clinical care."
+              figures={metricItems}
+            />
           </div>
         </section>
       )}
@@ -451,6 +498,8 @@ export default function HomeClient({
               eyebrow="Patient voices"
               title="Words from the people we serve"
               accentFrom={4}
+              lede="Stories left by the people who have been treated here, in their own words."
+              count={`· ${String(testimonials.length).padStart(2, "0")}`}
               action={
                 <Link href="/testimonials" className="nv-btn nv-btn--glass">
                   All stories
@@ -459,34 +508,8 @@ export default function HomeClient({
               }
             />
 
-            <div className="nv-quote-split mt-12">
-              <NovaReveal from="up">
-                <NovaTestimonials items={testimonials} />
-              </NovaReveal>
-
-              <div className="grid gap-4">
-                <NovaReveal from="right" delay={0.1}>
-                  <NovaFact
-                    icon={HeartPulse}
-                    title="Treated with dignity"
-                    description="Every ward runs on the same standard of respect, privacy, and clear explanation."
-                  />
-                </NovaReveal>
-                <NovaReveal from="right" delay={0.2}>
-                  <NovaFact
-                    icon={Sparkles}
-                    title="Continuously improving"
-                    description="Patient feedback feeds directly into how our departments plan the next quarter."
-                  />
-                </NovaReveal>
-                <NovaReveal from="right" delay={0.3}>
-                  <NovaFact
-                    icon={Stethoscope}
-                    title="Second opinions welcome"
-                    description="Ask any clinician for a referral — our specialists review cases together."
-                  />
-                </NovaReveal>
-              </div>
+            <div className="mt-12">
+              <NovaVoices items={testimonials} assurances={VOICE_ASSURANCES} />
             </div>
           </div>
         </section>
@@ -502,6 +525,7 @@ export default function HomeClient({
             title="News & notices"
             accentFrom={1}
             lede="Announcements, service changes, and stories from across the hospital."
+            count={`· ${String(newsPosts.length).padStart(2, "0")}`}
             action={
               <Link href="/news" className="nv-btn nv-btn--glass">
                 All updates
@@ -510,62 +534,8 @@ export default function HomeClient({
             }
           />
 
-          <div className="nv-quote-split mt-12">
-            <div className="nv-news-list">
-              {newsPosts.length ? (
-                newsPosts.map((post, i) => (
-                  <NovaReveal
-                    key={post.id}
-                    from="left"
-                    delay={Math.min(i, 4) * 0.12}
-                  >
-                    <NovaNewsRow
-                      href={`/news/${post.slug}`}
-                      index={i}
-                      date={
-                        post.created_at ? formatDate(post.created_at) : undefined
-                      }
-                      title={cleanPublicText(post.title || post.name || "")}
-                      excerpt={truncate(
-                        cleanPublicText(
-                          post.excerpt || post.short_description || post.content || ""
-                        ),
-                        130
-                      )}
-                    />
-                  </NovaReveal>
-                ))
-              ) : (
-                <NovaEmpty
-                  title="No updates yet"
-                  description="Hospital notices and announcements will appear here."
-                />
-              )}
-            </div>
-
-            <div className="grid gap-4">
-              <NovaReveal from="right" delay={0.1}>
-                <NovaFact
-                  icon={Siren}
-                  title="Emergency line"
-                  description={
-                    emergency
-                      ? `Call ${emergency} — the emergency desk answers day and night.`
-                      : "Our emergency desk answers day and night, every day of the year."
-                  }
-                />
-              </NovaReveal>
-              <NovaReveal from="right" delay={0.2}>
-                <NovaFact
-                  icon={MapPin}
-                  title="Find the campus"
-                  description={
-                    address ||
-                    "Siraro District, West Arsi Zone, Oromia Region, Ethiopia."
-                  }
-                />
-              </NovaReveal>
-            </div>
+          <div className="mt-12">
+            <NovaDispatch entries={dispatchEntries} notes={dispatchNotes} />
           </div>
         </div>
       </section>

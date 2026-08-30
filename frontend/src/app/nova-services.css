@@ -1,0 +1,305 @@
+/* ==========================================================================
+   NOVA — service ledger
+   The service catalogue as one ruled sheet: six typographic cells, hairlines
+   between them, a seal and a roman ordinal on each.
+
+   What it replaces was six photographic cards. The records carry printed
+   posters rather than photographs, so four of six rendered as a grey well with
+   a small glyph in the middle and the other two as a flyer cropped to 16:10.
+   Ruling the cells apart instead makes the set read as one object and lets the
+   glyph, which every record has, do the work of telling the six units apart.
+
+   Cell borders are drawn per cell and suppressed on the first row and the first
+   column, per breakpoint. Each breakpoint restates the base at
+   `:nth-child(n)` before its own suppressions, because the previous
+   breakpoint's `:nth-child()` rules outrank a bare `.nv-svl__cell` and would
+   otherwise keep a border switched off at the wrong column count.
+   ========================================================================== */
+
+.nv-svl {
+  position: relative;
+  padding: clamp(18px, 2.2vw, 30px);
+  overflow: hidden;
+  /* Same shell as the staff board below it: three soft corners and one square. */
+  border: 1px solid var(--nv-hairline);
+  border-radius: var(--nv-r-lg) var(--nv-r-lg) var(--nv-r-lg) 0;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+}
+
+/* Registration brackets, as on the staff board and the interior mastheads. Kept
+   local rather than hoisted into a shared utility, which is how the rest of the
+   system handles this mark — each block details its own corners. */
+.nv-svl__tick {
+  position: absolute;
+  z-index: 6;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  border: 1px solid var(--nv-champagne-line);
+}
+
+.nv-svl__tick--tl { top: 13px; left: 13px; border-right: 0; border-bottom: 0; }
+.nv-svl__tick--br { right: 13px; bottom: 13px; border-left: 0; border-top: 0; }
+
+.nv-svl__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nv-svl__cell {
+  position: relative;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-svl__cell:first-child { border-top: 0; }
+
+@media (min-width: 700px) {
+  .nv-svl__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .nv-svl__cell:nth-child(n) {
+    border-top: 1px solid var(--nv-hairline);
+    border-left: 1px solid var(--nv-hairline);
+  }
+
+  .nv-svl__cell:nth-child(-n + 2) { border-top: 0; }
+  .nv-svl__cell:nth-child(2n + 1) { border-left: 0; }
+}
+
+@media (min-width: 1100px) {
+  .nv-svl__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .nv-svl__cell:nth-child(n) {
+    border-top: 1px solid var(--nv-hairline);
+    border-left: 1px solid var(--nv-hairline);
+  }
+
+  .nv-svl__cell:nth-child(-n + 3) { border-top: 0; }
+  .nv-svl__cell:nth-child(3n + 1) { border-left: 0; }
+}
+
+/* Dealt in cell by cell on first sight, and latched there. */
+.nv-svl__cell {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 0.95s var(--nv-ease-lux),
+    transform 1.1s var(--nv-ease-lux);
+  transition-delay: calc(var(--nv-i, 0) * 85ms);
+}
+
+.nv-svl[data-lit="true"] .nv-svl__cell {
+  opacity: 1;
+  transform: none;
+}
+
+.nv-svl__unit {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: clamp(24px, 2.6vw, 36px) clamp(20px, 2vw, 30px)
+    clamp(22px, 2.2vw, 30px);
+  text-decoration: none;
+  isolation: isolate;
+}
+
+/* The cursor wash is .nv-spot from the core sheet, which paints on ::before at
+   z-index 1 — so everything the reader has to read sits at 2, and the bronze
+   edge rule above it at 3. */
+.nv-svl__unit > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Bronze rule along the top of the cell, drawn from the leading edge on
+   approach. Its own element rather than the cell border, because the top row of
+   the sheet has no border to recolour. */
+.nv-svl__edge {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.18)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.85s var(--nv-ease-lux);
+}
+
+.nv-svl__unit:hover .nv-svl__edge,
+.nv-svl__unit:focus-visible .nv-svl__edge {
+  transform: scaleX(1);
+}
+
+/* The watermark glyph, occupying what the photograph used to. Bottom right,
+   clipped by the cell, and far enough out of ink that the description reads over
+   it without contest. */
+.nv-svl__wm {
+  position: absolute;
+  right: -14px;
+  bottom: -22px;
+  z-index: 0;
+  display: none;
+  color: rgb(var(--nv-metal-rgb) / 0.075);
+  pointer-events: none;
+  transition:
+    color 0.9s var(--nv-ease-lux),
+    transform 1.1s var(--nv-ease-lux);
+}
+
+.nv-svl__wm svg {
+  width: clamp(104px, 11vw, 150px);
+  height: clamp(104px, 11vw, 150px);
+  stroke-width: 0.9;
+}
+
+@media (min-width: 700px) {
+  .nv-svl__wm { display: block; }
+}
+
+.nv-svl__unit:hover .nv-svl__wm {
+  color: rgb(var(--nv-metal-rgb) / 0.12);
+  transform: translate3d(0, -5px, 0);
+}
+
+.nv-svl__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* A pressed seal rather than an outlined chip: it fills on approach and takes a
+   soft ring, which is the one moment of solid metal in the section. */
+.nv-svl__seal {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne);
+  transition:
+    background 0.7s var(--nv-ease-lux),
+    border-color 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    color 0.7s var(--nv-ease-lux);
+}
+
+.nv-svl__seal svg { width: 19px; height: 19px; stroke-width: 1.5; }
+
+.nv-svl__unit:hover .nv-svl__seal,
+.nv-svl__unit:focus-visible .nv-svl__seal {
+  background: var(--nv-champagne);
+  border-color: var(--nv-champagne);
+  box-shadow: 0 0 0 5px var(--nv-champagne-faint);
+  color: var(--nv-on-media);
+}
+
+.nv-svl__ord {
+  font-family: var(--nv-font-serif);
+  font-size: clamp(1.55rem, 2.2vw, 2rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: rgb(var(--nv-metal-rgb) / 0.24);
+  user-select: none;
+  transition: color 0.7s var(--nv-ease-lux);
+}
+
+.nv-svl__unit:hover .nv-svl__ord { color: rgb(var(--nv-metal-rgb) / 0.5); }
+
+/* The short rule under the head, which extends on approach. It is the only
+   moving measure in the cell, so it carries the whole gesture. */
+.nv-svl__mark {
+  display: block;
+  width: 26px;
+  height: 1px;
+  margin-top: clamp(20px, 2vw, 28px);
+  background: var(--nv-champagne-line);
+  transition:
+    width 0.85s var(--nv-ease-lux),
+    background 0.85s var(--nv-ease-lux);
+}
+
+.nv-svl__unit:hover .nv-svl__mark,
+.nv-svl__unit:focus-visible .nv-svl__mark {
+  width: 64px;
+  background: var(--nv-champagne);
+}
+
+.nv-svl__title {
+  margin-top: 14px;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(1.1rem, 1.45vw, 1.26rem);
+  font-weight: 500;
+  line-height: 1.32;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+  color: var(--nv-text);
+}
+/* Clamped to four rendered lines so the cut lands at the end of a line. The
+   string is truncated on the way in as well; that guards against a description
+   long enough to be absurd, this decides what the cell actually shows. */
+.nv-svl__desc {
+  display: -webkit-box;
+  margin-top: 11px;
+  overflow: hidden;
+  font-size: 0.845rem;
+  line-height: 1.68;
+  color: var(--nv-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+/* Pushed to the foot by margin-top:auto, so the six calls to action line up
+   across the sheet however long the descriptions above them run. */
+.nv-svl__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: auto;
+  padding-top: clamp(18px, 2vw, 26px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.615rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+}
+
+.nv-svl__go svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.6s var(--nv-ease-lux);
+}
+
+.nv-svl__unit:hover .nv-svl__go svg,
+.nv-svl__unit:focus-visible .nv-svl__go svg {
+  transform: translate3d(3px, -3px, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-svl__cell,
+  .nv-svl__edge,
+  .nv-svl__mark,
+  .nv-svl__wm,
+  .nv-svl__go svg {
+    transition: none !important;
+  }
+
+  .nv-svl__cell { opacity: 1; transform: none; }
+  .nv-svl__edge { display: none; }
+}

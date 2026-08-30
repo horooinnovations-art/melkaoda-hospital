@@ -20,6 +20,36 @@ export function formatYear(date?: string | null) {
   return new Date(date).getFullYear().toString();
 }
 
+const ROMAN: ReadonlyArray<readonly [number, string]> = [
+  [10, "X"],
+  [9, "IX"],
+  [5, "V"],
+  [4, "IV"],
+  [1, "I"],
+];
+
+/**
+ * Roman numerals for the ordinals on the home page boards, where the mark is
+ * doing classical rather than arithmetic work. Falls back to a zero-padded
+ * numeral past XXXIX, where roman runs wider than the column holding it — the
+ * lists that use this are capped at ten, so that is a guard rather than a case
+ * anyone sees.
+ */
+export function toRoman(value: number) {
+  if (!Number.isFinite(value) || value < 1 || value > 39) {
+    return String(value).padStart(2, "0");
+  }
+  let rest = Math.floor(value);
+  let out = "";
+  for (const [step, glyph] of ROMAN) {
+    while (rest >= step) {
+      out += glyph;
+      rest -= step;
+    }
+  }
+  return out;
+}
+
 /**
  * Cut to `length`, then back up to the last word boundary so the ellipsis never
  * lands mid-word ("…without bei…"). If the cut leaves no whitespace to fall back

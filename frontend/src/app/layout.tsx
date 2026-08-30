@@ -22,8 +22,14 @@ import "./nova-page.css";
 // Interior pages — masthead, atelier card, ledger row. After nova-page.css so
 // the interior opening wins over the sheet it replaces.
 import "./nova-interior.css";
-// The clinical staff board on the home page. Self-contained under .nv-sg.
+// The two home-page boards. Self-contained under .nv-svl and .nv-sg.
+import "./nova-services.css";
 import "./nova-staff.css";
+import "./nova-boards.css";
+// The two home-page records — the voices folio and the dispatch sheet. Both are
+// self-contained under .nv-vox and .nv-disp.
+import "./nova-voices.css";
+import "./nova-dispatch.css";
 import "./nova-footer.css";
 
 const sourceSans = Source_Sans_3({

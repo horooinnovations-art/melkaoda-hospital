@@ -1,0 +1,666 @@
+/* ==========================================================================
+   NOVA — patient voices folio
+   One plate in three bands: a quote stage, an index of every voice down the
+   right edge, and the hospital's standing assurances ruled into the foot.
+
+   It replaces a rotating quote plate with three fact cards floating beside it.
+   Four objects at four weights said "four things"; one sheet with hairlines
+   between its bands says "one thing, with parts" — which is what the content is.
+
+   The stage never changes height: every quote is mounted in the same grid cell
+   and the inactive ones are hidden rather than unmounted. That is why a long
+   story following a short one does not shove the assurance strip down the page.
+   ========================================================================== */
+
+.nv-vox {
+  position: relative;
+  overflow: hidden;
+  /* Three soft corners and one square, as on the service ledger and the staff
+     board — the mark that says these plates belong to the same set. */
+  border: 1px solid var(--nv-hairline);
+  border-radius: var(--nv-r-xl) var(--nv-r-xl) var(--nv-r-xl) 0;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+}
+
+/* Letterhead rule, drawn across the top edge on first sight. */
+.nv-vox::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 6;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 20%,
+    rgb(var(--nv-metal-rgb) / 0.5) 50%,
+    var(--nv-champagne-line) 80%,
+    transparent
+  );
+  transform: scaleX(0);
+  transition: transform 1.5s var(--nv-ease-lux) 0.12s;
+}
+
+.nv-vox[data-lit="true"]::before { transform: scaleX(1); }
+
+/* ── Ambient layers ─────────────────────────────────────────────────────────
+   The ruled paper the page already uses under its sections, brought inside the
+   plate so the folio reads as a sheet of it rather than as a card laid on top.
+   ------------------------------------------------------------------------- */
+.nv-vox__weave {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(var(--nv-ink-rgb) / 0.05) 0 1px,
+    transparent 1px clamp(104px, 10vw, 168px)
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 62%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 62%, transparent 100%);
+}
+
+.nv-vox__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    52% 58% at 74% 10%,
+    rgb(var(--nv-metal-rgb) / 0.085),
+    transparent 74%
+  );
+  animation: nv-vox-pool 24s ease-in-out infinite alternate;
+}
+
+@keyframes nv-vox-pool {
+  from { opacity: 0.55; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.06); }
+}
+
+/* The closing mark, set enormous and nearly out of ink. It is the counterpart
+   to the opening mark in the meta row: the quotation opens at the top left of
+   the stage and closes here, at the bottom of the sheet. */
+.nv-vox__wm {
+  position: absolute;
+  right: 1.5%;
+  bottom: -3%;
+  z-index: 0;
+  display: none;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(11rem, 20vw, 19rem);
+  line-height: 0.62;
+  color: rgb(var(--nv-metal-rgb) / 0.05);
+  pointer-events: none;
+  user-select: none;
+  animation: nv-vox-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes nv-vox-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-14px, -10px, 0); }
+}
+
+@media (min-width: 760px) {
+  .nv-vox__wm { display: block; }
+}
+
+/* Registration brackets, as on the ledger and the engraved plate. */
+.nv-vox__tick {
+  position: absolute;
+  z-index: 6;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  border: 1px solid var(--nv-champagne-line);
+  opacity: 0;
+  transition: opacity 1.1s var(--nv-ease-lux) 0.5s;
+}
+
+.nv-vox[data-lit="true"] .nv-vox__tick { opacity: 1; }
+.nv-vox__tick--tl { top: 14px; left: 14px; border-right: 0; border-bottom: 0; }
+.nv-vox__tick--br { right: 14px; bottom: 14px; border-left: 0; border-top: 0; }
+
+/* ── Stage ──────────────────────────────────────────────────────────────── */
+.nv-vox__stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1040px) {
+  .nv-vox__stage { grid-template-columns: minmax(0, 1fr) 330px; }
+}
+
+.nv-vox__main { padding: clamp(28px, 3.4vw, 54px); }
+
+.nv-vox__meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* The one moment of solid metal in the section, and the only thing on the sheet
+   that moves without being asked: the sheen crosses the glyph on a long cycle,
+   which is what makes a printed ornament read as a cut one. */
+.nv-vox__mark {
+  font-family: var(--nv-font-serif);
+  font-size: clamp(3rem, 4.4vw, 4.2rem);
+  line-height: 0.62;
+  letter-spacing: -0.02em;
+  background: var(--nv-grad-metal);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  user-select: none;
+  animation: nv-vox-sheen 11s var(--nv-ease-io) infinite alternate;
+}
+
+@keyframes nv-vox-sheen {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+.nv-vox__ord {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  flex: none;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--nv-champagne-line);
+  font-family: var(--nv-font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+  user-select: none;
+}
+
+.nv-vox__ord i {
+  font-style: normal;
+  color: var(--nv-hairline-hi);
+}
+
+/* ── Quote panes ────────────────────────────────────────────────────────────
+   All of them share one grid cell, so the tallest quote sets the height of the
+   stage once and nothing below it ever moves.
+   ------------------------------------------------------------------------- */
+.nv-vox__panes {
+  position: relative;
+  display: grid;
+  margin-top: clamp(22px, 2.6vw, 32px);
+}
+
+.nv-vox__pane {
+  grid-area: 1 / 1;
+  margin: 0;
+  transition:
+    opacity 0.8s var(--nv-ease-lux),
+    transform 0.9s var(--nv-ease-lux);
+}
+
+.nv-vox__pane[data-on="false"] {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.nv-vox__quote {
+  margin: 0;
+  font-family: var(--nv-font-serif);
+  font-style: italic;
+  font-size: clamp(1.22rem, 2.2vw, 1.82rem);
+  line-height: 1.52;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+  color: var(--nv-text);
+}
+
+/* Word by word. The delay only exists on the rule for the pane that is on, so a
+   quote leaving the stage fades as one block rather than un-writing itself. */
+.nv-vox__w {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 0.42em, 0);
+  transition:
+    opacity 0.72s var(--nv-ease-lux),
+    transform 0.95s var(--nv-ease-lux);
+}
+
+.nv-vox[data-lit="true"] .nv-vox__pane[data-on="true"] .nv-vox__w {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--nv-w, 0) * 28ms);
+}
+
+.nv-vox__by {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: clamp(26px, 3vw, 38px);
+  padding-top: 22px;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-vox__name {
+  display: block;
+  font-family: var(--nv-font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  color: var(--nv-text);
+}
+
+.nv-vox__stars {
+  display: inline-flex;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.nv-vox__star {
+  display: inline-flex;
+  color: var(--nv-champagne);
+  opacity: 0;
+  transform: scale(0.55) rotate(-24deg);
+  transition:
+    opacity 0.5s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-vox__star svg { width: 12px; height: 12px; }
+
+.nv-vox[data-lit="true"] .nv-vox__pane[data-on="true"] .nv-vox__star {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(300ms + var(--nv-s, 0) * 90ms);
+}
+
+/* ── Medallion ──────────────────────────────────────────────────────────────
+   One mark at two sizes: large under the quote it belongs to, small in the
+   spine. The small one is the piece that fills with solid metal when its voice
+   is the one on the stage, which is how the index says which row is live
+   without needing a second colour anywhere else.
+   ------------------------------------------------------------------------- */
+.nv-vox__av {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow:
+    inset 0 1px 0 var(--nv-edge-soft),
+    0 0 0 5px rgb(var(--nv-metal-rgb) / 0.05);
+  font-family: var(--nv-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--nv-champagne);
+}
+
+.nv-vox__av--sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.62rem;
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  transition:
+    background 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    box-shadow 0.6s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux);
+}
+
+/* ── Voice spine ────────────────────────────────────────────────────────────
+   A vertical index beside the stage on wide viewports; a scrolling row of pills
+   under it on narrow ones, where 330px of column does not exist to spend.
+   ------------------------------------------------------------------------- */
+.nv-vox__spine {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  padding: 14px clamp(18px, 2.4vw, 26px) 18px;
+  border-top: 1px solid var(--nv-hairline);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nv-vox__spine::-webkit-scrollbar { display: none; }
+
+@media (min-width: 1040px) {
+  .nv-vox__spine {
+    flex-direction: column;
+    gap: 4px;
+    padding: clamp(24px, 2.6vw, 32px) clamp(16px, 1.7vw, 22px);
+    border-top: 0;
+    border-left: 1px solid var(--nv-hairline);
+    /* A shade darker than the plate: the index is a recessed column, not a
+       second card sitting on the first. */
+    background: rgb(var(--nv-ink-rgb) / 0.022);
+    overflow: visible;
+  }
+}
+
+.nv-vox__spine-label {
+  display: none;
+  margin-bottom: 8px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--nv-hairline);
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+@media (min-width: 1040px) {
+  .nv-vox__spine-label { display: block; }
+}
+
+/* Dealt in one row at a time on first sight. The delay is written per property
+   rather than on the shorthand so it applies to the entrance only — on the
+   shorthand it would also stall the hover wash by the row's own index. */
+.nv-vox__voice {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 11px;
+  width: max-content;
+  max-width: 72vw;
+  padding: 9px 18px 15px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition-property: opacity, transform, background, border-color;
+  transition-duration: 0.85s, 0.95s, 0.5s, 0.5s;
+  transition-timing-function: var(--nv-ease-lux);
+  transition-delay:
+    calc(220ms + var(--nv-i, 0) * 80ms),
+    calc(220ms + var(--nv-i, 0) * 80ms),
+    0s,
+    0s;
+}
+
+.nv-vox[data-lit="true"] .nv-vox__voice {
+  opacity: 1;
+  transform: none;
+}
+
+.nv-vox__voice:hover { background: rgb(var(--nv-metal-rgb) / 0.055); }
+
+.nv-vox__voice:focus-visible {
+  outline: 2px solid var(--nv-champagne);
+  outline-offset: 2px;
+}
+
+.nv-vox__voice[data-on="true"] {
+  background: var(--nv-champagne-faint);
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-vox__voice[data-on="true"] .nv-vox__av--sm {
+  background: var(--nv-champagne);
+  border-color: var(--nv-champagne);
+  box-shadow: 0 0 0 4px var(--nv-champagne-faint);
+  color: var(--nv-on-media);
+}
+
+.nv-vox__voice-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.nv-vox__voice-name,
+.nv-vox__voice-hint {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nv-vox__voice-name {
+  font-family: var(--nv-font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--nv-text-dim);
+  transition: color 0.5s var(--nv-ease-lux);
+}
+
+.nv-vox__voice[data-on="true"] .nv-vox__voice-name { color: var(--nv-text); }
+
+.nv-vox__voice-hint {
+  display: none;
+  font-size: 0.715rem;
+  line-height: 1.5;
+  color: var(--nv-faint);
+}
+
+@media (min-width: 1040px) {
+  .nv-vox__voice {
+    width: auto;
+    max-width: none;
+    border-radius: 15px;
+    padding: 11px 14px 17px 11px;
+  }
+
+  .nv-vox__voice-hint { display: block; }
+}
+
+/* ── Rotation clock ─────────────────────────────────────────────────────────
+   The rule under the selected name is not an indicator, it is the countdown: it
+   fills over exactly one interval, and the interval comes from the component
+   that owns the timer rather than being restated here. Holding the folio pauses
+   the fill where it stands; releasing it re-keys the element in React, so the
+   fill restarts from zero at the same instant the timer does.
+
+   With nothing to count — a single story, or a reduced-motion preference — there
+   is no clock, so the rule is not drawn at all rather than sitting there full.
+   ------------------------------------------------------------------------- */
+.nv-vox__meter {
+  position: absolute;
+  right: 18px;
+  bottom: 7px;
+  left: 11px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--nv-metal-rgb) / 0.2);
+  overflow: hidden;
+}
+
+.nv-vox__meter-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--nv-champagne);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: nv-vox-fill var(--nv-vox-ms, 7600ms) linear both;
+}
+
+.nv-vox[data-held="true"] .nv-vox__meter-fill { animation-play-state: paused; }
+.nv-vox[data-auto="false"] .nv-vox__meter { display: none; }
+
+@keyframes nv-vox-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ── Assurance strip ────────────────────────────────────────────────────────
+   The foot of the sheet. Cells are ruled apart rather than boxed, and the
+   borders are suppressed per breakpoint at the start of each visual row — the
+   same pattern as the service ledger, and the same reason for restating the
+   base at `:nth-child(n)` first: a narrower breakpoint's nth-child rule outranks
+   a bare class and would otherwise keep a border switched off.
+   ------------------------------------------------------------------------- */
+.nv-vox__strip {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--nv-hairline);
+  background: rgb(var(--nv-ink-rgb) / 0.014);
+}
+
+.nv-vox__cell {
+  position: relative;
+  padding: clamp(22px, 2.4vw, 30px) clamp(20px, 2.2vw, 30px);
+  border-top: 1px solid var(--nv-hairline);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.9s var(--nv-ease-lux),
+    transform 1.05s var(--nv-ease-lux);
+  transition-delay: calc(320ms + var(--nv-i, 0) * 90ms);
+}
+
+.nv-vox__cell:first-child { border-top: 0; }
+
+.nv-vox[data-lit="true"] .nv-vox__cell {
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 760px) {
+  .nv-vox__strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .nv-vox__cell:nth-child(n) {
+    border-top: 1px solid var(--nv-hairline);
+    border-left: 1px solid var(--nv-hairline);
+  }
+
+  .nv-vox__cell:nth-child(-n + 3) { border-top: 0; }
+  .nv-vox__cell:nth-child(3n + 1) { border-left: 0; }
+}
+
+/* Bronze rule along the top of the cell on approach. Its own element rather than
+   the cell border, because the first row of the strip has no border to recolour. */
+.nv-vox__cell-edge {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.16)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.85s var(--nv-ease-lux);
+}
+
+.nv-vox__cell:hover .nv-vox__cell-edge { transform: scaleX(1); }
+
+.nv-vox__seal {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne);
+  transition:
+    background 0.7s var(--nv-ease-lux),
+    border-color 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    color 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-vox__seal svg { width: 18px; height: 18px; stroke-width: 1.5; }
+
+.nv-vox__cell:hover .nv-vox__seal {
+  background: var(--nv-champagne);
+  border-color: var(--nv-champagne);
+  box-shadow: 0 0 0 5px var(--nv-champagne-faint);
+  color: var(--nv-on-media);
+  transform: translate3d(0, -2px, 0);
+}
+
+.nv-vox__cell-title {
+  margin-top: 18px;
+  font-family: var(--nv-font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  color: var(--nv-text);
+}
+
+.nv-vox__cell-desc {
+  margin-top: 9px;
+  font-size: 0.845rem;
+  line-height: 1.66;
+  color: var(--nv-muted);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────
+   Everything that moves here is decoration on top of a layout that already
+   works, so all of it is simply switched off. The rotation itself is disabled in
+   the component, which is why the clock has nothing left to draw.
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .nv-vox::before,
+  .nv-vox__tick,
+  .nv-vox__pane,
+  .nv-vox__w,
+  .nv-vox__star,
+  .nv-vox__voice,
+  .nv-vox__cell,
+  .nv-vox__cell-edge,
+  .nv-vox__seal {
+    transition: none !important;
+  }
+
+  .nv-vox__glow,
+  .nv-vox__wm,
+  .nv-vox__mark,
+  .nv-vox__meter-fill {
+    animation: none !important;
+  }
+
+  .nv-vox::before { transform: scaleX(1); }
+
+  .nv-vox__tick,
+  .nv-vox__w,
+  .nv-vox__star,
+  .nv-vox__voice,
+  .nv-vox__cell {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nv-vox__cell-edge { display: none; }
+}
+
+
+
+
+
+
+

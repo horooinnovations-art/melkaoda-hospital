@@ -5,6 +5,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Stethoscope } from "lucide-react";
 import SmartImage from "@/components/shared/SmartImage";
+import { toRoman } from "@/lib/utils";
 import { useInView, useSpotlight, useTilt } from "./hooks";
 
 export type StaffMember = {
@@ -15,33 +16,6 @@ export type StaffMember = {
   department?: string;
   photo?: string | null;
 };
-
-const ROMAN: ReadonlyArray<readonly [number, string]> = [
-  [10, "X"],
-  [9, "IX"],
-  [5, "V"],
-  [4, "IV"],
-  [1, "I"],
-];
-
-/**
- * Plate numbers, in the manner of an engraved portrait series. Falls back to a
- * zero-padded numeral past XXXIX, where roman runs wider than the column that
- * holds it — the home page shows ten clinicians at most, so that is a guard
- * rather than a case anyone sees.
- */
-function roman(value: number) {
-  if (value < 1 || value > 39) return String(value).padStart(2, "0");
-  let rest = value;
-  let out = "";
-  for (const [step, glyph] of ROMAN) {
-    while (rest >= step) {
-      out += glyph;
-      rest -= step;
-    }
-  }
-  return out;
-}
 
 function monogram(name: string) {
   return (
@@ -139,7 +113,7 @@ export default function NovaStaffGallery({
               tabIndex={on ? undefined : -1}
             >
               <span className="nv-sg__ghost" aria-hidden>
-                {roman(i + 1)}
+                {toRoman(i + 1)}
               </span>
 
               <span
@@ -242,7 +216,7 @@ export default function NovaStaffGallery({
                   onPointerEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
                 >
-                  <span className="nv-sg__num">{roman(i + 1)}</span>
+                  <span className="nv-sg__num">{toRoman(i + 1)}</span>
 
                   <span className="nv-sg__rowcopy">
                     <span className="nv-sg__rowname">{member.name}</span>

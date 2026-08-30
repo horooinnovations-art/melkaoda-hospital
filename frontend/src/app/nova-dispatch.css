@@ -1,0 +1,584 @@
+/* ==========================================================================
+   NOVA — dispatch sheet
+   Hospital notices as a dated record: a rail carrying the day, a bronze node on
+   a timeline that draws itself down the sheet, the notice set in the serif, and
+   the two standing contacts ruled into the foot.
+
+   It replaces a column of five grey rows beside a narrow aside of fact cards —
+   which was the same shape as the testimonial section directly above it, so the
+   bottom half of the home page read as one repeated pattern. The date leads here
+   because on a notice the date is the first thing anybody wants.
+
+   Rail geometry is two custom properties rather than repeated literals: the
+   timeline is drawn on the list item and has to land exactly on the rail's right
+   edge, which is the entry's inline padding plus the rail's own width.
+   ========================================================================== */
+
+.nv-disp {
+  --nv-disp-pad: clamp(18px, 2.2vw, 30px);
+  --nv-disp-rail: 84px;
+
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: var(--nv-r-xl) var(--nv-r-xl) var(--nv-r-xl) 0;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-disp::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 6;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 20%,
+    rgb(var(--nv-metal-rgb) / 0.5) 50%,
+    var(--nv-champagne-line) 80%,
+    transparent
+  );
+  transform: scaleX(0);
+  transition: transform 1.5s var(--nv-ease-lux) 0.12s;
+}
+
+.nv-disp[data-lit="true"]::before { transform: scaleX(1); }
+
+/* Ambient layers. The pool is thrown from the left here and from the right on
+   the voices folio, which is the same alternation the page's own section light
+   uses — two identical plates lit from the same side would read as a template. */
+.nv-disp__weave {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(var(--nv-ink-rgb) / 0.05) 0 1px,
+    transparent 1px clamp(104px, 10vw, 168px)
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+}
+
+.nv-disp__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    50% 56% at 16% 8%,
+    rgb(var(--nv-metal-rgb) / 0.08),
+    transparent 74%
+  );
+  animation: nv-disp-pool 26s ease-in-out infinite alternate;
+}
+
+@keyframes nv-disp-pool {
+  from { opacity: 0.55; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+.nv-disp__tick {
+  position: absolute;
+  z-index: 6;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  border: 1px solid var(--nv-champagne-line);
+  opacity: 0;
+  transition: opacity 1.1s var(--nv-ease-lux) 0.5s;
+}
+
+.nv-disp[data-lit="true"] .nv-disp__tick { opacity: 1; }
+.nv-disp__tick--tl { top: 14px; left: 14px; border-right: 0; border-bottom: 0; }
+.nv-disp__tick--br { right: 14px; bottom: 14px; border-left: 0; border-top: 0; }
+
+/* ── Entries ────────────────────────────────────────────────────────────── */
+.nv-disp__list {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: clamp(10px, 1.3vw, 18px) 0;
+  list-style: none;
+}
+
+.nv-disp__item {
+  position: relative;
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.9s var(--nv-ease-lux),
+    transform 1.05s var(--nv-ease-lux);
+  transition-delay: calc(var(--nv-i, 0) * 100ms);
+}
+
+.nv-disp[data-lit="true"] .nv-disp__item {
+  opacity: 1;
+  transform: none;
+}
+
+.nv-disp__item + .nv-disp__item { border-top: 1px solid var(--nv-hairline); }
+
+/* The timeline. Drawn on the list item so it spans the entry's full height —
+   padding included — which is what makes one continuous line down the sheet
+   rather than a dash per row. It grows top-down, one entry behind the other, on
+   the same stagger the entries themselves arrive on.
+
+   Suppressed below 720px, where the rail turns into an inline date line and there
+   is no column for a spine to run in. */
+.nv-disp__item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--nv-disp-pad) + var(--nv-disp-rail));
+  display: none;
+  width: 1px;
+  background: var(--nv-hairline);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform 1s var(--nv-ease-lux);
+  transition-delay: calc(var(--nv-i, 0) * 110ms);
+}
+
+.nv-disp[data-lit="true"] .nv-disp__item::before { transform: scaleY(1); }
+
+@media (min-width: 720px) {
+  .nv-disp__item::before { display: block; }
+}
+
+.nv-disp__entry {
+  position: relative;
+  display: block;
+  padding: clamp(20px, 2.2vw, 28px) var(--nv-disp-pad);
+  text-decoration: none;
+  isolation: isolate;
+}
+
+/* .nv-spot paints its wash on ::before at z-index 1, so everything readable
+   sits at 2 and the bronze edge rule above it at 3. */
+.nv-disp__entry > * {
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 720px) {
+  .nv-disp__entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+}
+
+.nv-disp__edge {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.16)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.85s var(--nv-ease-lux);
+}
+
+.nv-disp__entry:hover .nv-disp__edge,
+.nv-disp__entry:focus-visible .nv-disp__edge {
+  transform: scaleX(1);
+}
+
+/* ── Date rail ──────────────────────────────────────────────────────────────
+   A row above the title on narrow viewports, a right-aligned column against the
+   timeline from 720px up. Same three elements either way; only the axis changes.
+   ------------------------------------------------------------------------- */
+.nv-disp__rail {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 13px;
+}
+
+@media (min-width: 720px) {
+  .nv-disp__rail {
+    width: var(--nv-disp-rail);
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    margin-bottom: 0;
+    padding-right: 24px;
+    text-align: right;
+  }
+}
+
+/* Punched through the timeline: the white ring is what makes the dot read as a
+   node on the line rather than a bead beside it. */
+.nv-disp__node {
+  display: none;
+  position: absolute;
+  top: 9px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-plate-flat);
+  box-shadow: 0 0 0 4px var(--nv-plate-flat);
+  transition:
+    background 0.7s var(--nv-ease-lux),
+    border-color 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+@media (min-width: 720px) {
+  .nv-disp__node { display: block; }
+}
+
+.nv-disp__entry:hover .nv-disp__node,
+.nv-disp__entry:focus-visible .nv-disp__node {
+  background: var(--nv-champagne);
+  border-color: var(--nv-champagne);
+  transform: scale(1.25);
+}
+
+.nv-disp__day {
+  font-family: var(--nv-font-display);
+  font-size: 1.16rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--nv-text);
+}
+
+@media (min-width: 720px) {
+  .nv-disp__day { font-size: clamp(1.7rem, 2.4vw, 2.15rem); }
+}
+
+.nv-disp__mon,
+.nv-disp__year {
+  font-family: var(--nv-font-mono);
+  font-size: 0.635rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.nv-disp__mon { color: var(--nv-champagne-dim); }
+.nv-disp__year { color: var(--nv-faint); }
+
+@media (min-width: 720px) {
+  .nv-disp__mon { margin-top: 7px; }
+}
+
+/* ── Notice body ────────────────────────────────────────────────────────── */
+.nv-disp__body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding-right: 44px;
+}
+
+@media (min-width: 720px) {
+  .nv-disp__body { padding-left: 26px; }
+}
+
+/* A folio number, at the outer edge where a printed record puts it and clear of
+   the title. Roman for the same reason as on the ledger and the staff board: the
+   mark is doing classical work, not arithmetic. */
+.nv-disp__ord {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: rgb(var(--nv-metal-rgb) / 0.22);
+  user-select: none;
+  transition: color 0.7s var(--nv-ease-lux);
+}
+
+.nv-disp__entry:hover .nv-disp__ord { color: rgb(var(--nv-metal-rgb) / 0.48); }
+
+.nv-disp__title {
+  font-family: var(--nv-font-serif);
+  font-size: clamp(1.06rem, 1.6vw, 1.34rem);
+  font-weight: 500;
+  line-height: 1.36;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+  color: var(--nv-text);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-disp__entry:hover .nv-disp__title,
+.nv-disp__entry:focus-visible .nv-disp__title {
+  color: var(--nv-champagne-hi);
+}
+
+/* Two rendered lines, so the cut lands at the end of a line. The string is also
+   trimmed on the way in; that guards against an excerpt long enough to be
+   absurd, this decides what the row actually shows. */
+.nv-disp__excerpt {
+  display: -webkit-box;
+  margin-top: 10px;
+  overflow: hidden;
+  font-size: 0.855rem;
+  line-height: 1.68;
+  color: var(--nv-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.nv-disp__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.615rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+}
+
+.nv-disp__go svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.6s var(--nv-ease-lux);
+}
+
+.nv-disp__entry:hover .nv-disp__go svg,
+.nv-disp__entry:focus-visible .nv-disp__go svg {
+  transform: translate3d(3px, -3px, 0);
+}
+
+/* ── Standing notes ─────────────────────────────────────────────────────────
+   The foot of the sheet, ruled like the assurance strip on the voices folio so
+   the two sections read as a pair of records rather than two unrelated plates.
+   ------------------------------------------------------------------------- */
+.nv-disp__notes {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--nv-hairline);
+  background: rgb(var(--nv-ink-rgb) / 0.014);
+}
+
+.nv-disp__note {
+  position: relative;
+  border-top: 1px solid var(--nv-hairline);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.9s var(--nv-ease-lux),
+    transform 1.05s var(--nv-ease-lux);
+  transition-delay: calc(360ms + var(--nv-i, 0) * 90ms);
+}
+
+.nv-disp__note:first-child { border-top: 0; }
+
+.nv-disp[data-lit="true"] .nv-disp__note {
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 760px) {
+  .nv-disp__notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .nv-disp__note:nth-child(n) {
+    border-top: 1px solid var(--nv-hairline);
+    border-left: 1px solid var(--nv-hairline);
+  }
+
+  .nv-disp__note:nth-child(-n + 2) { border-top: 0; }
+  .nv-disp__note:nth-child(2n + 1) { border-left: 0; }
+}
+
+.nv-disp__note-inner {
+  display: block;
+  padding: clamp(22px, 2.4vw, 30px) clamp(20px, 2.2vw, 30px);
+  text-decoration: none;
+}
+
+.nv-disp__note-edge {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.16)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.85s var(--nv-ease-lux);
+}
+
+.nv-disp__note:hover .nv-disp__note-edge { transform: scaleX(1); }
+
+.nv-disp__seal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  color: var(--nv-champagne);
+  transition:
+    background 0.7s var(--nv-ease-lux),
+    border-color 0.7s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux),
+    color 0.7s var(--nv-ease-lux),
+    transform 0.7s var(--nv-ease-lux);
+}
+
+.nv-disp__seal svg { width: 18px; height: 18px; stroke-width: 1.5; }
+
+.nv-disp__note:hover .nv-disp__seal {
+  background: var(--nv-champagne);
+  border-color: var(--nv-champagne);
+  box-shadow: 0 0 0 5px var(--nv-champagne-faint);
+  color: var(--nv-on-media);
+  transform: translate3d(0, -2px, 0);
+}
+
+/* One note at most carries this — a desk that is genuinely staffed right now.
+   Two of them and the mark stops meaning anything. */
+.nv-disp__seal[data-live="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne);
+  animation: nv-disp-ping 2.6s var(--nv-ease-io) infinite;
+}
+
+@keyframes nv-disp-ping {
+  0% { transform: scale(0.94); opacity: 0.65; }
+  70%, 100% { transform: scale(1.5); opacity: 0; }
+}
+
+.nv-disp__note-title {
+  display: block;
+  margin-top: 18px;
+  font-family: var(--nv-font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  color: var(--nv-text);
+}
+
+.nv-disp__note-desc {
+  display: block;
+  margin-top: 9px;
+  font-size: 0.845rem;
+  line-height: 1.66;
+  color: var(--nv-muted);
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+.nv-disp__void {
+  position: relative;
+  z-index: 1;
+  padding: clamp(46px, 6vw, 78px) clamp(24px, 3vw, 40px);
+  text-align: center;
+}
+
+.nv-disp__void-ico {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne);
+}
+
+.nv-disp__void-ico svg { width: 20px; height: 20px; }
+
+.nv-disp__void-title {
+  margin-top: 20px;
+  font-family: var(--nv-font-display);
+  font-size: 1.06rem;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  color: var(--nv-text);
+}
+
+.nv-disp__void-desc {
+  margin-top: 9px;
+  font-size: 0.87rem;
+  line-height: 1.66;
+  color: var(--nv-muted);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────
+   Every moving part is decoration over a layout that already stands, so the
+   entrance transitions are dropped and the elements are placed at their end
+   state. The timeline is placed drawn rather than hidden — it is structure, not
+   an entrance — and only the hover rules that depend on a sweep are switched off.
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .nv-disp::before,
+  .nv-disp__tick,
+  .nv-disp__item,
+  .nv-disp__item::before,
+  .nv-disp__node,
+  .nv-disp__ord,
+  .nv-disp__title,
+  .nv-disp__go svg,
+  .nv-disp__note,
+  .nv-disp__seal {
+    transition: none !important;
+  }
+
+  .nv-disp__glow,
+  .nv-disp__seal[data-live="true"]::after {
+    animation: none !important;
+  }
+
+  .nv-disp::before { transform: scaleX(1); }
+  .nv-disp__item::before { transform: scaleY(1); }
+
+  .nv-disp__tick,
+  .nv-disp__item,
+  .nv-disp__note {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nv-disp__edge,
+  .nv-disp__note-edge {
+    display: none;
+  }
+}
+
+
+
+
+
+
+

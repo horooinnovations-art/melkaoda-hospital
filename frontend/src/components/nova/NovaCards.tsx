@@ -3,20 +3,14 @@
 import Link from "next/link";
 import type { ComponentType } from "react";
 import {
-  Activity,
   ArrowUpRight,
-  Award,
   Building2,
   ExternalLink,
   Globe,
-  HeartPulse,
   Inbox,
-  Star,
   Stethoscope,
-  UserCheck,
 } from "lucide-react";
 import SmartImage from "@/components/shared/SmartImage";
-import Counter from "@/components/vitals/Counter";
 import { iconForText } from "@/lib/healthIcons";
 import { cleanPublicText, cn, truncate } from "@/lib/utils";
 import type { Partner } from "@/lib/types";
@@ -114,59 +108,6 @@ export function NovaContentCard({
         </div>
       </div>
     </Link>
-  );
-}
-
-/* ── Metric tile ───────────────────────────────────────────────────────── */
-
-/**
- * Only the icon is inferred from the label now. There used to be a `hint`
- * string here too, and every one of them paraphrased the label it sat under —
- * "Departments / Clinical units under one roof" was word-for-word the heading
- * of the section above it. A number, its label and a rule is the whole unit.
- */
-function metricIcon(label: string): ComponentType<{ className?: string }> {
-  const key = label.toLowerCase();
-  if (/doctor|physician|staff|clinician/.test(key)) return UserCheck;
-  if (/department|unit|center|centre|ward/.test(key)) return Building2;
-  if (/patient|served|treated|catchment|population|community/.test(key)) {
-    return HeartPulse;
-  }
-  if (/year|experience|service|heritage/.test(key)) return Award;
-  return Activity;
-}
-
-export function NovaMetricCard({
-  value,
-  label,
-  index = 0,
-}: {
-  value: number;
-  label: string;
-  /** Position in the row, for the ghost numeral behind the figure. */
-  index?: number;
-}) {
-  const Icon = metricIcon(label);
-
-  return (
-    <div className="nv-fig">
-      <span className="nv-fig__ghost" aria-hidden>
-        {String(index + 1).padStart(2, "0")}
-      </span>
-
-      <span className="nv-fig__ico" aria-hidden>
-        <Icon />
-      </span>
-
-      <p className="nv-fig__value">
-        <Counter value={value} suffix="+" />
-      </p>
-
-      <p className="nv-fig__label">
-        <span className="nv-fig__rule" aria-hidden />
-        {label}
-      </p>
-    </div>
   );
 }
 
@@ -398,19 +339,6 @@ export function NovaFact({
       <p className="nv-fact__title">{title}</p>
       <p className="nv-fact__desc">{description}</p>
     </div>
-  );
-}
-
-/* ── Star row (testimonials) ───────────────────────────────────────────── */
-
-export function NovaStars({ rating = 5 }: { rating?: number }) {
-  const count = Math.max(1, Math.min(5, Math.round(rating)));
-  return (
-    <span className="nv-quote__stars" aria-label={`${count} out of 5`}>
-      {Array.from({ length: count }, (_, i) => (
-        <Star key={i} fill="currentColor" />
-      ))}
-    </span>
   );
 }
 
