@@ -237,7 +237,8 @@ export default function HomeClient({
 
   // The two standing notes in the foot of that sheet. The emergency one carries
   // the live mark and a tel: href, so on a phone the number is one tap rather
-  // than something to copy out by hand.
+  // than something to copy out by hand. The href is stripped to digits and a
+  // leading plus — a tel: URI with spaces in it is not one dialers have to honour.
   const dispatchNotes: DispatchNote[] = [
     {
       icon: Siren,
@@ -245,7 +246,7 @@ export default function HomeClient({
       desc: emergency
         ? `Call ${emergency} — the emergency desk answers day and night.`
         : "Our emergency desk answers day and night, every day of the year.",
-      href: emergency ? `tel:${emergency}` : undefined,
+      href: emergency ? `tel:${emergency.replace(/[^\d+]/g, "")}` : undefined,
       live: true,
     },
     {

@@ -85,6 +85,10 @@ export default function NovaVoices({
 
   const total = items.length;
   const autoRotates = total > 1 && !reduced;
+  /* With one story there is nothing to index and nothing to count, so the spine
+     and the ordinal are not drawn and the stage takes the whole width. A tab list
+     of one tab, and a counter reading "I / I", are both furniture. */
+  const solo = total < 2;
 
   useEffect(() => {
     if (!autoRotates || held) return;
@@ -142,33 +146,40 @@ export default function NovaVoices({
       data-lit={shown ? "true" : "false"}
       data-auto={autoRotates ? "true" : "false"}
       data-held={held ? "true" : "false"}
+      data-solo={solo ? "true" : "false"}
       style={{ "--nv-vox-ms": `${ROTATE_MS}ms` } as CSSProperties}
       onPointerEnter={hold}
       onPointerLeave={release}
       onFocusCapture={() => setHeld(true)}
       onBlurCapture={release}
     >
-      {/* Three ambient layers, all under the type at z-index 0: the ruled paper,
-          a warm pool that breathes, and the closing mark as a watermark. */}
+      {/* Two ambient layers under the type at z-index 0: the ruled paper, and a
+          warm pool that breathes. */}
       <span className="nv-vox__weave" aria-hidden />
       <span className="nv-vox__glow" aria-hidden />
-      <span className="nv-vox__wm" aria-hidden>
-        &rdquo;
-      </span>
       <span className="nv-vox__tick nv-vox__tick--tl" aria-hidden />
       <span className="nv-vox__tick nv-vox__tick--br" aria-hidden />
 
       <div className="nv-vox__stage">
         <div className="nv-vox__main">
+          {/* The closing mark, as a watermark. It lives inside the stage column
+              and is clipped by it, so it cannot bleed under the index beside it
+              or the assurance strip below. */}
+          <span className="nv-vox__wm" aria-hidden>
+            &rdquo;
+          </span>
+
           <div className="nv-vox__meta">
             <span className="nv-vox__mark" aria-hidden>
               &ldquo;
             </span>
-            <span className="nv-vox__ord" aria-hidden>
-              {toRoman(index + 1)}
-              <i>/</i>
-              {toRoman(total)}
-            </span>
+            {solo ? null : (
+              <span className="nv-vox__ord" aria-hidden>
+                {toRoman(index + 1)}
+                <i>/</i>
+                {toRoman(total)}
+              </span>
+            )}
           </div>
 
           <div className="nv-vox__panes">
@@ -237,13 +248,14 @@ export default function NovaVoices({
           </div>
         </div>
 
-        <div
-          className="nv-vox__spine"
-          role="tablist"
-          aria-orientation="vertical"
-          aria-label="Patient stories"
-          onKeyDown={onKeyDown}
-        >
+        {solo ? null : (
+          <div
+            className="nv-vox__spine"
+            role="tablist"
+            aria-orientation="vertical"
+            aria-label="Patient stories"
+            onKeyDown={onKeyDown}
+          >
           <p className="nv-vox__spine-label">Voices</p>
 
           {items.map((item, i) => {
@@ -290,8 +302,8 @@ export default function NovaVoices({
               </button>
             );
           })}
-        </div>
-
+          </div>
+        )}
       </div>
 
       {assurances.length ? (

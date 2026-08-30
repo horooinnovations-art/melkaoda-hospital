@@ -82,19 +82,20 @@
   to { opacity: 1; transform: scale(1.06); }
 }
 
-/* The closing mark, set enormous and nearly out of ink. It is the counterpart
-   to the opening mark in the meta row: the quotation opens at the top left of
-   the stage and closes here, at the bottom of the sheet. */
+/* The closing mark, set enormous and nearly out of ink. It is the counterpart to
+   the opening mark in the meta row — the quotation opens at the top left of the
+   stage and closes here, at its foot. Clipped by the stage column, so it never
+   reaches the index beside it or the strip below. */
 .nv-vox__wm {
   position: absolute;
-  right: 1.5%;
-  bottom: -3%;
+  right: -12px;
+  bottom: -46px;
   z-index: 0;
   display: none;
   font-family: var(--nv-font-serif);
-  font-size: clamp(11rem, 20vw, 19rem);
+  font-size: clamp(9rem, 15vw, 15rem);
   line-height: 0.62;
-  color: rgb(var(--nv-metal-rgb) / 0.05);
+  color: rgb(var(--nv-metal-rgb) / 0.055);
   pointer-events: none;
   user-select: none;
   animation: nv-vox-drift 26s ease-in-out infinite alternate;
@@ -135,11 +136,26 @@
 
 @media (min-width: 1040px) {
   .nv-vox__stage { grid-template-columns: minmax(0, 1fr) 330px; }
+
+  /* One story, no index: the stage takes the sheet rather than leaving a third
+     of it empty beside a list of one. */
+  .nv-vox[data-solo="true"] .nv-vox__stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-.nv-vox__main { padding: clamp(28px, 3.4vw, 54px); }
+.nv-vox__main {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(28px, 3.4vw, 54px);
+}
 
+/* Both bands of the stage are lifted over the watermark explicitly. A positioned
+   element paints above in-flow siblings even at z-index 0, so without this the
+   mark would sit on top of the opening ornament and the quote. */
 .nv-vox__meta {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -196,6 +212,7 @@
    ------------------------------------------------------------------------- */
 .nv-vox__panes {
   position: relative;
+  z-index: 1;
   display: grid;
   margin-top: clamp(22px, 2.6vw, 32px);
 }
@@ -217,6 +234,9 @@
 
 .nv-vox__quote {
   margin: 0;
+  /* A measure, not a column width: the stage is wide enough on a large screen
+     that an uncapped line of display serif would run past comfortable reading. */
+  max-width: 46ch;
   font-family: var(--nv-font-serif);
   font-style: italic;
   font-size: clamp(1.22rem, 2.2vw, 1.82rem);
