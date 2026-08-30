@@ -1,0 +1,715 @@
+/* ==========================================================================
+   NOVA — clinical staff board
+   One mounted portrait beside a ruled index of names, on a single plate.
+
+   The section this replaces was a horizontal rail of ten identical cards, which
+   asks a reader to scan sideways through strangers and gives no one of them a
+   moment. This gives the board a subject: one portrait at a time, mounted in an
+   arched niche with a museum label under it, and the index beside it doubling as
+   the control. Hovering or focusing a name mounts that portrait; left alone, the
+   board advances itself.
+
+   The dwell clock is .nv-sg__sweep — the bronze rule that fills under the active
+   name. Its animationend is what advances the board, so the progress a reader
+   can see and the timer driving it are one object and cannot drift apart.
+   Pausing is animation-play-state; reduced motion removes the animation, and
+   with it the auto-advance.
+   ========================================================================== */
+
+.nv-sg {
+  --nv-dwell: 5600ms;
+  --nv-sg-gap: clamp(30px, 4vw, 54px);
+  /* Width of the arch, and of the plinth rule that has to line up under it. */
+  --nv-sg-arch: 318px;
+
+  position: relative;
+  display: grid;
+  gap: var(--nv-sg-gap);
+  padding: clamp(24px, 3vw, 44px);
+  overflow: hidden;
+  /* The house signature: three soft corners and one square, so the plate reads
+     as registered to the page rather than floating on it. */
+  border: 1px solid var(--nv-hairline);
+  border-radius: var(--nv-r-lg) var(--nv-r-lg) var(--nv-r-lg) 0;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+}
+
+@media (min-width: 1024px) {
+  .nv-sg {
+    --nv-sg-gap: clamp(44px, 4.6vw, 78px);
+    grid-template-columns: minmax(0, 384px) minmax(0, 1fr);
+    /* Stretch, not start: the index has to inherit the height the stage sets
+       before its rows have any slack to share out between them. */
+    align-items: stretch;
+    padding: clamp(34px, 3.4vw, 56px);
+  }
+}
+
+/* Bronze brackets at two opposite corners — the registration mark the interior
+   mastheads carry, so the board belongs to the same set of objects. */
+.nv-sg__tick {
+  position: absolute;
+  z-index: 6;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  border: 1px solid var(--nv-champagne-line);
+}
+
+.nv-sg__tick--tl { top: 15px; left: 15px; border-right: 0; border-bottom: 0; }
+.nv-sg__tick--br { right: 15px; bottom: 15px; border-left: 0; border-top: 0; }
+
+/* ── The stage ──────────────────────────────────────────────────────────────
+   Every portrait is mounted at once, all into the same grid cell, and only the
+   active one is painted. Two reasons it stacks rather than swaps: the cell sizes
+   itself to the tallest label in the set, so nothing below the board moves when
+   the name changes, and no portrait is ever fetched mid-transition — each image
+   is already decoded when its turn comes.
+   ------------------------------------------------------------------------- */
+.nv-sg__stage {
+  position: relative;
+  display: grid;
+}
+
+@media (max-width: 1023px) {
+  .nv-sg__stage { width: 100%; max-width: 430px; margin-inline: auto; }
+}
+
+.nv-sg__plate {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 20px, 0) scale(0.986);
+  transition:
+    opacity 1s var(--nv-ease-lux),
+    transform 1.3s var(--nv-ease-lux);
+}
+
+.nv-sg__plate[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+/* Plate number, in the manner of an engraved portrait series. It sits behind the
+   arch rather than above it — a mark on the mount that the portrait is set over,
+   which is why it takes the text serif: the display face sets a numeral like II
+   as two geometric bars, and at this size that reads as a rendering fault. */
+.nv-sg__ghost {
+  position: absolute;
+  top: 4px;
+  left: 2px;
+  z-index: 0;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(3.4rem, 6vw, 5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: rgb(var(--nv-metal-rgb) / 0.16);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── The niche ────────────────────────────────────────────────────────────
+   A semicircular arch: on a 4:5 box that is exactly a 50% horizontal and 40%
+   vertical radius at the top two corners, which is why those numbers are not
+   round. The tilt reads --nv-tx and --nv-ty, written onto this element by the
+   pointer, and the perspective is inline in the transform so the stage needs no
+   3D context of its own to plumb through.
+   ------------------------------------------------------------------------- */
+.nv-sg__niche {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  max-width: var(--nv-sg-arch);
+  margin-inline: auto;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    172deg,
+    var(--nv-plate-flat) 0%,
+    #f4f1ea 58%,
+    var(--nv-plate-well) 100%
+  );
+  box-shadow: var(--nv-lift);
+  transform: perspective(1000px) rotateX(var(--nv-tx, 0deg))
+    rotateY(var(--nv-ty, 0deg));
+  transition:
+    transform 0.55s var(--nv-ease-lux),
+    box-shadow 0.9s var(--nv-ease-lux);
+}
+
+.nv-sg__plate:hover .nv-sg__niche { box-shadow: var(--nv-lift-hi); }
+
+/* Fluting, for the portrait that has none. A monogram on flat stock reads as a
+   missing file; the same monogram on a fluted apse reads as a plinth waiting for
+   its photograph. The flutes start below the springing of the arch and fade out
+   before the base, so the crown stays a smooth half-dome and the texture never
+   competes with the label under it. */
+.nv-sg__apse {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 15px,
+    rgb(var(--nv-ink-rgb) / 0.05) 15px 16px
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0 22%,
+    #000 44% 76%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0 22%,
+    #000 44% 76%,
+    transparent 100%
+  );
+}
+
+.nv-sg__mono {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding-top: 6%;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(3.6rem, 6.6vw, 4.9rem);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: rgb(var(--nv-metal-rgb) / 0.42);
+  user-select: none;
+}
+
+.nv-sg__photo {
+  z-index: 1;
+  object-fit: contain !important;
+  object-position: center center !important;
+  padding: 0.5rem;
+  filter: saturate(0.86) contrast(1.05);
+  transition: filter 1s var(--nv-ease-lux);
+}
+
+.nv-sg__plate:hover .nv-sg__photo { filter: none; }
+
+/* Keep unzoomed & uncropped so doctor photo is 100% visible */
+.nv-sg__plate[data-active="true"] .nv-sg__photo {
+  animation: none !important;
+}
+
+@keyframes nv-sg-drift {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to { transform: scale(1) translate3d(0, 0, 0); }
+}
+
+/* Inner hairline and a seating gradient at the base, on one layer above the
+   image. An inset shadow on the niche itself would paint under the img, which is
+   absolutely positioned inside it.
+
+   The scrim is gated on a photograph actually being painted. Its job is to seat
+   a bright photograph in the frame; over a monogram on pale stock it has nothing
+   to seat and only lays a grey band across the lower half of the arch.
+
+   That gate is `:has()` rather than a React flag, which is the exception to how
+   the rest of the system decides these things. React knows whether a photo URL
+   exists; it does not know whether the file behind it resolved, and SmartImage
+   swaps in the monogram on its own when every candidate host 404s. The DOM is
+   the only place that answer lives, so the selector reads the DOM. */
+.nv-sg__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px var(--nv-hairline),
+    inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-sg__niche:not(:has(.nv-sg__mono)) .nv-sg__veil {
+  background: linear-gradient(
+    180deg,
+    transparent 58%,
+    rgb(var(--nv-scrim-rgb) / 0.28) 100%
+  );
+}
+
+/* One colourless pass over the portrait as it is mounted — light moving across
+   glass, not a tint. */
+.nv-sg__glaze {
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 52%;
+  z-index: 4;
+  pointer-events: none;
+  transform: translate3d(-190%, 0, 0) rotate(12deg);
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.07) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.13) 52%,
+    transparent
+  );
+}
+
+.nv-sg__plate[data-active="true"] .nv-sg__glaze {
+  animation: nv-sg-pass 1.8s var(--nv-ease-io) 0.14s both;
+}
+
+@keyframes nv-sg-pass {
+  from { transform: translate3d(-190%, 0, 0) rotate(12deg); }
+  to { transform: translate3d(330%, 0, 0) rotate(12deg); }
+}
+
+/* The gilt fillet, set in from the arch the way a mounted print carries one. Two
+   metals, because it is drawn on whatever is behind it: the media champagne over
+   a photograph, where the page bronze would disappear against a bright frame,
+   and the page bronze over the pale stock of an empty niche, where the media
+   champagne is the one that vanishes. */
+.nv-sg__archivolt {
+  position: absolute;
+  inset: 11px;
+  z-index: 5;
+  pointer-events: none;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 50% 50% 4% 4% / 39% 39% 3% 3%;
+  opacity: 0.72;
+  transition: opacity 0.8s var(--nv-ease-lux);
+}
+
+.nv-sg__niche:not(:has(.nv-sg__mono)) .nv-sg__archivolt {
+  border-color: var(--nv-metal-on-media-line);
+}
+
+.nv-sg__plate:hover .nv-sg__archivolt { opacity: 1; }
+
+/* Cursor bloom. --mx and --my are written by the pointer; at rest the gradient
+   parks at the top centre and stays invisible. */
+.nv-sg__niche::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 26%),
+    rgb(255 255 255 / 0.17),
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity 0.6s var(--nv-ease);
+}
+
+.nv-sg__plate:hover .nv-sg__niche::after { opacity: 1; }
+
+/* ── The plinth and the label ──────────────────────────────────────────────
+   A bronze base rule with a lozenge on it, then the label centred under the
+   arch. The rule opens from the middle with clip-path rather than scaleX,
+   because scaling would stretch the lozenge along with it.
+   ------------------------------------------------------------------------- */
+.nv-sg__plinth {
+  position: relative;
+  display: block;
+  width: min(100%, var(--nv-sg-arch));
+  height: 1px;
+  margin: clamp(22px, 2.4vw, 30px) auto 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-champagne-line) 20%,
+    var(--nv-champagne-line) 80%,
+    transparent
+  );
+}
+
+.nv-sg__plinth::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--nv-champagne);
+  transform: rotate(45deg);
+}
+
+.nv-sg__plate[data-active="true"] .nv-sg__plinth {
+  animation: nv-sg-open 1.05s var(--nv-ease-lux) 0.1s both;
+}
+
+@keyframes nv-sg-open {
+  from { clip-path: inset(0 48% 0 48%); opacity: 0; }
+  to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+.nv-sg__cap {
+  display: block;
+  margin-top: clamp(16px, 1.8vw, 22px);
+  text-align: center;
+}
+
+/* Each label line rises out of its own mask, one after the next — the same
+   device the section headings use for words, applied to a plate swap. The
+   padding-bottom is what keeps a descender from being clipped by the mask. */
+.nv-sg__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+}
+
+.nv-sg__line > * { transform: translate3d(0, 118%, 0); }
+
+.nv-sg__plate[data-active="true"] .nv-sg__line > * {
+  animation: nv-sg-rise 1s var(--nv-ease-lux) both;
+  animation-delay: calc(150ms + var(--nv-i, 0) * 95ms);
+}
+
+@keyframes nv-sg-rise {
+  from { transform: translate3d(0, 118%, 0); }
+  to { transform: none; }
+}
+
+.nv-sg__kick {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-sg__kick svg { width: 12px; height: 12px; }
+
+/* The one place on the page the text serif carries a name. The board is a wall
+   of portraits, and a serif under an arch is what tells a reader that. */
+.nv-sg__name {
+  display: inline-block;
+  margin-top: 9px;
+  font-family: var(--nv-font-serif);
+  font-size: clamp(1.36rem, 2.2vw, 1.78rem);
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.014em;
+  color: var(--nv-text);
+}
+
+.nv-sg__role {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 0.845rem;
+  line-height: 1.58;
+  color: var(--nv-muted);
+}
+
+.nv-sg__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+}
+
+.nv-sg__go svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.6s var(--nv-ease-lux);
+}
+
+.nv-sg__plate:hover .nv-sg__go svg { transform: translate3d(3px, -3px, 0); }
+
+/* ── The index ────────────────────────────────────────────────────────────
+   A ruled list, and the control for the stage. Every row is a real link to its
+   profile, so the column is navigable by keyboard and by touch without any of
+   the mounting behaviour: hover and focus mount a portrait, a click or a tap
+   opens it. There is no button-plus-link pair to keep in agreement.
+   ------------------------------------------------------------------------- */
+.nv-sg__index {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .nv-sg__index::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: calc(var(--nv-sg-gap) * -0.5);
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--nv-hairline) 12%,
+      var(--nv-hairline) 88%,
+      transparent
+    );
+  }
+}
+
+.nv-sg__legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--nv-hairline);
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-sg__count {
+  color: var(--nv-champagne);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+}
+
+.nv-sg__count i {
+  font-style: normal;
+  margin-inline: 4px;
+  opacity: 0.42;
+}
+
+.nv-sg__roster {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The stage sets the height of the panel, and with four or five clinicians the
+   index runs out well before the portrait does. Rather than leave a quarter of
+   the panel blank, the rows share the slack out between them — capped, so a
+   board with two names does not become two enormous rows.
+
+   They are also dealt in on first sight and then left alone: the latch on
+   data-lit is what keeps scrolling back up from re-dealing them. */
+.nv-sg__roster > li {
+  display: flex;
+  flex: 1 1 auto;
+  max-height: 136px;
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.9s var(--nv-ease-lux),
+    transform 1s var(--nv-ease-lux);
+  transition-delay: calc(240ms + var(--nv-i, 0) * 80ms);
+}
+
+.nv-sg[data-lit="true"] .nv-sg__roster > li {
+  opacity: 1;
+  transform: none;
+}
+
+/* An affordance rather than information, so it goes where a footnote goes and
+   takes the smallest voice the system has. Removed where there is no hover to
+   describe: on touch a tap opens the profile and nothing needs explaining. */
+.nv-sg__hint {
+  /* Pushed to the foot of the column, so whatever slack the capped rows could
+     not absorb lands above this line rather than below it and the panel reads
+     as closed. */
+  margin-top: auto;
+  padding-top: 20px;
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--nv-ink-rgb) / 0.3);
+}
+
+@media (hover: none) {
+  .nv-sg__hint { display: none; }
+}
+
+.nv-sg__row {
+  position: relative;
+  display: grid;
+  flex: 1;
+  grid-template-columns: 40px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(15px, 1.6vw, 21px) 4px;
+  border-bottom: 1px solid var(--nv-hairline);
+  text-decoration: none;
+  transition:
+    border-color 0.7s var(--nv-ease-lux),
+    background 0.7s var(--nv-ease-lux);
+}
+
+.nv-sg__row[data-active="true"] {
+  border-color: var(--nv-champagne-line);
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-faint),
+    rgb(var(--nv-metal-rgb) / 0) 76%
+  );
+}
+
+/* The active marker: a bronze tick that grows out of the middle of the leading
+   edge. The row itself never moves — only its contents step inward — so the
+   background and the rule under it stay put. */
+.nv-sg__row::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 0;
+  background: var(--nv-champagne);
+  transform: translateY(-50%);
+  transition: height 0.75s var(--nv-ease-lux);
+}
+
+.nv-sg__row[data-active="true"]::before { height: 58%; }
+
+.nv-sg__num,
+.nv-sg__rowcopy {
+  transition: transform 0.75s var(--nv-ease-lux);
+}
+
+.nv-sg__row[data-active="true"] .nv-sg__num,
+.nv-sg__row[data-active="true"] .nv-sg__rowcopy {
+  transform: translate3d(11px, 0, 0);
+}
+
+.nv-sg__num {
+  font-family: var(--nv-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: rgb(var(--nv-ink-rgb) / 0.34);
+  transition:
+    color 0.6s var(--nv-ease-lux),
+    transform 0.75s var(--nv-ease-lux);
+}
+
+.nv-sg__row[data-active="true"] .nv-sg__num { color: var(--nv-champagne); }
+
+.nv-sg__rowcopy { min-width: 0; }
+
+.nv-sg__rowname {
+  display: block;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.016em;
+  color: var(--nv-text-dim);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-sg__row[data-active="true"] .nv-sg__rowname { color: var(--nv-text); }
+
+.nv-sg__rowmeta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.765rem;
+  line-height: 1.5;
+  color: var(--nv-faint);
+}
+
+.nv-sg__rowgo {
+  display: grid;
+  place-items: center;
+  color: var(--nv-champagne);
+  opacity: 0;
+  transform: translate3d(-6px, 6px, 0);
+  transition:
+    opacity 0.6s var(--nv-ease-lux),
+    transform 0.6s var(--nv-ease-lux);
+}
+
+.nv-sg__rowgo svg { width: 15px; height: 15px; }
+
+.nv-sg__row[data-active="true"] .nv-sg__rowgo { opacity: 1; transform: none; }
+/* ── The clock ─────────────────────────────────────────────────────────────
+   Rendered on the active row only. React mounts a fresh element each time the
+   subject changes, which is what restarts the fill — including when a pointer
+   picks a name out of order. When it reaches the end, its animationend hands the
+   board to the next portrait.
+   ------------------------------------------------------------------------- */
+.nv-sg__sweep {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.32)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: nv-sg-sweep var(--nv-dwell) linear forwards;
+}
+
+/* Held by a pointer or a focus inside the board, and while the board is off
+   screen. Freezing the animation freezes the clock, because they are the same
+   thing. */
+.nv-sg[data-held="true"] .nv-sg__sweep { animation-play-state: paused; }
+
+@keyframes nv-sg-sweep {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────
+   With the sweep animation gone there is no animationend, so the board stops
+   advancing on its own and simply answers hover and focus. That is the whole
+   branch — no second code path to keep in agreement with the first.
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .nv-sg__sweep {
+    animation: none;
+    transform: scaleX(1);
+    opacity: 0.45;
+  }
+
+  .nv-sg__plate,
+  .nv-sg__roster > li,
+  .nv-sg__num,
+  .nv-sg__rowcopy,
+  .nv-sg__niche {
+    transition: none !important;
+  }
+
+  .nv-sg__photo,
+  .nv-sg__glaze,
+  .nv-sg__plinth,
+  .nv-sg__line > * {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .nv-sg__niche { transform: none !important; }
+  .nv-sg__niche::after { display: none; }
+}

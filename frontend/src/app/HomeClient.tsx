@@ -29,7 +29,9 @@ import NovaHero from "@/components/nova/NovaHero";
 import NovaSectionHead from "@/components/nova/NovaSectionHead";
 import NovaReveal from "@/components/nova/NovaReveal";
 import NovaWords from "@/components/nova/NovaWords";
-import NovaRail from "@/components/nova/NovaRail";
+import NovaStaffGallery, {
+  type StaffMember,
+} from "@/components/nova/NovaStaffGallery";
 import NovaDeptIndex, {
   type IndexEntry,
 } from "@/components/nova/NovaDeptIndex";
@@ -39,7 +41,6 @@ import NovaGalleryStack, {
 import NovaTestimonials from "@/components/nova/NovaTestimonials";
 import {
   NovaContentCard,
-  NovaDoctorCard,
   NovaEmpty,
   NovaFact,
   NovaMetricCard,
@@ -153,6 +154,23 @@ export default function HomeClient({
     title: dept.name,
     description: dept.short_description || dept.description || undefined,
     image: getImageFromItem(dept as unknown as Record<string, unknown>),
+  }));
+
+  // Subjects for the clinical staff board. The title is part of the name here —
+  // the board sets it in the text serif under an arch, where "Dr." belongs with
+  // the name rather than in the role line below it.
+  const staffBoard: StaffMember[] = doctors.map((doctor) => ({
+    id: String(doctor.id),
+    href: `/doctors/${doctor.slug}`,
+    name:
+      cleanPublicText(
+        [doctor.title, doctor.first_name, doctor.last_name]
+          .filter(Boolean)
+          .join(" ")
+      ) || `${doctor.first_name} ${doctor.last_name}`.trim(),
+    role: cleanPublicText(doctor.designation || "") || undefined,
+    department: cleanPublicText(doctor.department?.name || "") || undefined,
+    photo: getImageFromItem(doctor as unknown as Record<string, unknown>),
   }));
 
   // Cards for the stacked carousel under the hero. Gallery entries first; the
@@ -404,6 +422,7 @@ export default function HomeClient({
             title="The people who treat you"
             accentFrom={3}
             lede="Specialists and general practitioners providing care across every hospital department."
+            count={`· ${String(doctors.length).padStart(2, "0")}`}
             action={
               <Link href="/doctors" className="nv-btn nv-btn--glass">
                 Full directory
@@ -414,29 +433,9 @@ export default function HomeClient({
 
           <div className="mt-12">
             {doctors.length ? (
-              <NovaRail label="Our doctors">
-                {doctors.map((doctor) => {
-                  const fullName = [
-                    doctor.title,
-                    doctor.first_name,
-                    doctor.last_name,
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-                  return (
-                    <NovaDoctorCard
-                      key={doctor.id}
-                      href={`/doctors/${doctor.slug}`}
-                      name={fullName}
-                      role={doctor.designation || undefined}
-                      department={doctor.department?.name || undefined}
-                      photo={getImageFromItem(
-                        doctor as unknown as Record<string, unknown>
-                      )}
-                    />
-                  );
-                })}
-              </NovaRail>
+              <NovaReveal from="up">
+                <NovaStaffGallery members={staffBoard} />
+              </NovaReveal>
             ) : (
               <NovaEmpty title="Doctors coming soon" />
             )}

@@ -22,6 +22,8 @@ import "./nova-page.css";
 // Interior pages — masthead, atelier card, ledger row. After nova-page.css so
 // the interior opening wins over the sheet it replaces.
 import "./nova-interior.css";
+// The clinical staff board on the home page. Self-contained under .nv-sg.
+import "./nova-staff.css";
 import "./nova-footer.css";
 
 const sourceSans = Source_Sans_3({

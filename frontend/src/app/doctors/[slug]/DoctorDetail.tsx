@@ -87,7 +87,7 @@ export default function DoctorDetail({ slug }: { slug: string }) {
                 alt={name}
                 fill
                 optimizeWidth={480}
-                className="object-cover object-[center_20%] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                className="object-contain object-center p-1 transition-transform duration-700 ease-out"
                 sizes="140px"
                 priority
               />
