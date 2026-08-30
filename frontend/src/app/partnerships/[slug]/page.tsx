@@ -27,6 +27,7 @@ import { getImageFromItem } from "@/lib/media";
 import type { Partner } from "@/lib/types";
 import { getStoredPartners } from "@/lib/partnersData";
 import { stripHtml } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/api";
 
 export default function PartnerDetailPage({
   params,
@@ -101,9 +102,13 @@ export default function PartnerDetailPage({
   return (
     <PageTransition>
       <PageHero
+        section="/partnerships"
         title={partner.name}
-        eyebrow={partner.category || "Institutional Partner"}
-        subtitle={partner.short_description || `Official partnership profile for ${partner.name}.`}
+        eyebrow={partner.category || "Institutional partner"}
+        subtitle={
+          partner.short_description ||
+          `What this partnership covers, and how it supports care at ${SITE_NAME}.`
+        }
         breadcrumbs={[
           { label: "Partnerships", href: "/partnerships" },
           { label: partner.name },

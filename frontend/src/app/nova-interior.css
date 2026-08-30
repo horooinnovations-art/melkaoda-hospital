@@ -1,0 +1,1677 @@
+/* ==========================================================================
+   NOVA — INTERIOR (everything except the homepage)
+   Namespace: .nv-mast (masthead) · .nv-xc (atelier card) · .nv-led (ledger row)
+   Loaded after nova-page.css, before nova-footer.css.
+
+   Why this sheet exists
+   ---------------------
+   Interior pages opened with `.nv-ph`: breadcrumbs, a brand hairline, a title,
+   one flourish, a lede, and an optional row of stats — all flush left in a
+   single column, on a field of vertical rails. It was correct and it was inert.
+   Nineteen pages shared it and every one of them arrived looking like the same
+   page with the nouns swapped, because nothing in the composition ever changed
+   from page to page.
+
+   Three ideas replace it.
+
+     1. A MASTHEAD, not a banner. The opening is set like the front page of a
+        journal: a ruled identity line that carries the section ordinal and the
+        hospital name, a tab for the section, then the title as the largest
+        thing on the page — with its final phrase in the serif italic, which is
+        the one typographic move that makes an editorial page read as designed
+        rather than as defaulted.
+
+     2. A DRAWN GROUND instead of a ruled one. Vertical rails read as a lined
+        notebook; the ground here is a fine dot matrix crossed by three
+        enormous hairline arcs struck from a centre off the top-right corner.
+        Arcs at that radius read as a technical drawing at page scale, and they
+        give the composition a direction the rails never had.
+
+     3. A GLYPH per page. `iconForText()` already picks a medical mark from a
+        title, so Departments opens under a building, Doctors under a
+        stethoscope, Imaging under a scanner. One faint watermark, no new data,
+        and no two interior pages open identically any more.
+
+   Motion is keyed off [data-shown="true"], which NovaReveal puts on whichever
+   element takes its className — so the title's per-word rise, the identity
+   rule, the figure rules and the arcs all draw from one observer.
+   ========================================================================== */
+
+.nv-mast {
+  /* One dot interval and one arc tint, so the ground can be retuned here. */
+  --mast-dot: clamp(22px, 2.2vw, 30px);
+  --mast-arc: rgb(var(--nv-metal-rgb) / 0.15);
+  --mast-arc-soft: rgb(var(--nv-metal-rgb) / 0.085);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--nv-paper);
+  padding: clamp(108px, 11.5vw, 168px) 0 clamp(56px, 5.8vw, 84px);
+}
+
+/* Detail pages carry a portrait and a long document below them, so the opening
+   closes tighter: the body starts sooner and the seam does the joining.
+
+   The title also steps down, and this is not cosmetic. A list page title is
+   written for the masthead — two or three words, chosen — while a detail page
+   title is whatever the CMS holds: a news headline in Oromo runs to sixty
+   characters, and at the list-page size that is four lines of 78px display type
+   before the reader reaches the story. */
+.nv-mast--tight {
+  padding-bottom: clamp(38px, 4vw, 58px);
+}
+
+.nv-mast--tight .nv-mast__title {
+  max-width: 27ch;
+  font-size: clamp(1.95rem, 3.6vw, 3.05rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+
+/* ── 1 · the matrix ───────────────────────────────────────────────────────
+   A dot at every interval crossing, at 5.5% ink — under the threshold where it
+   tints anything on top of it, over the threshold where it disappears. It
+   drifts diagonally on a 64s cycle: slow enough that the movement is felt
+   rather than watched, and one interval of travel so the loop is seamless. */
+.nv-mast__matrix {
+  position: absolute;
+  inset: calc(var(--mast-dot) * -1);
+  z-index: -2;
+  pointer-events: none;
+  background-image: radial-gradient(
+    rgb(var(--nv-ink-rgb) / 0.105) 1px,
+    transparent 1px
+  );
+  background-size: var(--mast-dot) var(--mast-dot);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+  animation: nv-mast-drift 64s linear infinite;
+  will-change: transform;
+}
+
+@keyframes nv-mast-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(var(--mast-dot), var(--mast-dot), 0); }
+}
+
+/* ── 2 · the arcs ─────────────────────────────────────────────────────────
+   Three concentric hairlines struck from a centre off the top-right corner, at
+   a radius wide enough that only a gentle sweep of each one crosses the page.
+   The container is masked top and bottom so the arcs fade out instead of being
+   sheared off by the section's own overflow, and the whole set swells by 2% on
+   a 34s cycle — the ground breathing, not moving. */
+.nv-mast__arcs {
+  position: absolute;
+  top: -78vh;
+  right: -44vw;
+  width: 128vw;
+  aspect-ratio: 1;
+  z-index: -2;
+  pointer-events: none;
+  border: 1px solid var(--mast-arc);
+  border-radius: 50%;
+  -webkit-mask-image: linear-gradient(
+    170deg,
+    transparent 46%,
+    #000 62%,
+    #000 82%,
+    transparent 96%
+  );
+  mask-image: linear-gradient(
+    170deg,
+    transparent 46%,
+    #000 62%,
+    #000 82%,
+    transparent 96%
+  );
+  animation: nv-mast-swell 34s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.nv-mast__arcs::before,
+.nv-mast__arcs::after {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--mast-arc-soft);
+  border-radius: 50%;
+}
+
+.nv-mast__arcs::before { inset: 7.5%; }
+.nv-mast__arcs::after { inset: 17%; border-color: var(--mast-arc); }
+
+@keyframes nv-mast-swell {
+  from { transform: scale(1); }
+  to { transform: scale(1.022); }
+}
+
+/* ── 3 · the blooms ───────────────────────────────────────────────────────
+   Two washes on offset cycles: bronze from the left, where the title starts,
+   and a cooler one from the lower right so the composition is lit across a
+   diagonal rather than from one side. Both are far under the threshold where
+   they would tint type. */
+.nv-mast__bloom {
+  position: absolute;
+  top: -16%;
+  bottom: -20%;
+  left: -6%;
+  width: 62%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 54% at 22% 44%,
+    rgb(var(--nv-metal-rgb) / 0.085),
+    transparent 72%
+  );
+  animation: nv-mast-breathe 26s ease-in-out infinite alternate;
+}
+
+.nv-mast__bloom--far {
+  left: auto;
+  right: -6%;
+  width: 56%;
+  background: radial-gradient(
+    56% 50% at 78% 62%,
+    rgb(var(--nv-ink-rgb) / 0.03),
+    transparent 74%
+  );
+  animation-delay: -13s;
+}
+
+@keyframes nv-mast-breathe {
+  from { opacity: 0.58; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.07); }
+}
+
+/* ── 4 · the rake ─────────────────────────────────────────────────────────
+   One diagonal pass of light, on arrival only. Looping it would turn the
+   opening into a slideshow; struck once as the page settles, it reads as the
+   sheet catching a light. It carries no hue of its own beyond the warm glaze,
+   because a coloured pass over a photograph shifts skin tone. */
+.nv-mast__rake {
+  position: absolute;
+  top: -32%;
+  bottom: -32%;
+  left: 0;
+  width: 40%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.045) 44%,
+    rgb(var(--nv-glaze-rgb) / 0.085) 52%,
+    transparent
+  );
+  transform: translate3d(-170%, 0, 0) rotate(9deg);
+  transition: transform 2.5s var(--nv-ease-io) 0.2s;
+}
+
+.nv-mast[data-shown="true"] .nv-mast__rake {
+  transform: translate3d(320%, 0, 0) rotate(9deg);
+}
+
+/* ── 5 · falloff and the join ─────────────────────────────────────────────
+   The vignette lets the corners drop away so the centre carries the eye; the
+   seam is the same warm hairline that joins two sections on the homepage, so
+   the masthead hands off to the body instead of fading into it. */
+.nv-mast__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    124% 94% at 46% 32%,
+    transparent 44%,
+    var(--nv-vignette) 100%
+  );
+}
+
+.nv-mast::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 1px;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--nv-hairline) 20%,
+    var(--nv-champagne-line) 50%,
+    var(--nv-hairline) 80%,
+    transparent
+  );
+}
+
+/* ── 6 · the page glyph ───────────────────────────────────────────────────
+   The mark `iconForText()` picks from the page's own title, set very large and
+   very faint behind the right of the composition. This is the whole reason
+   nineteen interior pages no longer open identically, and it costs no content:
+   the table that already chooses a service card's glyph chooses this one.
+
+   Hidden under 900px — at phone width there is no column free of type for it
+   to sit in, and a watermark behind a lede is a legibility problem, not an
+   ornament. */
+/* Suppressed when the aside is present: the frame occupies the right of the
+   composition, and a watermark behind a photograph is a layer nobody sees. The
+   flag is set on the section by `Masthead` rather than inferred with `:has()`,
+   because the glyph precedes the grid in the DOM and no combinator reaches
+   backwards. */
+.nv-mast--aside .nv-mast__glyph {
+  display: none;
+}
+
+.nv-mast__glyph {
+  position: absolute;
+  top: 50%;
+  right: clamp(-72px, -3vw, -12px);
+  width: clamp(300px, 33vw, 500px);
+  z-index: -1;
+  display: none;
+  color: rgb(var(--nv-metal-rgb) / 0.07);
+  pointer-events: none;
+  transform: translateY(-48%);
+  animation: nv-mast-float 22s ease-in-out infinite alternate;
+}
+
+.nv-mast__glyph svg {
+  width: 100%;
+  height: auto;
+  stroke-width: 0.45;
+}
+
+@keyframes nv-mast-float {
+  from { transform: translateY(-51%) rotate(-1.4deg); }
+  to { transform: translateY(-45%) rotate(1.4deg); }
+}
+
+@media (min-width: 900px) {
+  .nv-mast__glyph { display: block; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MASTHEAD — CONTENT
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-mast__inner {
+  position: relative;
+  z-index: 2;
+}
+
+.nv-mast__grid {
+  display: grid;
+  gap: clamp(36px, 4vw, 64px);
+}
+
+/* The aside only earns a column when there is something in it. Without this
+   the single-column pages — most of them — would reserve 340px of empty
+   gutter and the title would be set to two-thirds width for no reason. */
+@media (min-width: 1024px) {
+  .nv-mast__grid--aside {
+    grid-template-columns: minmax(0, 1fr) minmax(272px, 344px);
+    align-items: end;
+    gap: clamp(40px, 4.4vw, 76px);
+  }
+}
+
+/* ── Breadcrumbs ──────────────────────────────────────────────────────────
+   The separator is a bronze lozenge on the baseline rather than a slash or a
+   chevron glyph: a drawn mark sits where a typeface's own solidus would be a
+   character with its own weight and side bearings. */
+.nv-mast__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 11px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-mast__crumb {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.4s var(--nv-ease-lux);
+}
+
+.nv-mast__crumb:hover { color: var(--nv-champagne); }
+.nv-mast__crumb--here { color: var(--nv-text-dim); }
+
+.nv-mast__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.nv-mast__step::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  flex: none;
+  background: var(--nv-champagne-line);
+  transform: rotate(45deg);
+}
+
+/* ── Identity line ────────────────────────────────────────────────────────
+   The ruled line a journal sets its section under: an ordinal in a hairline
+   square, the hospital's name in mono, and a rule that draws itself out to the
+   end of the column on arrival. The name comes from settings — it was hard-
+   coded to the hospital this site was forked from, on every interior page. */
+.nv-mast__ident {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: clamp(22px, 2.4vw, 32px);
+}
+
+.nv-mast__ord {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--nv-champagne);
+}
+
+.nv-mast__org {
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-mast__ident-rule {
+  flex: 1;
+  min-width: 24px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 46%,
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.5s var(--nv-ease-lux) 0.14s;
+}
+
+.nv-mast[data-shown="true"] .nv-mast__ident-rule { transform: scaleX(1); }
+
+/* ── Section tab ──────────────────────────────────────────────────────────
+   The eyebrow, set inside drawn brackets. `.nv-eyebrow` puts a hairline before
+   the text, which is the homepage's mark; brackets are the interior's, so the
+   two openings are told apart at a glance without a second colour. */
+.nv-mast__tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-top: clamp(26px, 2.8vw, 36px);
+  padding: 0 15px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+}
+
+.nv-mast__tag::before,
+.nv-mast__tag::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 6px;
+  border: 1px solid var(--nv-champagne-line);
+  opacity: 0;
+  transition: opacity 0.9s var(--nv-ease-lux) 0.3s;
+}
+
+.nv-mast__tag::before { left: 0; border-right: 0; }
+.nv-mast__tag::after { right: 0; border-left: 0; }
+
+.nv-mast[data-shown="true"] .nv-mast__tag::before,
+.nv-mast[data-shown="true"] .nv-mast__tag::after { opacity: 1; }
+
+/* ── Title ────────────────────────────────────────────────────────────────
+   Each word is its own clipping box with the word inside it translated below
+   the baseline, so the line rises into view a word at a time. Two details
+   matter and are easy to lose:
+
+     · `padding-bottom` on the box. Without it the clip cuts the descenders of
+       the resting state and "Emergency" loses the tail of its g.
+     · the word gaps are real whitespace between the boxes, not a margin, so
+       the spacing is the typeface's own word space at every size. The animated
+       run is `aria-hidden` and a plain copy of the line sits beside it in an
+       `.sr-only` span — a screen reader reading forty clipping boxes would
+       otherwise announce the title with its spaces missing.
+
+   The closing phrase is set in the serif italic. That single change is what
+   makes the line read as composed rather than as a heading in a template, and
+   it costs one prop. */
+.nv-mast__title {
+  margin-top: clamp(16px, 1.8vw, 24px);
+  max-width: 21ch;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.6rem, 5.9vw, 4.9rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.038em;
+  color: var(--nv-text);
+}
+
+.nv-mast__w {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.09em;
+  vertical-align: bottom;
+}
+
+.nv-mast__w > span {
+  display: inline-block;
+  transform: translate3d(0, 112%, 0);
+  transition: transform 1.15s var(--nv-ease-lux);
+  transition-delay: calc(var(--i, 0) * 0.07s + 0.08s);
+}
+
+.nv-mast[data-shown="true"] .nv-mast__w > span { transform: translate3d(0, 0, 0); }
+
+.nv-mast__w--accent > span {
+  font-family: var(--nv-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  color: var(--nv-champagne-hi);
+}
+
+/* ── Jewel rule ───────────────────────────────────────────────────────────
+   A bar, a lozenge and a fading hairline. The bar is the only 2px mark in the
+   system: at 1px it reads as a continuation of the hairline beside it, and the
+   whole point of the unit is that the three parts are different weights. */
+.nv-mast__rule {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: clamp(24px, 2.6vw, 34px);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.4s var(--nv-ease-lux) 0.3s;
+}
+
+.nv-mast[data-shown="true"] .nv-mast__rule { transform: scaleX(1); }
+
+.nv-mast__rule-bar {
+  width: clamp(38px, 4.4vw, 54px);
+  height: 2px;
+  flex: none;
+  background: linear-gradient(90deg, var(--nv-champagne), var(--nv-champagne-hi));
+}
+
+.nv-mast__rule-node {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border: 1px solid var(--nv-champagne);
+  transform: rotate(45deg);
+}
+
+.nv-mast__rule-line {
+  width: clamp(90px, 16vw, 240px);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 56%,
+    transparent
+  );
+}
+
+/* ── Lede ─────────────────────────────────────────────────────────────────
+   Measured at 60ch: past about 70 the eye loses the start of the next line, and
+   under about 55 the paragraph reads cramped beside a 78px title. It fades up
+   behind the title's last word rather than with it. */
+.nv-mast__lede {
+  margin-top: clamp(20px, 2.2vw, 28px);
+  max-width: 60ch;
+  font-size: clamp(1.03rem, 1.16vw, 1.145rem);
+  line-height: 1.72;
+  color: var(--nv-text-dim);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 1.1s var(--nv-ease-lux) 0.42s,
+    transform 1.1s var(--nv-ease-lux) 0.42s;
+}
+
+.nv-mast[data-shown="true"] .nv-mast__lede {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Badges ───────────────────────────────────────────────────────────────
+   Hairline pills with a lit node. Never a fill: a filled bronze pill at this
+   size reads brown, which is the reason the whole system keeps its metal in
+   lines and small marks only. */
+.nv-mast__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: clamp(24px, 2.6vw, 32px);
+}
+
+.nv-mast__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px 7px 12px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.42);
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux),
+    background 0.45s var(--nv-ease-lux);
+}
+
+.nv-mast__badge svg {
+  width: 13px;
+  height: 13px;
+  color: var(--nv-champagne);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-mast__badge-dot {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--nv-champagne);
+  box-shadow: 0 0 0 3px rgb(var(--nv-metal-rgb) / 0.12);
+}
+
+.nv-mast__badge:hover {
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  color: var(--nv-champagne-hi);
+}
+
+/* ── Figure cluster ───────────────────────────────────────────────────────
+   Read as an instrument panel: the figures share one top rule, are divided by
+   vertical hairlines, and each one's own segment of that rule warms and draws
+   itself in, left to right. The old row was four numbers floating in a flex
+   gap, which never told a visitor they belonged to one reading. */
+.nv-mast__figs {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: clamp(34px, 3.6vw, 48px);
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-mast__fig {
+  position: relative;
+  padding: clamp(18px, 2vw, 24px) clamp(22px, 2.8vw, 38px) 2px;
+}
+
+.nv-mast__fig:first-child { padding-left: 0; }
+
+.nv-mast__fig + .nv-mast__fig::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: clamp(18px, 2vw, 24px);
+  bottom: 8px;
+  width: 1px;
+  background: var(--nv-hairline);
+}
+
+/* The warm segment over the shared rule. Sits on ::after so ::before is free
+   for the divider, and is inset by the same padding so it spans exactly the
+   figure it belongs to. */
+.nv-mast__fig::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--nv-champagne), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.1s var(--nv-ease-lux);
+}
+
+.nv-mast[data-shown="true"] .nv-mast__fig::after { transform: scaleX(1); }
+.nv-mast[data-shown="true"] .nv-mast__fig:nth-child(1)::after { transition-delay: 0.46s; }
+.nv-mast[data-shown="true"] .nv-mast__fig:nth-child(2)::after { transition-delay: 0.58s; }
+.nv-mast[data-shown="true"] .nv-mast__fig:nth-child(3)::after { transition-delay: 0.7s; }
+.nv-mast[data-shown="true"] .nv-mast__fig:nth-child(4)::after { transition-delay: 0.82s; }
+
+.nv-mast__fig-value {
+  display: block;
+  font-family: var(--nv-font-mono);
+  font-size: clamp(1.5rem, 2.1vw, 1.95rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--nv-text);
+}
+
+.nv-mast__fig-label {
+  display: block;
+  margin-top: 11px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-mast__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(30px, 3.2vw, 40px);
+}
+
+/* ── Back link (detail pages) ─────────────────────────────────────────────
+   Above the identity line rather than beside the title, so the eye meets the
+   way out before it meets the subject — and the arrow travels left on hover,
+   which is the direction the link actually goes. */
+.nv-mast__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: clamp(18px, 2vw, 24px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-muted);
+  text-decoration: none;
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-mast__back svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.5s var(--nv-ease-lux);
+}
+
+.nv-mast__back:hover { color: var(--nv-champagne); }
+.nv-mast__back:hover svg { transform: translate3d(-4px, 0, 0); }
+
+/* ── Aside frame ──────────────────────────────────────────────────────────
+   The subject's portrait, mounted. One corner is square — the same signature
+   the interior cards carry — and a bronze bracket is drawn at it and at the
+   opposite corner, so the frame reads as registered rather than merely
+   rounded. */
+.nv-mast__frame {
+  position: relative;
+  overflow: hidden;
+  /* Landscape while it spans the column on a phone, portrait once it becomes a
+     side column — cropping a 16:9 press photograph to 4:5 at full width throws
+     away most of the frame. */
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 28px 28px 28px 0;
+  background: var(--nv-plate-well);
+  box-shadow: var(--nv-lift);
+}
+
+.nv-mast__frame img {
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+
+/* Inner hairline plus a seating gradient at the base, on one layer. An inset
+   shadow on the frame itself would paint under the absolutely-positioned
+   <img>, which is why this is a sibling overlay and not a box-shadow. */
+.nv-mast__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 58%,
+    rgb(var(--nv-scrim-rgb) / 0.34) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px var(--nv-hairline),
+    inset 0 1px 0 var(--nv-edge);
+}
+
+.nv-mast__frame::before,
+.nv-mast__tick {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  border: 1px solid var(--nv-metal-on-media-line);
+}
+
+.nv-mast__frame::before {
+  top: 13px;
+  right: 13px;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.nv-mast__tick {
+  bottom: 9px;
+  left: 9px;
+  border-right: 0;
+  border-top: 0;
+}
+
+@media (min-width: 1024px) {
+  .nv-mast__frame { aspect-ratio: 4 / 5; }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .nv-mast { padding-top: clamp(92px, 23vw, 118px); }
+  .nv-mast__title { max-width: none; }
+  .nv-mast__fig { padding-inline: 0 26px; }
+  .nv-mast__fig + .nv-mast__fig { padding-left: 26px; }
+}
+
+@media (max-width: 479px) {
+  .nv-mast__title { font-size: clamp(2.1rem, 10.5vw, 2.6rem); }
+  .nv-mast__org { letter-spacing: 0.16em; font-size: 0.625rem; }
+  .nv-mast__figs { margin-top: 28px; }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────
+   Two different jobs, as everywhere in this system. Layers that only travel
+   are stopped; layers that CARRY STRUCTURE — every rule drawn from scaleX(0)
+   and every word clipped below its baseline — have to be *placed* at their
+   resting state, or the title never appears at all. */
+@media (prefers-reduced-motion: reduce) {
+  .nv-mast__matrix,
+  .nv-mast__arcs,
+  .nv-mast__glyph { animation: none; }
+
+  .nv-mast__bloom { animation: none; opacity: 0.86; }
+  .nv-mast__rake { display: none; }
+
+  .nv-mast__ident-rule,
+  .nv-mast__rule,
+  .nv-mast__fig::after {
+    transform: scaleX(1);
+    transition: none;
+  }
+
+  .nv-mast__w > span {
+    transform: none;
+    transition: none;
+  }
+
+  .nv-mast__tag::before,
+  .nv-mast__tag::after { opacity: 1; transition: none; }
+
+  .nv-mast__lede {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ATELIER CARD — .nv-xc
+   The unit every interior grid repeats: services, departments, emergency,
+   insurance, and anything else `ResourceList` renders as a grid.
+
+   What changed from `.nv-card`, which the homepage keeps
+   ----------------------------------------------------
+   `.nv-card` mounts its photograph inset on three sides, on a plate with four
+   equal 22px corners. It is a good unit and the homepage still uses it. But it
+   is also SYMMETRICAL, and a page of forty symmetrical rounded rectangles has
+   no reading order — the eye has nowhere to enter a card.
+
+   This one is built around an asymmetry and a straddle.
+
+     · ONE SQUARE CORNER. Three corners at 28px and the fourth at 0, with a
+       bronze bracket struck inside it. That corner is the card's signature and
+       the reason a grid of them reads as a set of plates rather than as tiles.
+     · THE SEAL STRADDLES THE JOIN. The glyph sits centred on the hairline
+       between photograph and copy, half on each — the move a certificate makes
+       with a wax seal. It is what gives the card a focal point, and because
+       `iconForText()` picks the glyph per item, it is also what tells six cards
+       apart while their kickers all read "Clinical service".
+     · THE PHOTOGRAPH RUNS TO THE EDGE. No mount. The plate is the mount now,
+       and the join carries the bronze hairline the seal is set on.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-xc {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 28px 28px 28px 0;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  text-decoration: none;
+  transition:
+    transform 0.75s var(--nv-ease-lux),
+    border-color 0.75s var(--nv-ease-lux),
+    box-shadow 0.75s var(--nv-ease-lux),
+    background 0.75s var(--nv-ease-lux);
+}
+
+.nv-xc:hover {
+  transform: translate3d(0, -9px, 0);
+  background: var(--nv-plate-hi);
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 var(--nv-edge);
+}
+
+/* ── The photograph ─────────────────────────────────────────────────────── */
+.nv-xc__frame {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  background: var(--nv-plate-well);
+}
+
+.nv-xc__photo {
+  object-fit: cover;
+  transform: scale(1.02);
+  filter: saturate(0.86) contrast(1.04);
+  transition:
+    transform 1.7s var(--nv-ease-lux),
+    filter 0.9s var(--nv-ease-lux);
+}
+
+.nv-xc:hover .nv-xc__photo {
+  transform: scale(1.075);
+  filter: none;
+}
+
+/* Seats the image against the plate below it. The gradient stops short of the
+   join because the bronze hairline there is the actual edge — a scrim that ran
+   all the way down would bury it. */
+.nv-xc__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 52%,
+    rgb(var(--nv-scrim-rgb) / 0.46) 100%
+  );
+}
+
+/* Colourless diagonal pass on hover. Warm light over a face turns the skin
+   tone, so this one carries only the neutral glaze. */
+.nv-xc__frame::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 46%;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.06) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.1) 52%,
+    transparent
+  );
+  transform: translate3d(-200%, 0, 0) rotate(11deg);
+  transition: transform 1.25s var(--nv-ease-io);
+}
+
+.nv-xc:hover .nv-xc__frame::after {
+  transform: translate3d(330%, 0, 0) rotate(11deg);
+}
+
+/* Shown when the item has no photograph, or when every candidate URL 404s. It
+   carries the same glyph as the seal, so a card with no image still reads as
+   that department rather than as a hole in the grid. */
+.nv-xc__void {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--nv-plate-well);
+  color: rgb(var(--nv-metal-rgb) / 0.26);
+}
+
+.nv-xc__void svg { width: 38px; height: 38px; stroke-width: 1.25; }
+
+/* Index chip. Gives a long grid a rhythm to scan by, and it is the one thing
+   allowed on the photograph because it carries information. */
+.nv-xc__ord {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border: 1px solid var(--nv-metal-on-media-line);
+  border-radius: 999px;
+  background: rgb(var(--nv-scrim-rgb) / 0.66);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-family: var(--nv-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.18em;
+  color: var(--nv-metal-on-media);
+}
+
+/* ── Body, and the seal on the join ─────────────────────────────────────── */
+.nv-xc__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 38px 26px 26px;
+}
+
+/* The join. Bronze at the left where the seal sits, cooling to nothing across
+   the card — so the hairline reads as struck from the seal rather than as a
+   border that happens to be warm. */
+.nv-xc__body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 58%,
+    transparent
+  );
+}
+
+.nv-xc__seal {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 15px;
+  background: var(--nv-plate-flat);
+  box-shadow:
+    inset 0 1px 0 var(--nv-edge-soft),
+    0 6px 18px -8px rgba(24, 27, 36, 0.28),
+    0 0 0 0 rgb(var(--nv-metal-rgb) / 0.16);
+  color: var(--nv-champagne);
+  transform: translateY(-50%);
+  transition:
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    box-shadow 0.7s var(--nv-ease-lux);
+}
+
+.nv-xc__seal svg { width: 20px; height: 20px; stroke-width: 1.6; }
+
+.nv-xc:hover .nv-xc__seal {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne);
+  box-shadow:
+    inset 0 1px 0 var(--nv-edge-soft),
+    0 8px 22px -8px rgba(24, 27, 36, 0.32),
+    0 0 0 5px rgb(var(--nv-metal-rgb) / 0.1);
+}
+
+.nv-xc__kicker {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-xc:hover .nv-xc__kicker { color: var(--nv-champagne-hi); }
+
+/* `text-wrap: balance` earns its place here: real names run to "Inpatient Care
+   Services (Medical and Surgical)", which otherwise orphans one word on a
+   third line. */
+.nv-xc__title {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.24rem, 1.5vw, 1.42rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.024em;
+  text-wrap: balance;
+  color: var(--nv-text);
+  transition: color 0.5s var(--nv-ease-lux);
+}
+
+.nv-xc:hover .nv-xc__title { color: var(--nv-champagne-hi); }
+
+/* Clamped on the rendered line rather than at a character count, so the cut
+   lands at the end of a line. `truncate` still caps the string, far above this
+   — a guard against an absurd description, not the thing shortening it. */
+.nv-xc__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  font-size: 0.895rem;
+  line-height: 1.74;
+  color: var(--nv-muted);
+}
+
+/* `margin-top: auto` is what keeps a row machined: whatever each title and
+   description do above it, every foot in the row sits on one line. */
+.nv-xc__foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--nv-hairline);
+}
+
+.nv-xc__foot::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  inset-inline: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.2) 70%,
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s var(--nv-ease-lux);
+  pointer-events: none;
+}
+
+.nv-xc:hover .nv-xc__foot::before { transform: scaleX(1); }
+
+.nv-xc__go {
+  font-family: var(--nv-font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+  transition: color 0.6s var(--nv-ease-lux);
+}
+
+.nv-xc:hover .nv-xc__go { color: var(--nv-champagne); }
+
+.nv-xc__disc {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 999px;
+  color: var(--nv-faint);
+  transition:
+    transform 0.7s var(--nv-ease-lux),
+    color 0.6s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux),
+    background 0.6s var(--nv-ease-lux);
+}
+
+.nv-xc__disc svg { width: 15px; height: 15px; }
+
+.nv-xc:hover .nv-xc__disc {
+  color: var(--nv-champagne-hi);
+  border-color: var(--nv-champagne-line);
+  background: var(--nv-champagne-faint);
+  transform: translate3d(3px, -3px, 0);
+}
+
+/* ── The registration bracket ───────────────────────────────────────────────
+   Struck inside the square corner. Visible at rest, because it is part of the
+   card's shape rather than a hover reward, and it lengthens and warms when the
+   card is picked up. */
+.nv-xc__mark {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 4;
+  width: 26px;
+  height: 26px;
+  border-left: 1px solid var(--nv-champagne-line);
+  border-bottom: 1px solid var(--nv-champagne-line);
+  pointer-events: none;
+  transition:
+    width 0.7s var(--nv-ease-lux),
+    height 0.7s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux);
+}
+
+.nv-xc:hover .nv-xc__mark {
+  width: 40px;
+  height: 40px;
+  border-color: var(--nv-champagne);
+}
+
+/* ── Compact variant ──────────────────────────────────────────────────────── */
+.nv-xc--compact .nv-xc__frame { aspect-ratio: 16 / 9; }
+.nv-xc--compact .nv-xc__body { padding: 34px 20px 22px; gap: 10px; }
+.nv-xc--compact .nv-xc__title { font-size: 1.1rem; }
+.nv-xc--compact .nv-xc__seal { width: 40px; height: 40px; border-radius: 13px; left: 20px; }
+.nv-xc--compact .nv-xc__seal svg { width: 17px; height: 17px; }
+.nv-xc--compact .nv-xc__desc { -webkit-line-clamp: 2; line-clamp: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-xc,
+  .nv-xc__photo,
+  .nv-xc__seal,
+  .nv-xc__disc,
+  .nv-xc__mark { transition: none; }
+
+  .nv-xc:hover { transform: none; }
+  .nv-xc:hover .nv-xc__photo { transform: scale(1.02); }
+  .nv-xc:hover .nv-xc__disc { transform: none; }
+  .nv-xc__frame::after { display: none; }
+  .nv-xc__foot::before { transform: scaleX(1); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LEDGER ROW — .nv-led
+   News, announcements, events, careers, health education. A feed, not a grid,
+   so the unit is a wide row rather than a tile.
+
+   It carries the same three signatures as the atelier card — the square corner
+   with a bracket struck in it, the bronze join, and the index — so a visitor
+   moving from /services to /news is looking at one family of objects. What is
+   different is where the weight sits: a row is read left to right, so the join
+   becomes a VERTICAL rule that grows on hover, and the index is set large and
+   faint behind the copy instead of chipped onto the photograph.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-ledger {
+  display: grid;
+  gap: clamp(18px, 2vw, 26px);
+}
+
+.nv-led {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 28px 28px 28px 0;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift), inset 0 1px 0 var(--nv-edge);
+  text-decoration: none;
+  transition:
+    transform 0.65s var(--nv-ease-lux),
+    border-color 0.65s var(--nv-ease-lux),
+    box-shadow 0.65s var(--nv-ease-lux),
+    background 0.65s var(--nv-ease-lux);
+}
+
+.nv-led:hover {
+  transform: translate3d(0, -5px, 0);
+  background: var(--nv-plate-hi);
+  border-color: var(--nv-champagne-line);
+  box-shadow: var(--nv-lift-hi), inset 0 1px 0 var(--nv-edge);
+}
+
+@media (min-width: 768px) {
+  .nv-led {
+    grid-template-columns: minmax(0, 41%) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .nv-led--lead { grid-template-columns: minmax(0, 53%) minmax(0, 1fr); }
+}
+
+/* ── Media ──────────────────────────────────────────────────────────────── */
+.nv-led__frame {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(196px, 26vw, 248px);
+  background: var(--nv-plate-well);
+}
+
+.nv-led--lead .nv-led__frame { min-height: clamp(248px, 34vw, 348px); }
+
+.nv-led__photo {
+  object-fit: cover;
+  filter: saturate(0.88) contrast(1.03);
+  transition:
+    transform 1.6s var(--nv-ease-lux),
+    filter 0.9s var(--nv-ease-lux);
+}
+
+.nv-led:hover .nv-led__photo {
+  transform: scale(1.05);
+  filter: none;
+}
+
+.nv-led__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 58%,
+    rgb(var(--nv-scrim-rgb) / 0.4) 100%
+  );
+  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+}
+
+.nv-led__frame::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 44%;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.05) 46%,
+    rgb(var(--nv-glaze-rgb) / 0.09) 52%,
+    transparent
+  );
+  transform: translate3d(-200%, 0, 0) rotate(12deg);
+  transition: transform 1.2s var(--nv-ease-io);
+}
+
+.nv-led:hover .nv-led__frame::after {
+  transform: translate3d(330%, 0, 0) rotate(12deg);
+}
+
+/* The initial, for an item with no photograph: a very faint letter in the
+   display face, so the slot reads as deliberate rather than as broken. */
+.nv-led__initial {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: clamp(3.4rem, 7vw, 5.6rem);
+  font-weight: 500;
+  color: rgb(var(--nv-metal-rgb) / 0.13);
+  user-select: none;
+}
+
+/* Lead flag. The only fill in the unit, and it is on a scrim over a photograph
+   where a hairline pill would be lost. */
+.nv-led__flag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border: 1px solid var(--nv-metal-on-media-line);
+  border-radius: 999px;
+  background: rgb(var(--nv-scrim-rgb) / 0.7);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-family: var(--nv-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nv-metal-on-media);
+}
+
+.nv-led__flag::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--nv-metal-on-media);
+  transform: rotate(45deg);
+}
+
+/* ── Copy ───────────────────────────────────────────────────────────────── */
+.nv-led__copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 2.8vw, 38px);
+}
+
+/* The vertical join. Sits on the copy's leading edge, bronze, and grows from a
+   third of the height to the full height when the row is picked up. On a
+   stacked phone layout it becomes the horizontal join instead, because at that
+   width the row is read top to bottom. */
+.nv-led__copy::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne-line),
+    var(--nv-hairline) 62%,
+    transparent
+  );
+}
+
+@media (min-width: 768px) {
+  .nv-led__copy::before {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 0;
+    width: 1px;
+    height: 34%;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--nv-champagne) 50%,
+      transparent
+    );
+    transform: translateY(-50%);
+    transition: height 0.8s var(--nv-ease-lux);
+  }
+
+  .nv-led:hover .nv-led__copy::before { height: 88%; }
+}
+
+/* The index, set large and faint behind the top of the copy. It is what gives
+   a long feed a sense of position — item 7 of 40 — without printing a counter. */
+.nv-led__ord {
+  position: absolute;
+  top: clamp(10px, 1.4vw, 16px);
+  right: clamp(16px, 2vw, 26px);
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.6rem, 4.4vw, 4rem);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: rgb(var(--nv-metal-rgb) / 0.1);
+  user-select: none;
+  pointer-events: none;
+  transition: color 0.7s var(--nv-ease-lux);
+}
+
+.nv-led:hover .nv-led__ord { color: rgb(var(--nv-metal-rgb) / 0.19); }
+
+.nv-led__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-led__date::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border: 1px solid var(--nv-champagne);
+  transform: rotate(45deg);
+}
+
+.nv-led__title {
+  margin-top: 14px;
+  max-width: 32ch;
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.22rem, 1.75vw, 1.55rem);
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: -0.024em;
+  text-wrap: balance;
+  color: var(--nv-text);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-led--lead .nv-led__title { font-size: clamp(1.5rem, 2.5vw, 2.1rem); }
+.nv-led:hover .nv-led__title { color: var(--nv-champagne-hi); }
+
+.nv-led__excerpt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  margin-top: 12px;
+  max-width: 62ch;
+  font-size: 0.925rem;
+  line-height: 1.68;
+  color: var(--nv-muted);
+}
+
+.nv-led__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: clamp(20px, 2.2vw, 26px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-text-dim);
+  transition: color 0.45s var(--nv-ease-lux);
+}
+
+.nv-led__more-rule {
+  width: 26px;
+  height: 1px;
+  flex: none;
+  background: var(--nv-champagne-line);
+  transition:
+    width 0.6s var(--nv-ease-lux),
+    background-color 0.5s var(--nv-ease-lux);
+}
+
+.nv-led__more svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.5s var(--nv-ease-lux);
+}
+
+.nv-led:hover .nv-led__more { color: var(--nv-champagne); }
+.nv-led:hover .nv-led__more-rule { width: 48px; background: var(--nv-champagne); }
+.nv-led:hover .nv-led__more svg { transform: translate3d(3px, -3px, 0); }
+
+/* The bracket in the square corner — the family mark. */
+.nv-led__mark {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 4;
+  width: 24px;
+  height: 24px;
+  border-left: 1px solid var(--nv-champagne-line);
+  border-bottom: 1px solid var(--nv-champagne-line);
+  pointer-events: none;
+  transition:
+    width 0.7s var(--nv-ease-lux),
+    height 0.7s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux);
+}
+
+.nv-led:hover .nv-led__mark {
+  width: 38px;
+  height: 38px;
+  border-color: var(--nv-champagne);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-led,
+  .nv-led__photo,
+  .nv-led__ord,
+  .nv-led__mark,
+  .nv-led__more-rule { transition: none; }
+
+  .nv-led:hover { transform: none; }
+  .nv-led:hover .nv-led__photo { transform: none; }
+  .nv-led__frame::after { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE FAMILY PASS
+   Interior pages carry a dozen units this sheet does not define: the clinician
+   frame, the partner plate, the testimonial, the insurance logo card, the
+   gallery tile, the FAQ row, the detail panel. Each was designed on its own and
+   each landed on a different corner radius — 15, 18, 20 and 22px on one site —
+   with hover states that warmed to a neutral hairline on some and to bronze on
+   others.
+
+   Rather than redraw seven units, this gives all of them the two marks the new
+   card and row are built on:
+
+     · ONE SQUARE CORNER, bottom-left. It is the whole reason a page of these
+       reads as a set rather than as an assortment.
+     · A BRACKET STRUCK INSIDE IT, bronze, lengthening when the unit is picked
+       up. Each of these roots had a free pseudo-element; the selector lists
+       below are grouped by which one, and nothing else about the units moves.
+
+   Two of them — `.nv-doc` and `.nv-partner` — are shared with the homepage, so
+   their overrides are scoped under `.nv-pb`, the interior body field. The
+   homepage sits on `.nv-flow` and never matches.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shape ──────────────────────────────────────────────────────────────── */
+.nv-tcard,
+.nv-logo-card,
+.nv-gtile,
+.nv-dpanel {
+  border-radius: 24px 24px 24px 0;
+}
+
+.nv-faq { border-radius: 18px 18px 18px 0; }
+
+.nv-pb .nv-doc__frame { border-radius: 24px 24px 24px 0; }
+
+.nv-pb .nv-partner {
+  position: relative;
+  border-radius: 24px 24px 24px 0;
+}
+
+/* Hover warms to the metal on all of them. Half of these units warmed to a
+   neutral hairline instead, which on a page where the other half warms to
+   bronze reads as two different systems reacting to the same gesture. */
+.nv-tcard:hover,
+.nv-logo-card:hover {
+  border-color: var(--nv-champagne-line);
+}
+
+/* ── The bracket ────────────────────────────────────────────────────────── */
+.nv-tcard::after,
+.nv-logo-card::after,
+.nv-dpanel::after,
+.nv-gtile::before,
+.nv-pb .nv-doc__frame::after,
+.nv-pb .nv-partner::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 4;
+  width: 22px;
+  height: 22px;
+  border-left: 1px solid var(--nv-champagne-line);
+  border-bottom: 1px solid var(--nv-champagne-line);
+  pointer-events: none;
+  transition:
+    width 0.7s var(--nv-ease-lux),
+    height 0.7s var(--nv-ease-lux),
+    border-color 0.6s var(--nv-ease-lux);
+}
+
+/* The gallery tile and the clinician frame are edge-to-edge photography, so
+   their bracket takes the champagne that reads on a scrim rather than the
+   bronze that reads on porcelain. */
+.nv-gtile::before,
+.nv-pb .nv-doc__frame::after {
+  border-color: var(--nv-metal-on-media-line);
+}
+
+.nv-tcard:hover::after,
+.nv-logo-card:hover::after,
+.nv-gtile:hover::before,
+.nv-pb .nv-doc:hover .nv-doc__frame::after,
+.nv-pb .nv-partner:hover::after {
+  width: 34px;
+  height: 34px;
+  border-color: var(--nv-champagne);
+}
+
+.nv-gtile:hover::before,
+.nv-pb .nv-doc:hover .nv-doc__frame::after {
+  border-color: var(--nv-metal-on-media);
+}
+
+/* A detail panel is not interactive, so its bracket is simply part of the
+   plate — it never lengthens, because nothing picks the panel up. */
+.nv-dpanel::after {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-tcard::after,
+  .nv-logo-card::after,
+  .nv-gtile::before,
+  .nv-pb .nv-doc__frame::after,
+  .nv-pb .nv-partner::after {
+    transition: none;
+  }
+}

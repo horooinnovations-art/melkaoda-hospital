@@ -26,6 +26,7 @@ import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import { cn, isPublicItemActive, stripHtml } from "@/lib/utils";
 import type { GalleryItem } from "@/lib/types";
+import { SITE_NAME } from "@/lib/api";
 
 function galleryHref(item: GalleryItem) {
   return `/gallery/${item.slug || item.id}`;
@@ -58,6 +59,8 @@ export default function GalleryPage() {
     }
     return Array.from(set).sort();
   }, [items]);
+
+  const collectionCount = Math.max(1, categories.length);
 
   const filtered = useMemo(() => {
     if (category === "all") return items;
@@ -92,11 +95,31 @@ export default function GalleryPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Gallery Showcase"
-        eyebrow="Visual stories & campus life"
+        section="/gallery"
+        title="The Hospital in"
+        accent="Pictures"
+        eyebrow="Campus and care"
         subtitle={
           heroSubtitle ||
-          "Explore moments from Gambo General Hospital's medical operations, community care, and clinical excellence."
+          `Wards, theatres, outreach days and the people who staff them — photographed at ${SITE_NAME}.`
+        }
+        stats={
+          items.length
+            ? [
+                { value: String(items.length), label: "Photographs" },
+                // An untagged library has no categories at all, which still
+                // means one collection rather than zero — so the count and the
+                // label have to be derived from the same number.
+                ...(collectionCount
+                  ? [
+                      {
+                        value: String(collectionCount),
+                        label: collectionCount === 1 ? "Collection" : "Collections",
+                      },
+                    ]
+                  : []),
+              ]
+            : undefined
         }
         breadcrumbs={[{ label: "Gallery" }]}
       />

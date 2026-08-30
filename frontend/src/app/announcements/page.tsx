@@ -18,9 +18,11 @@ export default async function AnnouncementsPage({
   return (
     <>
       <PageHero
-        title="Announcements"
-        eyebrow="Official notices"
-        subtitle="Important updates, policy changes, new services and notices from the hospital administration."
+        section="/announcements"
+        title="Official"
+        accent="Notices"
+        eyebrow="Straight from administration"
+        subtitle="Policy changes, service updates and formal notices issued by the hospital administration. Current items sit at the top."
         breadcrumbs={[{ label: "Announcements" }]}
       />
       <PageBody>

@@ -9,7 +9,6 @@ import DetailShell, {
   DetailDivider,
   DetailLinkChip,
   DetailPanel,
-  DetailSectionHeader,
   type DetailBadge,
 } from "@/components/shared/DetailShell";
 import { getImageFromItem } from "@/lib/media";
@@ -65,12 +64,10 @@ export default function NewsDetail({ slug }: { slug: string }) {
       backLabel="All News"
       width="prose"
     >
-      <DetailSectionHeader
-        eyebrow="Hospital news"
-        title="Article"
-        description="Updates and stories from Gambo General Hospital."
-      />
-
+      {/* No section header above the content. The three that used to open these
+          pages — "Hospital news · Article", "Hospital page · Content", "Gallery ·
+          Featured image" — restated the masthead directly above them and told a
+          reader nothing they had not just read. */}
       {item.content || image ? (
         <DetailPanel>
           <div className="nv-dpanel__label">

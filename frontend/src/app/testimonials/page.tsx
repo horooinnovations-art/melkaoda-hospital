@@ -27,10 +27,17 @@ export default function TestimonialsPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Patient Stories"
+        section="/testimonials"
+        title="In Their Own"
+        accent="Words"
         eyebrow="Patient voices"
-        subtitle="Real experiences from the people we serve — honest accounts of care, recovery and the human side of our hospital."
-        breadcrumbs={[{ label: "Testimonials" }]}
+        subtitle="Accounts from patients and their families about being treated here — diagnosis, recovery, and the people they met along the way."
+        stats={
+          items.length
+            ? [{ value: String(items.length), label: "Accounts published" }]
+            : undefined
+        }
+        breadcrumbs={[{ label: "Patient Stories" }]}
       />
 
       <PageBody>

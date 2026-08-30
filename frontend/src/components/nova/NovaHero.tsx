@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { HomeData } from "@/lib/types";
 import { cleanPublicText, truncate } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/api";
 import NovaHeroBackdrop from "./NovaHeroBackdrop";
 import NovaWords from "./NovaWords";
 
@@ -144,7 +145,7 @@ export default function NovaHero({
   images?: string[];
   place?: string;
 }) {
-  const brand = cleanPublicText(name) || "Gambo General Hospital";
+  const brand = cleanPublicText(name) || SITE_NAME;
   const brandWords = brand.trim().split(/\s+/).filter(Boolean);
   const headline = cleanPublicText(tagline) || "Care you can trust, close to home.";
   const support =

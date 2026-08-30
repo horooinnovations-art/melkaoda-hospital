@@ -9,9 +9,7 @@ import { DetailSkeleton } from "@/components/shared/Skeleton";
 import DetailShell, {
   DetailDivider,
   DetailLinkChip,
-  DetailMetaRow,
   DetailPanel,
-  DetailSectionHeader,
   type DetailBadge,
 } from "@/components/shared/DetailShell";
 import { Calendar, Clock, FileText, MapPin, Tag } from "lucide-react";
@@ -129,13 +127,6 @@ export default function ResourceDetail({
   if (category) badges.push({ icon: Tag, label: category, tone: "brass" });
   if (readTime) badges.push({ icon: Clock, label: readTime, tone: "glass" });
 
-  const metaItems = [
-    date ? { icon: Calendar, label: formatDate(date) ?? "" } : null,
-    location ? { icon: MapPin, label: location } : null,
-    category ? { icon: Tag, label: category } : null,
-    readTime ? { icon: Clock, label: readTime } : null,
-  ].filter(Boolean) as { icon?: typeof Calendar; label: string }[];
-
   return (
     <DetailShell
       title={title}
@@ -146,23 +137,13 @@ export default function ResourceDetail({
       backLabel={backLabel}
       width={width}
     >
-      <DetailSectionHeader
-        eyebrow="Overview"
-        title="Full details"
-        description="Everything you need to know about this care offering at Gambo General Hospital."
-      />
-
-      {(metaItems.length > 0 || shortDesc) && (
-        <DetailPanel tone={1} className="nv-dpanel--overview">
-          <DetailMetaRow items={metaItems} />
-          {shortDesc && (
-            <p className="nv-dhead__desc">{shortDesc}</p>
-          )}
-        </DetailPanel>
-      )}
-
-      <DetailDivider />
-
+      {/* The overview panel that used to open this page has been removed. It
+          rendered `metaItems` — the same four facts the masthead prints as
+          badges — followed by `shortDesc`, which is the masthead's own lede.
+          Above it sat a section header reading "Overview · Full details ·
+          Everything you need to know about this care offering", introducing
+          content the reader had just finished. Three blocks, nothing new in any
+          of them, before the narrative the visitor came for. */}
       {content ? (
         <DetailPanel tone={2}>
           <div className="nv-dpanel__label">

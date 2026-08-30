@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useGetResourceListQuery } from "@/store/slices/apiSlice";
 import PageHero from "@/components/layout/PageHero";
 import PageBody from "@/components/layout/PageBody";
+import { SITE_NAME } from "@/lib/api";
 import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/Skeleton";
@@ -29,9 +30,16 @@ export default function LeadershipPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Our Leadership"
-        eyebrow="Hospital leadership"
-        subtitle="The people responsible for strategy, clinical quality, and day-to-day hospital direction."
+        section="/leadership"
+        title="Hospital"
+        accent="Leadership"
+        eyebrow="Who is accountable"
+        subtitle="The office holders responsible for clinical quality, strategy and the day-to-day direction of the hospital — and what each of them holds."
+        stats={
+          leaders.length
+            ? [{ value: String(leaders.length), label: "Office holders" }]
+            : undefined
+        }
         breadcrumbs={[{ label: "Leadership" }]}
       />
 
@@ -40,7 +48,7 @@ export default function LeadershipPage() {
             <div>
               <p className="nv-toolbar__kicker">Current board</p>
               <p className="nv-toolbar__note">
-                Office holders guiding Gambo General Hospital.
+                Office holders currently in post at {SITE_NAME}.
               </p>
             </div>
             <Link href="/leadership/history" className="nv-toolbar__link">

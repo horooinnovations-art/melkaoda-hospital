@@ -49,9 +49,16 @@ export default function PartnershipsPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Partnerships & Collaborations"
-        eyebrow="Our Alliances"
-        subtitle="Working hand in hand with government authorities, international foundations, medical universities, and community organizations to deliver exceptional healthcare."
+        section="/partnerships"
+        title="Partners &"
+        accent="Collaborators"
+        eyebrow="Who we work with"
+        subtitle="Government authorities, international foundations, teaching hospitals and community organisations — and what each partnership brings to the care given here."
+        stats={
+          partners.length
+            ? [{ value: String(partners.length), label: "Active partners" }]
+            : undefined
+        }
         breadcrumbs={[{ label: "Partnerships" }]}
       />
 

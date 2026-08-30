@@ -18,9 +18,11 @@ export default async function ServicesPage({
   return (
     <>
       <PageHero
-        title="Clinical Services"
-        eyebrow="What we offer"
-        subtitle="From primary consultations to advanced surgical procedures — comprehensive healthcare services tailored to every patient's needs."
+        section="/services"
+        title="Clinical"
+        accent="Services"
+        eyebrow="What we treat"
+        subtitle="From a first consultation through surgery to follow-up. Each entry sets out what the service covers, which department provides it and how to be referred."
         breadcrumbs={[{ label: "Services" }]}
       />
       <PageBody>

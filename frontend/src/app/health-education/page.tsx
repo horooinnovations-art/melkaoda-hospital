@@ -18,9 +18,11 @@ export default async function HealthEducationPage({
   return (
     <>
       <PageHero
-        title="Health Education"
+        section="/health-education"
+        title="Health"
+        accent="Education"
         eyebrow="Know your health"
-        subtitle="Empowering patients and communities with evidence-based health information, prevention tips, and wellness guides."
+        subtitle="Plain-language guides to prevention, symptoms and living with a long-term condition — written for patients rather than for clinicians."
         breadcrumbs={[{ label: "Health Education" }]}
       />
       <PageBody>

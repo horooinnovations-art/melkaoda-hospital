@@ -1,4 +1,5 @@
 "use client";
+import { SITE_NAME } from "@/lib/api";
 
 export default function GlobalError({
   error,
@@ -24,7 +25,7 @@ export default function GlobalError({
       >
         <div style={{ maxWidth: 420, textAlign: "center" }}>
           <p style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase" }}>
-            Gambo General Hospital
+            {SITE_NAME}
           </p>
           <h1 style={{ fontSize: 28, margin: "12px 0" }}>Application error</h1>
           <p style={{ fontSize: 14, opacity: 0.75 }}>

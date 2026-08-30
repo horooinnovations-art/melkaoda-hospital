@@ -18,9 +18,11 @@ export default async function NewsPage({
   return (
     <>
       <PageHero
-        title="News & Updates"
-        eyebrow="Latest from us"
-        subtitle="Stay informed with announcements, clinical achievements, and health news from across the hospital."
+        section="/news"
+        title="News &"
+        accent="Updates"
+        eyebrow="From the hospital"
+        subtitle="Clinical milestones, new equipment, staff appointments and the stories behind them. Newest first."
         breadcrumbs={[{ label: "News" }]}
       />
       <PageBody>

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: loke-hospital-api
+    name: melkaoda-hospital-api
     runtime: node
     plan: free
     region: oregon
@@ -12,7 +12,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: APP_NAME
-        value: Gambo General Hospital
+        value: Melka Oda General Hospital
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -28,7 +28,7 @@ services:
       - key: PUBLIC_API_URL
         sync: false
       - key: FRONTEND_URL
-        value: https://gambo-general-hospital-website.onrender.com
+        sync: false
       - key: DB_HOST
         sync: false
       - key: DB_PORT
@@ -46,7 +46,7 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
       - key: CLOUDINARY_FOLDER
-        value: loke-hospital
+        value: melkaoda-hospital
       - key: DB_SSL
         value: "true"
       # Prefer a real PEM in MYSQL_ATTR_SSL_CA. Until then, explicit insecure TLS opt-in:
@@ -58,7 +58,7 @@ services:
         sync: false
 
   - type: web
-    name: loke-hospital-web
+    name: melkaoda-hospital-web
     runtime: node
     plan: free
     region: oregon
@@ -69,9 +69,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_SITE_NAME
-        value: Gambo General Hospital
+        value: Melka Oda General Hospital
       # Must be the live API URL (baked into the client bundle at build time).
       - key: NEXT_PUBLIC_API_URL
-        value: https://gambo-general-hospital.onrender.com/api/v1
+        sync: false
       - key: NEXT_PUBLIC_MEDIA_STORAGE_HOST
         sync: false

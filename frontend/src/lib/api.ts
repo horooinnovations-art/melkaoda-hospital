@@ -6,17 +6,12 @@ import type {
   SiteSettings,
 } from "./types";
 
-const REMOTE_API = "https://gambo-general-hospital.onrender.com/api/v1";
-
 /**
  * Prefer 127.0.0.1 over "localhost" on Windows — Node can hang on ::1 when
  * the API only listens on IPv4.
  */
 export const SERVER_API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? REMOTE_API
-    : "http://127.0.0.1:5000/api/v1");
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
 
 function isLocalApiBase(base: string) {
   return /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\b/i.test(base);
@@ -24,15 +19,14 @@ function isLocalApiBase(base: string) {
 
 /**
  * Local browser → same-origin `/api/v1` rewrite (avoids CORS on :3001+).
- * Production browser → absolute Render API URL (Next→API rewrite returns 502
- * on Render free when the API is cold / timed out).
+ * Production browser → absolute configured API URL.
  * Server → always absolute backend URL.
  */
 export function getApiBase() {
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
     // Local preview always uses the Next rewrite proxy so browser calls stay
-    // same-origin (avoids CORS when SERVER_API_BASE points at Render).
+    // same-origin.
     if (host === "localhost" || host === "127.0.0.1") {
       return "/api/v1";
     }
@@ -47,7 +41,7 @@ export function getApiBase() {
 export const API_BASE = SERVER_API_BASE;
 
 export const SITE_NAME =
-  process.env.NEXT_PUBLIC_SITE_NAME || "Gambo General Hospital";
+  process.env.NEXT_PUBLIC_SITE_NAME || "Melka Oda General Hospital";
 
 /** Empty by default — public copy should come from Admin → Settings. */
 export const DEFAULT_TAGLINE = "";

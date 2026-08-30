@@ -483,9 +483,14 @@ export default function AboutPage() {
   return (
     <PageTransition>
       <PageHero
-        title="About"
-        eyebrow="Our hospital"
-        subtitle={tagline || siteName}
+        section="/about"
+        title="About the"
+        accent="Hospital"
+        eyebrow="Mandate and mission"
+        subtitle={
+          tagline ||
+          `Who ${siteName} serves, what it was set up to do, and the people and partners who keep it running.`
+        }
         breadcrumbs={[{ label: "About" }]}
       />
 

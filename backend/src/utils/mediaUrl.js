@@ -4,40 +4,30 @@ const API_PUBLIC =
   `http://localhost:${process.env.PORT || 5000}`;
 
 /**
- * Host for relative `/storage/...` paths. Absolute remote storage URLs are
- * left alone so local API origin never rewrites working Render/CDN assets.
+ * Host for relative `/storage/...` paths.
  */
 const STORAGE_HOST = (
   process.env.MEDIA_STORAGE_HOST ||
-  'https://deder.horooinnovations.com'
+  API_PUBLIC
 ).replace(/\/$/, '');
 
-/**
- * Mirror Deder StorageUrlHelper / Media::getUrlAttribute for the Node API:
- * rewrite broken localhost storage paths to the live file host, and undo
- * accidental Deder→Loke rebrand of CDN folder names (files still live under
- * `deder-hospital` on the shared Cloudinary account).
- */
 export function normalizeMediaUrl(url) {
   if (!url || typeof url !== 'string') return url;
 
-  let next = url
-    .replace(/\/loke-hospital\//g, '/deder-hospital/')
-    .replace(/loke\.horooinnovations\.com/gi, 'deder.horooinnovations.com')
-    .replace(/\/\/loke-hospital\./gi, '//deder-hospital.');
+  let next = url;
 
-  // Absolute Cloudinary URLs are complete — leave them alone after folder fix.
+  // Absolute Cloudinary URLs are complete — leave them alone.
   if (/^https?:\/\/res\.cloudinary\.com\//i.test(next)) {
     return next;
   }
 
-  // Prefer the always-on public storage host over cold Render dynos.
+  // Rewrite legacy storage domains (deder/loke/gambo/horooinnovations/onrender) to current STORAGE_HOST
   next = next.replace(
-    /https?:\/\/(?:loke-hospital-eb7x|deder-hospital-eb7x)\.onrender\.com/gi,
-    'https://deder.horooinnovations.com'
+    /^https?:\/\/(?:[a-z0-9-]+\.)*(?:deder|loke|gambo)[-a-z0-9]*\.(?:onrender\.com|horooinnovations\.com)\/(storage|uploads)\//gi,
+    `${STORAGE_HOST}/$1/`
   );
 
-  // Absolute remote storage — keep the (possibly rewritten) host.
+  // Absolute remote storage — keep host if not a legacy host or local.
   if (
     /^https?:\/\//i.test(next) &&
     !/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\//i.test(next)
@@ -81,9 +71,5 @@ export function nestMedia(row, flatKey, nestedKey = 'photo') {
 
 /** Prefer CDN URLs that respond quickly over cold Render storage. */
 export function isFastCdnUrl(url) {
-  return (
-    typeof url === 'string' &&
-    (/res\.cloudinary\.com/i.test(url) ||
-      /deder\.horooinnovations\.com/i.test(url))
-  );
+  return typeof url === 'string' && /res\.cloudinary\.com/i.test(url);
 }

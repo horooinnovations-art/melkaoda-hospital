@@ -18,6 +18,7 @@ import {
 import type { HomeData } from "@/lib/types";
 import { getImageFromItem, resolveMediaUrl } from "@/lib/media";
 import { cleanPublicText } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/api";
 import SmartImage from "@/components/shared/SmartImage";
 
 const SLIDE_MS = 5800;
@@ -96,7 +97,7 @@ export default function HomeHero({
   const [paused, setPaused] = useState(false);
   const [dir, setDir] = useState(1);
 
-  const brand = cleanPublicText(name) || "Gambo General Hospital";
+  const brand = cleanPublicText(name) || SITE_NAME;
   const brandParts = brand.trim().split(/\s+/).filter(Boolean);
   const headline =
     cleanPublicText(tagline) || "Care you can trust, close to home.";

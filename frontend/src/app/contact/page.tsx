@@ -132,12 +132,15 @@ export default function ContactPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Contact"
-        eyebrow="Reach Gambo General Hospital"
+        section="/contact"
+        title="Get in"
+        accent="Touch"
+        eyebrow="Ways to reach us"
         subtitle={
           settings?.about
             ? truncate(stripHtml(String(settings.about)), 170)
-            : (settings?.tagline as string | undefined)
+            : ((settings?.tagline as string | undefined) ||
+              "Phone lines, the switchboard, the address and a form that reaches the right desk. Emergencies should always go to the number below rather than to this page.")
         }
         breadcrumbs={[{ label: "Contact" }]}
       />

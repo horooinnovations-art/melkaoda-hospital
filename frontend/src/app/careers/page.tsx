@@ -18,9 +18,11 @@ export default async function CareersPage({
   return (
     <>
       <PageHero
-        title="Join Our Team"
-        eyebrow="Career opportunities"
-        subtitle="Build a meaningful career in healthcare. We're looking for passionate professionals who share our commitment to clinical excellence."
+        section="/careers"
+        title="Build a Career"
+        accent="Here"
+        eyebrow="Work with us"
+        subtitle="Openings across clinical, nursing, laboratory and administrative teams. Each listing sets out the requirements, the closing date and how to apply."
         breadcrumbs={[{ label: "Careers" }]}
       />
       <PageBody>

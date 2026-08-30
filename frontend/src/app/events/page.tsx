@@ -18,9 +18,11 @@ export default async function EventsPage({
   return (
     <>
       <PageHero
-        title="Events & Programmes"
-        eyebrow="Community calendar"
-        subtitle="Health talks, free screenings, community outreach and hospital events — open to patients, staff and the public."
+        section="/events"
+        title="Events &"
+        accent="Programmes"
+        eyebrow="What is coming up"
+        subtitle="Health talks, screening days, outreach clinics and hospital events. Check each entry for the venue, the date and who it is open to."
         breadcrumbs={[{ label: "Events" }]}
       />
       <PageBody>

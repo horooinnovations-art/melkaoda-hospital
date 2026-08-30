@@ -19,9 +19,11 @@ export default async function DepartmentsPage({
   return (
     <>
       <PageHero
-        title="Departments"
-        eyebrow="Clinical units"
-        subtitle="Explore the departments and specialized care services available at the hospital."
+        section="/departments"
+        title="Clinical"
+        accent="Departments"
+        eyebrow="Care, organised"
+        subtitle="Every unit in the hospital, with the consultants, equipment and referral routes that belong to it. Start here when you already know which team you need."
         breadcrumbs={[{ label: "Departments" }]}
       />
       <PageBody>

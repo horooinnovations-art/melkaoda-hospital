@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import SmartImage from "@/components/shared/SmartImage";
 import NovaReveal from "@/components/nova/NovaReveal";
-import PageHeroAtmosphere from "@/components/layout/PageHeroAtmosphere";
-import { optimizeImageUrl } from "@/lib/media";
+import Masthead from "@/components/layout/Masthead";
 import { cn } from "@/lib/utils";
 
 export type DetailBadgeTone = "mint" | "coral" | "glass" | "brass" | "teal";
@@ -16,19 +14,6 @@ export interface DetailBadge {
   label: string;
   tone?: DetailBadgeTone;
 }
-
-/**
- * The five old tones were four saturated fills plus a glass one. Nova draws the
- * same distinction with a hairline: warm for the tones that used to be brass or
- * mint, cool for the rest. The tone names are kept so no caller has to change.
- */
-const BADGE_TONES: Record<DetailBadgeTone, string> = {
-  mint: "nv-dbadge nv-dbadge--warm",
-  teal: "nv-dbadge nv-dbadge--cool",
-  coral: "nv-dbadge nv-dbadge--warm",
-  glass: "nv-dbadge",
-  brass: "nv-dbadge nv-dbadge--warm",
-};
 
 const WIDTHS = {
   prose: "max-w-3xl",
@@ -53,10 +38,15 @@ interface DetailShellProps {
 /**
  * The [slug] page shell.
  *
- * Shares `.nv-ph` with the list-page hero, so a visitor moving from /news into
- * /news/some-story stays in one opening rather than meeting a second design.
- * `--detail` only tightens the bottom padding and admits the back link and the
- * subject's portrait.
+ * Renders the same `Masthead` a list page opens with, so a visitor moving from
+ * /news into /news/some-story stays inside one composition instead of meeting a
+ * second design. `tight` is the only difference: a detail page has a document
+ * under it, so the opening closes nearer its body and lets the seam do the join.
+ *
+ * `section` is the route the caller came from rather than the story's own URL,
+ * which is what puts a news story under "14 · Newsroom" instead of leaving the
+ * ordinal blank -- `sectionMeta()` resolves a detail path to its parent section,
+ * and `backHref` is that path on every caller.
  */
 export default function DetailShell({
   title,
@@ -71,78 +61,26 @@ export default function DetailShell({
   bodyClassName,
   imageMode = "showcase",
 }: DetailShellProps) {
-  const heroSrc = image ? optimizeImageUrl(image, 1400) ?? image : undefined;
   const visibleBadges = (badges ?? []).filter((b) => b && b.label);
-  const showcase = Boolean(heroSrc) && imageMode === "showcase";
+  const showcase = Boolean(image) && imageMode === "showcase";
 
   return (
     <div>
-      <NovaReveal
-        as="section"
-        from="none"
-        className="nv-ph nv-ph--detail -mx-[calc((100vw-100%)/2)] w-screen"
-      >
-        <PageHeroAtmosphere />
-
-        <div className="nv-ph__inner mx-auto max-w-6xl px-5 lg:px-8">
-          <div className={cn("nv-ph__split", showcase && "nv-ph__split--media")}>
-            <div>
-              {backHref && (
-                <Link href={backHref} className="nv-ph__back">
-                  <ArrowLeft aria-hidden />
-                  {backLabel}
-                </Link>
-              )}
-
-              <p className="nv-ph__brand">
-                <span className="nv-ph__brand-mark" aria-hidden />
-                Gambo General Hospital
-              </p>
-
-              {eyebrow && <p className="nv-eyebrow mt-5">{eyebrow}</p>}
-
-              <h1 className="nv-ph__title">{title}</h1>
-
-              <div className="nv-ph__flourish" aria-hidden />
-
-              {subtitle && <p className="nv-ph__sub">{subtitle}</p>}
-
-              {visibleBadges.length > 0 && (
-                <div className="nv-ph__badges mt-7">
-                  {visibleBadges.map((badge, i) => {
-                    const Icon = badge.icon;
-                    return (
-                      <span
-                        key={`${badge.label}-${i}`}
-                        className={BADGE_TONES[badge.tone ?? "glass"]}
-                      >
-                        {Icon && <Icon aria-hidden />}
-                        {badge.label}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {showcase && heroSrc && (
-              <div className="nv-ph__media">
-                <SmartImage
-                  src={heroSrc}
-                  // Decorative: the <h1> beside this frame is the subject's name.
-                  // A non-empty alt here printed the title twice whenever the
-                  // candidate URL 404'd and the img fell back to its alt text.
-                  alt=""
-                  fill
-                  priority
-                  optimizeWidth={1200}
-                  sizes="(max-width: 900px) 100vw, 340px"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </NovaReveal>
+      <Masthead
+        tight
+        title={title}
+        eyebrow={eyebrow}
+        lede={subtitle}
+        section={backHref}
+        crumbs={[{ label: title }]}
+        backHref={backHref}
+        backLabel={backLabel}
+        image={showcase ? image : null}
+        badges={visibleBadges.map((badge) => ({
+          label: badge.label,
+          icon: badge.icon,
+        }))}
+      />
 
       <div className="nv-pb relative -mx-[calc((100vw-100%)/2)] w-screen">
         <span className="nv-pb__glow" aria-hidden />

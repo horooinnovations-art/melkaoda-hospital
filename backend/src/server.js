@@ -33,31 +33,18 @@ process.on('uncaughtException', (err) => {
 app.use(compression());
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
-/** Allow configured FRONTEND_URL(s) plus known Render frontends / local Next. */
+/** Allow configured FRONTEND_URL(s) plus local Next preview origins. */
 function resolveCorsOrigin(origin, callback) {
   const configured = (process.env.FRONTEND_URL || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
   const localDev = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
-  const knownFrontends = [
-    'https://gambo-general-hospital-website.onrender.com',
-    'https://loke-general-hospital-website.onrender.com',
-    'https://loke-hospital-web.onrender.com',
-    'https://gambo-general-hospital.onrender.com',
-  ];
-  const renderFrontend =
-    /^https:\/\/([a-z0-9-]+\.)*(gambo|loke)[-a-z0-9]*\.(onrender\.com|horooinnovations\.com)$/i;
 
   if (!origin) return callback(null, true);
   if (configured.includes(origin)) return callback(null, true);
-  if (knownFrontends.includes(origin)) return callback(null, true);
-  if (renderFrontend.test(origin)) return callback(null, true);
-  if (!isProduction() && localDev.test(origin)) return callback(null, true);
   if (localDev.test(origin)) return callback(null, true);
-  if (configured.length === 0 && !isProduction()) {
-    return callback(null, true);
-  }
+  if (configured.length === 0) return callback(null, true);
   return callback(null, false);
 }
 
@@ -102,7 +89,7 @@ app.get('/health', async (_req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
     await pool.query('SELECT 1');
-    res.json({ ok: true, service: 'Gambo General Hospital API', db: 'up' });
+    res.json({ ok: true, service: 'Melka Oda General Hospital API', db: 'up' });
   } catch (err) {
     res.status(503).json({
       ok: false,
@@ -126,7 +113,7 @@ app.use((err, _req, res, _next) => {
 });
 
 const server = app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Gambo Hospital API listening on http://0.0.0.0:${PORT}`);
+  logger.info(`Melka Oda Hospital API listening on http://0.0.0.0:${PORT}`);
   bootstrapSchema().catch((err) =>
     logger.warn('schema_bootstrap_skipped', { error: err.message })
   );

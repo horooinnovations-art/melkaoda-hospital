@@ -206,12 +206,10 @@ export default function GalleryDetail({ slug }: { slug: string }) {
       width="full"
       imageMode="showcase"
     >
-      <DetailSectionHeader
-        eyebrow="Gallery"
-        title="Featured image"
-        description="A closer look at life and care at Gambo General Hospital."
-      />
-
+      {/* No section header above the content. The three that used to open these
+          pages — "Hospital news · Article", "Hospital page · Content", "Gallery ·
+          Featured image" — restated the masthead directly above them and told a
+          reader nothing they had not just read. */}
       {image ? (
         <DetailPanel tone={1} className="nv-dgallery">
           <div className="nv-dgallery__frame">

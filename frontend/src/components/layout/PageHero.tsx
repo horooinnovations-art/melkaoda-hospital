@@ -1,123 +1,77 @@
-import Link from "next/link";
 import { Sparkles, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
-import NovaReveal from "@/components/nova/NovaReveal";
-import PageHeroAtmosphere from "@/components/layout/PageHeroAtmosphere";
+import type { LucideIcon } from "lucide-react";
+import Masthead from "@/components/layout/Masthead";
+import type { MastCrumb, MastStat } from "@/components/layout/Masthead";
 
-interface Crumb {
-  label: string;
-  href?: string;
-}
+const BADGE_ICONS: Record<string, LucideIcon> = {
+  sparkles: Sparkles,
+  zap: Zap,
+};
 
 interface PageHeroProps {
   title: string;
+  /** Closing phrase of the title, set in the serif italic. */
+  accent?: string;
   subtitle?: string;
-  image?: string;
   eyebrow?: string;
-  breadcrumbs?: Crumb[];
+  /** Route this page occupies, e.g. "/services". Resolves ordinal and group. */
+  section?: string;
+  breadcrumbs?: MastCrumb[];
   className?: string;
+  /** Buttons and links under the opening. */
   children?: React.ReactNode;
-  stats?: { label: string; value: string }[];
-  /** Retained for source compatibility; the Nova opening has one treatment. */
-  variant?: "default" | "gradient" | "premium" | "dark" | "minimal";
+  stats?: MastStat[];
   badges?: { label: string; icon?: "sparkles" | "zap" }[];
+  /** Overrides the glyph inferred from the title; `null` suppresses it. */
+  glyph?: LucideIcon | null;
+  aside?: React.ReactNode;
+  image?: string;
+  /** Retained for source compatibility; the interior opening has one treatment. */
+  variant?: "default" | "gradient" | "premium" | "dark" | "minimal";
   showDecoration?: boolean;
 }
 
 /**
- * The opening of every interior page.
+ * The opening of a list or landing page.
  *
- * `from="none"` rather than the usual "up": this sits above the fold on load,
- * so it fades in place instead of sliding up into it. The reveal is still what
- * puts `data-shown` on `.nv-ph`, which is how the brand mark, the flourish and
- * the stat rules draw themselves — nova-page.css keys all of them off that one
- * attribute, so none of this needs its own observer.
+ * Everything visual lives in `Masthead`, which `DetailShell` renders too — this
+ * is the thin adapter that keeps the older call signature working: `subtitle`
+ * rather than `lede`, `breadcrumbs` rather than `crumbs`, badge icons named as
+ * strings, and actions passed as children.
  */
 export default function PageHero({
   title,
+  accent,
   subtitle,
   eyebrow,
+  section,
   breadcrumbs,
   className,
   children,
   stats,
   badges,
+  glyph,
+  aside,
+  image,
 }: PageHeroProps) {
-  const trail = breadcrumbs ?? [{ label: title }];
-
   return (
-    <NovaReveal
-      as="section"
-      from="none"
-      className={cn("nv-ph -mx-[calc((100vw-100%)/2)] w-screen", className)}
-    >
-      <PageHeroAtmosphere />
-
-      <div className="nv-ph__inner nv-shell nv-shell--wide">
-        <nav aria-label="Breadcrumb" className="nv-ph__crumbs">
-          <Link href="/" className="nv-ph__crumb">
-            Home
-          </Link>
-          {trail.map((crumb) => (
-            <span key={crumb.label} className="nv-ph__step">
-              {crumb.href ? (
-                <Link href={crumb.href} className="nv-ph__crumb">
-                  {crumb.label}
-                </Link>
-              ) : (
-                <span className="nv-ph__crumb nv-ph__crumb--current" aria-current="page">
-                  {crumb.label}
-                </span>
-              )}
-            </span>
-          ))}
-        </nav>
-
-        <p className="nv-ph__brand">
-          <span className="nv-ph__brand-mark" aria-hidden />
-          Gambo General Hospital
-        </p>
-
-        {badges && badges.length > 0 && (
-          <div className="nv-ph__badges">
-            {badges.map((badge, idx) => {
-              const BadgeIcon =
-                badge.icon === "sparkles"
-                  ? Sparkles
-                  : badge.icon === "zap"
-                    ? Zap
-                    : null;
-              return (
-                <span key={`${badge.label}-${idx}`} className="nv-ph__badge">
-                  {BadgeIcon && <BadgeIcon aria-hidden />}
-                  {badge.label}
-                </span>
-              );
-            })}
-          </div>
-        )}
-
-        {eyebrow && <p className="nv-eyebrow mt-5">{eyebrow}</p>}
-
-        <h1 className="nv-ph__title">{title}</h1>
-
-        <div className="nv-ph__flourish" aria-hidden />
-
-        {subtitle && <p className="nv-ph__sub">{subtitle}</p>}
-
-        {stats && stats.length > 0 && (
-          <div className="nv-ph__stats">
-            {stats.map((stat) => (
-              <div key={stat.label} className="nv-ph__stat">
-                <span className="nv-ph__stat-value">{stat.value}</span>
-                <span className="nv-ph__stat-label">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {children && <div className="nv-ph__actions">{children}</div>}
-      </div>
-    </NovaReveal>
+    <Masthead
+      title={title}
+      accent={accent}
+      eyebrow={eyebrow}
+      lede={subtitle}
+      section={section}
+      crumbs={breadcrumbs ?? [{ label: [title, accent].filter(Boolean).join(" ") }]}
+      stats={stats}
+      badges={badges?.map((badge) => ({
+        label: badge.label,
+        icon: badge.icon ? BADGE_ICONS[badge.icon] : undefined,
+      }))}
+      actions={children}
+      image={image}
+      aside={aside}
+      glyph={glyph}
+      className={className}
+    />
   );
 }

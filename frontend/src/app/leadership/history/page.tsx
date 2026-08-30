@@ -25,6 +25,7 @@ import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import type { Leader, LeadershipHistory } from "@/lib/types";
 import { formatYear, stripHtml } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/api";
 
 type TimelineLeader = {
   id: number;
@@ -107,9 +108,11 @@ export default function LeadershipHistoryPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Leadership History"
-        eyebrow="Our heritage"
-        subtitle="A chronological chronicle of the directors and visionaries who have guided Gambo General Hospital — from our founding to today."
+        section="/leadership/history"
+        title="A Line of"
+        accent="Directors"
+        eyebrow="How we got here"
+        subtitle={`Every director who has led ${SITE_NAME}, in order of service — from the founding of the hospital to the office holder in post today.`}
         breadcrumbs={[
           { label: "Leadership", href: "/leadership" },
           { label: "History" },
@@ -376,7 +379,7 @@ export default function LeadershipHistoryPage() {
 
                   <div className="nv-modal__foot">
                     <span className="nv-pill nv-pill--plain">
-                      Gambo General Hospital
+                      {SITE_NAME}
                     </span>
                     <Link
                       href={`/leadership/history/${

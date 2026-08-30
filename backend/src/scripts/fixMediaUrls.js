@@ -11,17 +11,19 @@ dotenv.config();
 import pool from '../config/db.js';
 
 const STORAGE_HOST =
-  process.env.MEDIA_STORAGE_HOST || 'https://deder-hospital-eb7x.onrender.com';
+  process.env.MEDIA_STORAGE_HOST || process.env.APP_URL || 'http://localhost:5000';
 
 function fixUrl(url) {
   if (!url || typeof url !== 'string') return url;
-  let next = url
-    .replace(/\/loke-hospital\//g, '/deder-hospital/')
-    .replace(/loke-hospital-eb7x\.onrender\.com/gi, 'deder-hospital-eb7x.onrender.com')
-    .replace(/loke\.horooinnovations\.com/gi, 'deder.horooinnovations.com')
-    .replace(/\/\/loke-hospital\./gi, '//deder-hospital.');
+  let next = url;
 
-  // Local Laravel storage URLs → live host that still has the files
+  // Replace legacy storage hosts with relative /storage/ or /uploads/
+  next = next.replace(
+    /^https?:\/\/(?:[a-z0-9-]+\.)*(?:deder|loke|gambo)[-a-z0-9]*\.(?:onrender\.com|horooinnovations\.com)\/(storage|uploads)\//gi,
+    '/$1/'
+  );
+
+  // Local Laravel storage URLs → live storage host
   next = next.replace(
     /^https?:\/\/localhost(?::\d+)?\/[^/]+\/public\/storage\//i,
     `${STORAGE_HOST}/storage/`
@@ -34,11 +36,6 @@ function fixUrl(url) {
     /^https?:\/\/localhost(?::\d+)?\/storage\//i,
     `${STORAGE_HOST}/storage/`
   );
-
-  // Bare storage paths
-  if (next.startsWith('storage/') || next.startsWith('/storage/')) {
-    next = `${STORAGE_HOST}/${next.replace(/^\//, '')}`;
-  }
 
   return next;
 }

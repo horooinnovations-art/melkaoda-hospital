@@ -9,7 +9,6 @@ import DetailShell, {
   DetailDivider,
   DetailLinkChip,
   DetailPanel,
-  DetailSectionHeader,
 } from "@/components/shared/DetailShell";
 import { getImageFromItem } from "@/lib/media";
 import { stripHtml } from "@/lib/utils";
@@ -57,12 +56,10 @@ export default function CmsPage({ slug }: { slug: string }) {
 
   return (
     <DetailShell title={page.title} subtitle={subtitle} image={image} width="prose">
-      <DetailSectionHeader
-        eyebrow="Hospital page"
-        title="Content"
-        description="Official information from Gambo General Hospital."
-      />
-
+      {/* No section header above the content. The three that used to open these
+          pages — "Hospital news · Article", "Hospital page · Content", "Gallery ·
+          Featured image" — restated the masthead directly above them and told a
+          reader nothing they had not just read. */}
       {page.content ? (
         <DetailPanel>
           <div className="nv-dpanel__label">

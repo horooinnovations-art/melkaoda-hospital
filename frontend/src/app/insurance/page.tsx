@@ -27,9 +27,16 @@ export default function InsurancePage() {
   return (
     <PageTransition>
       <PageHero
-        title="Insurance Partners"
-        eyebrow="Coverage & access"
-        subtitle="We work with a wide network of insurance providers to ensure accessible, affordable healthcare for every patient."
+        section="/insurance"
+        title="Insurance &"
+        accent="Coverage"
+        eyebrow="Billing and cover"
+        subtitle="The schemes and providers we work with, and what each one covers. Check your cover here before an appointment, or ask us if your scheme is not listed."
+        stats={
+          items.length
+            ? [{ value: String(items.length), label: "Schemes accepted" }]
+            : undefined
+        }
         breadcrumbs={[{ label: "Insurance" }]}
       />
 

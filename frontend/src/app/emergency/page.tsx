@@ -24,9 +24,12 @@ export default async function EmergencyPage() {
   return (
     <>
       <PageHero
-        title="Emergency Services"
-        eyebrow="24/7 response"
-        subtitle="Immediate, expert emergency care around the clock. Our rapid-response teams are always ready when every second counts."
+        section="/emergency"
+        title="Emergency"
+        accent="Response"
+        eyebrow="Round the clock"
+        subtitle="Emergency care does not keep office hours. If this is urgent, call before you travel — the number below reaches the duty team directly."
+        badges={[{ label: "Open 24 hours" }, { label: "Call before you travel" }]}
         breadcrumbs={[{ label: "Emergency" }]}
       >
         {/* `nv-btn` rather than the shared Button's "brass" variant, which is

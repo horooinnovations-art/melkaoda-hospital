@@ -176,37 +176,39 @@ export function rebrandText(value) {
     /^https?:\/\//i.test(value) ||
     value.includes('res.cloudinary.com') ||
     value.includes('/storage/') ||
-    value.includes('onrender.com') ||
-    value.includes('horooinnovations.com') ||
     value.includes('cloudinary')
   ) {
     return value;
   }
 
   return value
-    .replace(/Deder General Hospital/gi, 'Gambo General Hospital')
-    .replace(/Loke General Hospital/gi, 'Gambo General Hospital')
-    .replace(/Deder Hospital/gi, 'Gambo General Hospital')
-    .replace(/Loke Hospital/gi, 'Gambo General Hospital')
-    .replace(/Deder/g, 'Gambo')
-    .replace(/deder/g, 'gambo')
-    .replace(/Loke/g, 'Gambo')
-    .replace(/loke/g, 'gambo');
+    .replace(/Deder General Hospital/gi, 'Melka Oda General Hospital')
+    .replace(/Gambo General Hospital/gi, 'Melka Oda General Hospital')
+    .replace(/Loke General Hospital/gi, 'Melka Oda General Hospital')
+    .replace(/Deder Hospital/gi, 'Melka Oda Hospital')
+    .replace(/Gambo Hospital/gi, 'Melka Oda Hospital')
+    .replace(/Loke Hospital/gi, 'Melka Oda Hospital')
+    .replace(/Deder/g, 'Melka Oda')
+    .replace(/Gambo/g, 'Melka Oda')
+    .replace(/Loke/g, 'Melka Oda')
+    .replace(/deder/g, 'melkaoda')
+    .replace(/gambo/g, 'melkaoda')
+    .replace(/loke/g, 'melkaoda');
 }
 
 /**
- * Slugs are rebranded on output (deder/loke -> gambo), so a slug arriving in a URL
- * may not be what is actually stored in the database. Returns every candidate
- * DB slug to try, most-likely first.
+ * Returns candidate DB slugs for fallback matching if legacy slugs exist in DB.
  */
 export function slugLookupCandidates(slug) {
   if (!slug || typeof slug !== 'string') return [slug];
 
   const candidates = [slug];
-  const revertedDeder = slug.replace(/gambo/gi, 'deder');
-  if (revertedDeder !== slug) candidates.push(revertedDeder);
-  const revertedLoke = slug.replace(/gambo/gi, 'loke');
-  if (revertedLoke !== slug && !candidates.includes(revertedLoke)) candidates.push(revertedLoke);
+  for (const legacy of ['deder', 'gambo', 'loke']) {
+    const candidate = slug.replace(/melkaoda/gi, legacy);
+    if (candidate !== slug && !candidates.includes(candidate)) {
+      candidates.push(candidate);
+    }
+  }
 
   return candidates;
 }

@@ -1,18 +1,19 @@
 const API_PROXY_TARGET = (
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://gambo-general-hospital.onrender.com/api/v1"
-    : "http://127.0.0.1:5000/api/v1")
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1"
 ).replace(/\/$/, "");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // `npm run dev` uses turbopack and `npm run build` uses webpack; the two write
+  // incompatible artifacts into the same directory and neither prunes the
+  // other's, which is what makes `next start` 500 on every SSR route after a dev
+  // session. Building into a separate tree keeps a verification build clean
+  // without touching the dev server's own `.next`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   turbopack: {
     root: import.meta.dirname,
   },
   images: {
-    // Enable Next optimizer for Unsplash/Cloudinary. Storage hosts on Render
-    // still pass `unoptimized` via SmartImage to avoid cold-start 502s.
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24,
     remotePatterns: [
@@ -21,9 +22,6 @@ const nextConfig = {
       { protocol: "http", hostname: "127.0.0.1" },
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "deder-hospital-eb7x.onrender.com" },
-      { protocol: "https", hostname: "deder.horooinnovations.com" },
-      { protocol: "https", hostname: "loke-general-hospital.onrender.com" },
-      { protocol: "https", hostname: "loke-hospital-eb7x.onrender.com" },
       { protocol: "https", hostname: "gambo-general-hospital.onrender.com" },
     ],
   },

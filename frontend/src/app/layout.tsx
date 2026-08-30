@@ -19,6 +19,9 @@ import "./nova-stack.css";
 import "./nova-cards.css";
 import "./nova-sections.css";
 import "./nova-page.css";
+// Interior pages — masthead, atelier card, ledger row. After nova-page.css so
+// the interior opening wins over the sheet it replaces.
+import "./nova-interior.css";
 import "./nova-footer.css";
 
 const sourceSans = Source_Sans_3({
@@ -33,9 +36,13 @@ const novaDisplay = Bricolage_Grotesque({
   display: "swap",
 });
 
+// The italic is fetched, not synthesised: the interior masthead sets the closing
+// phrase of every page title in it, and a browser-obliqued serif at 80px shears
+// the letterforms badly enough to read as a rendering fault.
 const novaSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
+  style: ["normal", "italic"],
   variable: "--font-nv-serif",
   display: "swap",
 });

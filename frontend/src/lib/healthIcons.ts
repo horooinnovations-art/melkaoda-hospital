@@ -31,7 +31,9 @@ const RULES: Array<[RegExp, LucideIcon]> = [
   [/matern|obstet|gyn|birth|delivery/i, Baby],
   [/ortho|bone|joint|fractur|physio|rehab/i, Bone],
   [/eye|ophthalm|optic|vision/i, Eye],
-  [/ent\b|ear|nose|throat|audio/i, Ear],
+  // `\bent\b`, not `ent\b`: the latter matches the tail of "Outpatient",
+  // which is how every outpatient department came to be marked with an ear.
+  [/\bent\b|\bear\b|nose|throat|audio|otolaryng/i, Ear],
   [/lab|patholog|blood|haemat|hemat/i, TestTube],
   [/microbio|research|genetic|dna/i, Dna],
   [/radiolog|imaging|scan|x-?ray|ultrasound|mri|ct\b/i, Scan],

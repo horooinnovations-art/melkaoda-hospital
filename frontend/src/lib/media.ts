@@ -1,16 +1,12 @@
 import type { MediaRef } from "./types";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://gambo-general-hospital.onrender.com/api/v1"
-    : "http://127.0.0.1:5000/api/v1");
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
 
 export const BACKEND_ORIGIN = API_URL.replace(/\/api\/v1\/?$/, "");
 
 /**
- * Host for relative `/storage/...` paths. Absolute remote storage URLs are
- * left alone so local API origin never rewrites working Render/CDN assets.
+ * Host for relative `/storage/...` paths.
  */
 const STORAGE_HOST = (
   process.env.NEXT_PUBLIC_MEDIA_STORAGE_HOST ||
@@ -18,22 +14,21 @@ const STORAGE_HOST = (
   BACKEND_ORIGIN
 ).replace(/\/$/, "");
 
-
 function normalizeBrokenUrl(url: string): string {
-  let next = url
-    .replace(/\/loke-hospital\//g, "/deder-hospital/")
-    .replace(/loke\.horooinnovations\.com/gi, "deder.horooinnovations.com")
-    .replace(/\/\/loke-hospital\./gi, "//deder-hospital.");
+  let next = url;
 
   // Absolute Cloudinary URLs are already complete.
   if (/^https?:\/\/res\.cloudinary\.com\//i.test(next)) {
     return next;
   }
 
-  // Keep Render and Horoo storage hosts as-is. Some department/service files
-  // exist on only one host; SmartImage retries the alternate on error.
+  // Rewrite legacy storage domains (deder/loke/gambo/horooinnovations/onrender) to current STORAGE_HOST
+  next = next.replace(
+    /^https?:\/\/(?:[a-z0-9-]+\.)*(?:deder|loke|gambo)[-a-z0-9]*\.(?:onrender\.com|horooinnovations\.com)\/(storage|uploads)\//gi,
+    `${STORAGE_HOST}/$1/`
+  );
 
-  // Absolute remote storage — keep the (possibly rewritten) host.
+  // Absolute remote storage — keep host.
   if (
     /^https?:\/\//i.test(next) &&
     !/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\//i.test(next)
@@ -153,51 +148,45 @@ export function rewriteProseHtml(html: string): string {
   });
 }
 
-/** True when the URL is a CDN / always-on host that usually responds quickly. */
+/** True when the URL is a CDN / host that responds quickly. */
 export function isFastCdnUrl(url?: string | null): boolean {
   if (!url) return false;
-  return /res\.cloudinary\.com|deder\.horooinnovations\.com/i.test(url);
+  return /res\.cloudinary\.com/i.test(url);
 }
 
-const ALL_MIRROR_HOSTS = [
-  "gambo-general-hospital.onrender.com",
-  "deder.horooinnovations.com",
-  "deder-hospital-eb7x.onrender.com",
-  "loke-hospital-eb7x.onrender.com",
-  "loke-general-hospital.onrender.com",
-  "loke.horooinnovations.com",
-];
-
-const STORAGE_HOST_ALTERNATES: Record<string, string[]> = {
-  "deder.horooinnovations.com": ALL_MIRROR_HOSTS,
-  "deder-hospital-eb7x.onrender.com": ALL_MIRROR_HOSTS,
-  "loke-hospital-eb7x.onrender.com": ALL_MIRROR_HOSTS,
-  "loke-general-hospital.onrender.com": ALL_MIRROR_HOSTS,
-  "gambo-general-hospital.onrender.com": ALL_MIRROR_HOSTS,
-  "loke.horooinnovations.com": ALL_MIRROR_HOSTS,
-};
+const CLOUDINARY_BASE = "https://res.cloudinary.com/dz0zqwhyd/image/upload";
 
 /**
- * Build a small list of storage URL candidates. Horoo and Render mirrors are
- * not always in sync — try the alternate host when the primary 404s.
+ * Build a list of storage URL candidates. Primary is local/configured API,
+ * fallback is Cloudinary CDN where assets are stored.
  */
 export function storageImageCandidates(source?: string | null): string[] {
   if (!source) return [];
   const primary = resolveMediaUrl(source) ?? source;
+  if (!primary) return [];
   const out: string[] = [primary];
+
+  if (/res\.cloudinary\.com/i.test(primary)) {
+    return out;
+  }
+
   try {
     const url = new URL(primary);
-    const hostList = STORAGE_HOST_ALTERNATES[url.hostname] || ALL_MIRROR_HOSTS;
-    for (const host of hostList) {
-      if (host === url.hostname) continue;
-      const next = new URL(primary);
-      next.hostname = host;
-      const candidate = next.toString();
-      if (!out.includes(candidate)) out.push(candidate);
+    const cleanPath = url.pathname.replace(/^\/(?:public\/)?(?:storage\/)?/, "");
+    if (cleanPath) {
+      const c1 = `${CLOUDINARY_BASE}/deder-hospital/${cleanPath}`;
+      const c2 = `${CLOUDINARY_BASE}/${cleanPath}`;
+      if (!out.includes(c1)) out.push(c1);
+      if (!out.includes(c2)) out.push(c2);
     }
   } catch {
-    /* keep primary only */
+    const cleanPath = String(source).replace(/^\/(?:public\/)?(?:storage\/)?/, "");
+    if (cleanPath) {
+      out.push(`${CLOUDINARY_BASE}/deder-hospital/${cleanPath}`);
+      out.push(`${CLOUDINARY_BASE}/${cleanPath}`);
+    }
   }
+
   return out;
 }
 

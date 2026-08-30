@@ -76,9 +76,19 @@ export default function FaqsPage() {
   return (
     <PageTransition>
       <PageHero
-        title="Frequently Asked Questions"
-        eyebrow="Got questions?"
-        subtitle="Clear answers to the questions patients and visitors ask most — from appointments and billing to services and visiting hours."
+        section="/faqs"
+        title="Questions,"
+        accent="Answered"
+        eyebrow="Before you visit"
+        subtitle="The things patients and visitors ask us most, grouped by subject — appointments, billing, visiting hours and what to bring with you."
+        stats={
+          faqs.length
+            ? [
+                { value: String(faqs.length), label: "Questions" },
+                { value: String(grouped.length), label: "Subjects" },
+              ]
+            : undefined
+        }
         breadcrumbs={[{ label: "FAQs" }]}
       />
 

@@ -29,7 +29,7 @@ export const SAMPLE_PARTNERS: Partner[] = [
     slug: "west-arsi-zone-health-department",
     category: "Government & Public Sector",
     description:
-      "Technical assistance, direct supervision, disease monitoring, and zonal healthcare resource allocation for Gambo General Hospital.",
+      "Technical assistance, direct supervision, disease monitoring, and zonal healthcare resource allocation for the hospital.",
     short_description:
       "Technical assistance, supervision, and performance monitoring.",
     website: "https://westarsi.gov.et",
