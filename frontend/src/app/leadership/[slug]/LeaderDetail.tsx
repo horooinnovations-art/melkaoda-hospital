@@ -102,7 +102,7 @@ export default function LeaderDetail({
                 alt={name}
                 fill
                 optimizeWidth={640}
-                className="object-cover object-[center_20%]"
+                className="object-contain object-top p-1 bg-[linear-gradient(135deg,#1b1409_0%,#2f230c_100%)]"
                 sizes="(max-width: 768px) 100vw, 320px"
                 priority
               />

@@ -3884,6 +3884,221 @@
   .nv-gtile__act:hover { transform: none; }
 }
 
+/* ── Ultra-Fancy Doctor Directory & Grid Cards ────────────────────────── */
+.nv-doc-grid {
+  display: grid;
+  gap: clamp(22px, 2.8vw, 36px);
+  align-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .nv-doc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1080px) {
+  .nv-doc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-doc-grid > [data-nv-reveal] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.nv-doc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.99) 0%, rgba(253, 250, 244, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-doc-card:hover {
+  transform: translate3d(0, -7px, 0);
+  border-color: rgba(255, 215, 0, 0.65);
+  box-shadow: 0 24px 54px rgba(184, 134, 11, 0.2), inset 0 1px 0 rgba(255, 235, 175, 0.4);
+}
+
+.nv-doc-card__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3.5;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1b1409 0%, #2f230c 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.nv-doc-card__img {
+  object-fit: cover;
+  object-position: center 20%;
+  transition: transform 1.2s var(--nv-ease-lux);
+}
+
+.nv-doc-card:hover .nv-doc-card__img {
+  transform: scale(1.06);
+}
+
+.nv-doc-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-font-display);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 700;
+  color: rgba(255, 215, 0, 0.35);
+  user-select: none;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.15), transparent 70%);
+}
+
+.nv-doc-card__dept-pill {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  border-radius: 999px;
+  background: rgba(26, 19, 8, 0.82);
+  backdrop-filter: blur(10px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffe8a3;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.nv-doc-card__avail {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 999px;
+  background: rgba(14, 28, 18, 0.85);
+  backdrop-filter: blur(10px);
+  font-family: var(--nv-font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4ade80;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.nv-doc-card__avail-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: nv-doc-pulse 2s infinite alternate;
+}
+
+@keyframes nv-doc-pulse {
+  from { opacity: 0.6; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+.nv-doc-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 auto;
+  padding: clamp(18px, 2.2vw, 26px);
+}
+
+.nv-doc-card__name {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.2rem, 1.7vw, 1.45rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+  color: var(--nv-text);
+  transition: color 0.4s var(--nv-ease-lux);
+}
+
+.nv-doc-card:hover .nv-doc-card__name {
+  color: #b8860b;
+}
+
+.nv-doc-card__role {
+  margin-top: 6px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.688rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8c723b;
+}
+
+.nv-doc-card__desc {
+  margin-top: 12px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--nv-text-dim);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.nv-doc-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(24, 27, 36, 0.08);
+}
+
+.nv-doc-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #191d26;
+  transition: color 0.35s var(--nv-ease-lux);
+}
+
+.nv-doc-card:hover .nv-doc-card__cta {
+  color: #745b2b;
+}
+
+.nv-doc-card__cta svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.4s var(--nv-ease-lux);
+}
+
+.nv-doc-card:hover .nv-doc-card__cta svg {
+  transform: translate3d(4px, 0, 0);
+}
+
 /* ── Lightbox ─────────────────────────────────────────────────────────────
    Full-viewport image view. The scrim is near-opaque charcoal rather than a
    translucent slate, because a photograph judged against a half-lit background

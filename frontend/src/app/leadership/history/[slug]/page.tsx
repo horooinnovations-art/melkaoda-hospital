@@ -123,18 +123,16 @@ export default function LeadershipHistoryDetailPage({
         description="Tenure, biography, and lasting contributions."
       />
 
-      <div className="nv-dsplit">
-        <DetailPanel className="nv-portrait" delay={0.04}>
-          <div className="nv-portrait__media">
+      <div className="nv-dsplit items-start">
+        <DetailPanel className="nv-portrait !h-auto self-start border border-[rgba(212,175,55,0.3)] shadow-xl" delay={0.04}>
+          <div className="nv-portrait__media relative aspect-[4/5] overflow-hidden bg-[linear-gradient(135deg,#1b1409_0%,#2f230c_100%)] p-2">
             {image ? (
               <SmartImage
                 src={image}
-                // Decorative: .nv-portrait__name prints this person's name under
-                // the frame, and the page <h1> carries it too.
                 alt=""
                 fill
                 optimizeWidth={720}
-                className="nv-portrait__img object-cover object-top"
+                className="nv-portrait__img object-contain object-top p-1 transition-transform duration-700 ease-out"
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 priority
               />

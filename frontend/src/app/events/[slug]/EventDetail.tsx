@@ -16,6 +16,7 @@ import DetailShell, {
 } from "@/components/shared/DetailShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getImageFromItem } from "@/lib/media";
 import { formatDate } from "@/lib/utils";
 import type { Event } from "@/lib/types";
 
@@ -65,6 +66,7 @@ export default function EventDetail({ slug }: { slug: string }) {
   }
 
   const event = data as Event;
+  const image = getImageFromItem(event as unknown as Record<string, unknown>);
 
   const badges: DetailBadge[] = [];
   if (event.event_date) badges.push({ icon: Calendar, label: formatDate(event.event_date), tone: "teal" });
@@ -75,6 +77,7 @@ export default function EventDetail({ slug }: { slug: string }) {
     <DetailShell
       title={event.title}
       subtitle={event.location}
+      image={image}
       badges={badges}
       backHref="/events"
       backLabel="All Events"
