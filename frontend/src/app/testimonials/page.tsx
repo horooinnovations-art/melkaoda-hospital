@@ -58,6 +58,7 @@ export default function TestimonialsPage() {
                     key={item.id}
                     from="up"
                     delay={Math.min(Math.floor(i / 3), 5) * 0.12}
+                    className="h-full w-full"
                   >
                     <blockquote className="nv-tcard">
                       <span className="nv-tcard__glyph" aria-hidden>

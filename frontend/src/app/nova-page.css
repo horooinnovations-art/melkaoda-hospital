@@ -1358,13 +1358,15 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   height: 100%;
+  width: 100%;
   overflow: hidden;
-  padding: clamp(22px, 2.4vw, 30px);
-  border: 1px solid var(--nv-hairline);
-  border-radius: 18px;
-  background: var(--nv-plate);
-  box-shadow: var(--nv-lift);
+  padding: clamp(24px, 2.8vw, 34px);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 22px;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.99) 0%, rgba(253, 250, 244, 0.98) 100%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition:
     border-color 0.55s var(--nv-ease-lux),
     box-shadow 0.55s var(--nv-ease-lux),
@@ -1372,9 +1374,9 @@
 }
 
 .nv-tcard:hover {
-  transform: translate3d(0, -3px, 0);
-  border-color: var(--nv-hairline-hi);
-  box-shadow: var(--nv-lift-hi);
+  transform: translate3d(0, -6px, 0);
+  border-color: rgba(255, 215, 0, 0.65);
+  box-shadow: 0 24px 50px rgba(184, 134, 11, 0.2), inset 0 1px 0 rgba(255, 235, 175, 0.4);
 }
 
 .nv-tcard::before {
@@ -1382,21 +1384,20 @@
   position: absolute;
   top: 0;
   inset-inline: 0;
-  height: 1px;
+  height: 2px;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.6) 42%, transparent);
 }
 
-/* The quote glyph, set large and very faint behind the opening words rather
-   than boxed in a filled plate. */
+/* The quote glyph, set large and faint behind the opening words. */
 .nv-tcard__glyph {
   position: absolute;
   top: clamp(10px, 1.2vw, 16px);
   right: clamp(14px, 1.6vw, 22px);
   font-family: var(--nv-font-serif);
-  font-size: 4.2rem;
+  font-size: 4.8rem;
   line-height: 1;
-  color: rgb(var(--nv-metal-rgb) / 0.1);
+  color: rgba(212, 175, 55, 0.15);
   pointer-events: none;
   user-select: none;
 }
@@ -1405,16 +1406,16 @@
   position: relative;
   flex: 1;
   font-family: var(--nv-font-serif);
-  font-size: 1.075rem;
-  line-height: 1.62;
-  color: var(--nv-text);
+  font-size: 1.1rem;
+  line-height: 1.68;
+  color: #1e293b;
 }
 
 .nv-tcard__foot {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 15px;
   margin-top: clamp(22px, 2.4vw, 28px);
   padding-top: 18px;
 }
@@ -1428,8 +1429,8 @@
   height: 1px;
   background: linear-gradient(
     90deg,
-    var(--nv-champagne-line),
-    var(--nv-hairline) 60%,
+    rgba(255, 215, 0, 0.5),
+    rgba(212, 175, 55, 0.2) 60%,
     transparent
   );
 }
@@ -1437,21 +1438,19 @@
 .nv-tcard__photo {
   position: relative;
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
   overflow: hidden;
-  border-radius: 12px;
-  background: var(--nv-plate-well);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1b1409 0%, #2f230c 100%);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
-.nv-tcard__photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 0 0 1px var(--nv-hairline);
+.nv-tcard__photo img {
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 2px;
 }
 
 .nv-tcard__initial {
@@ -1460,31 +1459,35 @@
   display: grid;
   place-items: center;
   font-family: var(--nv-font-display);
-  font-size: 1.05rem;
-  color: var(--nv-champagne-dim);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffe8a3;
 }
 
 .nv-tcard__who {
   font-family: var(--nv-font-display);
-  font-size: 0.975rem;
-  font-weight: 500;
+  font-size: 1.05rem;
+  font-weight: 600;
   font-style: normal;
-  color: var(--nv-text);
+  color: #0f172a;
 }
 
 .nv-tcard__stars {
   display: flex;
-  gap: 3px;
+  gap: 4px;
   margin-top: 5px;
 }
 
 .nv-tcard__stars svg {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
 }
 
-.nv-tcard__star--on { color: var(--nv-champagne); }
-.nv-tcard__star--off { color: rgb(var(--nv-ink-rgb) / 0.14); }
+.nv-tcard__star--on {
+  color: #ffd700;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.5));
+}
+.nv-tcard__star--off { color: rgba(15, 23, 42, 0.14); }
 
 @media (prefers-reduced-motion: reduce) {
   .nv-tcard { transition: none; }
@@ -1797,32 +1800,44 @@
 
 .nv-dsplit {
   display: grid;
-  gap: clamp(18px, 2.2vw, 26px);
+  gap: clamp(24px, 3vw, 44px);
+  align-items: start;
 }
 
 @media (min-width: 940px) {
   .nv-dsplit {
-    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+    grid-template-columns: 360px minmax(0, 1fr);
     align-items: start;
   }
 }
 
-/* A portrait panel: the photograph fills the panel's top, its caption sits
-   under a warm rule. No padding on the media, so the frame is the panel's own
-   edge rather than a second box inside it. */
 .nv-portrait {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: auto !important;
+  align-self: flex-start;
   padding: 0 !important;
   overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.99) 0%, rgba(253, 250, 244, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.08);
 }
 
 .nv-portrait__media {
   position: relative;
-  aspect-ratio: 4 / 5;
-  background: var(--nv-plate-well);
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(253, 249, 242, 0.6) 0%, rgba(255, 255, 255, 0.95) 100%);
 }
 
 .nv-portrait__img {
-  transition: transform 1.6s var(--nv-ease-lux);
+  object-fit: contain !important;
+  object-position: bottom center !important;
+  padding: 4px;
+  transition: transform 1.2s var(--nv-ease-lux);
 }
 
 .nv-portrait__media:hover .nv-portrait__img {

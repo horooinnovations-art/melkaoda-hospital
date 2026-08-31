@@ -19,9 +19,9 @@ export interface DetailBadge {
 }
 
 const WIDTHS = {
-  prose: "max-w-3xl",
-  wide: "max-w-4xl",
-  full: "max-w-5xl",
+  prose: "max-w-4xl",
+  wide: "max-w-6xl",
+  full: "max-w-[1360px]",
 } as const;
 
 interface DetailShellProps {
@@ -158,7 +158,7 @@ export default function DetailShell({
   badges,
   backHref,
   backLabel = "Back",
-  width = "wide",
+  width = "full",
   children,
   bodyClassName,
   imageMode = "showcase",
@@ -188,7 +188,7 @@ export default function DetailShell({
         <span className="nv-pb__glow" aria-hidden />
         <div
           className={cn(
-            "nv-pb__inner nv-dstack mx-auto px-5 py-12 lg:px-8 lg:py-16",
+            "nv-pb__inner nv-dstack mx-auto px-4 sm:px-6 py-10 lg:px-10 lg:py-14",
             WIDTHS[width],
             bodyClassName
           )}
@@ -207,6 +207,7 @@ export function DetailPanel({
   children,
   delay = 0.05,
   className,
+  fullHeight = false,
 }: {
   children: React.ReactNode;
   delay?: number;
@@ -214,10 +215,11 @@ export function DetailPanel({
   as?: "div" | "section" | "article";
   /** Retained for source compatibility; every panel now shares one surface. */
   tone?: 1 | 2 | 3 | 4;
+  fullHeight?: boolean;
 }) {
   return (
-    <NovaReveal from="up" delay={delay} className="h-full w-full">
-      <div className={cn("nv-dpanel h-full flex flex-col justify-between", className)}>
+    <NovaReveal from="up" delay={delay} className={cn("w-full", fullHeight && "h-full")}>
+      <div className={cn("nv-dpanel", fullHeight && "h-full flex flex-col justify-between", className)}>
         {children}
       </div>
     </NovaReveal>

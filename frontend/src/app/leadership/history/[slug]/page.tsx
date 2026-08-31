@@ -1,7 +1,8 @@
 "use client";
 
 import { use } from "react";
-import { Award, UserRound } from "lucide-react";
+import Link from "next/link";
+import { Award, UserRound, Calendar, Sparkles, CheckCircle2, History, ArrowLeft } from "lucide-react";
 import { useGetResourceItemQuery } from "@/store/slices/apiSlice";
 import SmartImage from "@/components/shared/SmartImage";
 import Prose from "@/components/shared/Prose";
@@ -15,7 +16,7 @@ import DetailShell, {
   type DetailBadge,
 } from "@/components/shared/DetailShell";
 import { getImageFromItem } from "@/lib/media";
-import { formatYear } from "@/lib/utils";
+import { formatYear, cleanPublicText } from "@/lib/utils";
 
 function parseAchievements(raw: unknown): string[] {
   if (Array.isArray(raw)) return raw.map(String);
@@ -95,8 +96,9 @@ export default function LeadershipHistoryDetailPage({
     );
   }
 
-  const name = leader.name as string;
-  const position = leader.position as string | undefined;
+  const rawName = leader.name as string;
+  const name = cleanPublicText(rawName) || rawName;
+  const position = leader.position ? cleanPublicText(String(leader.position)) : undefined;
   const image = getImageFromItem(leader);
   const achievements = parseAchievements(leader.achievements || leader.certifications);
   const bio = (leader.bio || leader.short_bio) as string | undefined;
@@ -115,78 +117,101 @@ export default function LeadershipHistoryDetailPage({
       badges={badges}
       backHref="/leadership/history"
       backLabel="Back to History"
-      width="wide"
+      width="full"
     >
       <DetailSectionHeader
-        eyebrow="Leadership history"
-        title="Legacy profile"
-        description="Tenure, biography, and lasting contributions."
+        eyebrow="Hospital Governance"
+        title="Legacy Leader Profile"
+        description="Tenure, executive biography, and lasting contributions to Melka Oda General Hospital."
       />
 
-      <div className="nv-dsplit items-start">
-        <DetailPanel className="nv-portrait !h-auto self-start border border-[rgba(212,175,55,0.3)] shadow-xl" delay={0.04}>
-          <div className="nv-portrait__media relative aspect-[4/5] overflow-hidden bg-[linear-gradient(135deg,#1b1409_0%,#2f230c_100%)] p-2">
+      <div className="nv-dsplit items-start gap-8">
+        {/* Fancy Uncropped Leader Portrait Card */}
+        <DetailPanel className="nv-portrait !h-auto self-start border border-[rgba(212,175,55,0.35)] bg-[linear-gradient(145deg,rgba(255,255,255,0.99),rgba(252,249,242,0.98))] shadow-2xl rounded-2xl transition-all duration-500 hover:border-[rgba(255,215,0,0.65)] hover:shadow-2xl overflow-hidden" delay={0.04}>
+          <div className="relative h-[260px] sm:h-[300px] w-full overflow-hidden bg-gradient-to-b from-amber-50/60 via-white to-amber-50/30 p-2">
             {image ? (
               <SmartImage
                 src={image}
-                alt=""
+                alt={name}
                 fill
                 optimizeWidth={720}
-                className="nv-portrait__img object-contain object-top p-1 transition-transform duration-700 ease-out"
-                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="object-contain object-bottom p-1 transition-transform duration-700 ease-out hover:scale-[1.02]"
+                sizes="(max-width: 1024px) 100vw, 360px"
                 priority
               />
             ) : (
-              <div className="nv-portrait__fallback" aria-hidden>
+              <div className="flex h-full items-center justify-center font-display text-5xl font-bold text-amber-900/30">
                 {name.charAt(0)}
               </div>
             )}
-            <span className="nv-portrait__veil" aria-hidden />
-            <span className="nv-portrait__badge">Leader</span>
+
+            {/* Glowing Tenure Pill */}
+            <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-amber-900/20 bg-amber-900/90 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-amber-100 backdrop-blur-md shadow-md">
+              <Calendar className="h-3 w-3 text-amber-300" />
+              {tenure}
+            </span>
+
+            {/* Legacy Badge */}
+            <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-amber-900/20 bg-amber-900/90 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-amber-200 backdrop-blur-md shadow-md">
+              <Sparkles className="h-3 w-3 text-amber-300" />
+              Legacy Leader
+            </span>
           </div>
-          <div className="nv-portrait__info">
-            <p className="nv-portrait__name">{name}</p>
-            {position && <p className="nv-portrait__role">{position}</p>}
-            <p className="nv-portrait__dept">{tenure}</p>
+
+          <div className="p-6 border-t border-amber-900/10 bg-amber-50/40">
+            <h3 className="font-display text-xl font-bold text-slate-900 leading-tight">{name}</h3>
+            {position && (
+              <p className="mt-1 font-mono text-xs font-semibold uppercase tracking-wider text-amber-800">
+                {position}
+              </p>
+            )}
+            <p className="mt-3 text-xs font-mono text-slate-600 flex items-center gap-1.5">
+              <History className="h-3.5 w-3.5 text-amber-700 shrink-0" />
+              Tenure: {tenure}
+            </p>
           </div>
         </DetailPanel>
 
-        <div className="nv-dstack">
+        {/* Content Stack: Biography & Achievements */}
+        <div className="nv-dstack flex-1 space-y-6">
           {bio ? (
-            <DetailPanel delay={0.1}>
-              <div className="nv-dpanel__label">
-                <span className="nv-dpanel__icon" aria-hidden>
-                  <UserRound />
+            <DetailPanel delay={0.08} className="p-6 sm:p-8 lg:p-10 border border-amber-900/20 bg-gradient-to-br from-white via-amber-50/20 to-amber-50/40 rounded-2xl shadow-xl">
+              <div className="nv-dpanel__label mb-6 pb-4 border-b border-amber-900/10">
+                <span className="nv-dpanel__icon flex h-10 w-10 items-center justify-center rounded-xl bg-amber-900 text-amber-100 shadow-md" aria-hidden>
+                  <UserRound className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="nv-dpanel__kicker">Biography</p>
-                  <h3 className="nv-dpanel__title">{name}</h3>
+                  <p className="nv-dpanel__kicker text-amber-800 font-mono text-xs font-semibold uppercase tracking-widest">Executive Biography</p>
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">{name}</h2>
+                  {position && <p className="font-mono text-xs font-medium text-amber-900/80 uppercase tracking-wider mt-0.5">{position}</p>}
                 </div>
               </div>
               {bio.includes("<") ? (
                 <Prose html={bio} />
               ) : (
-                <p className="nv-dplain">{bio}</p>
+                <div className="space-y-4 text-base sm:text-lg leading-relaxed text-slate-700 font-sans">
+                  <p>{bio}</p>
+                </div>
               )}
             </DetailPanel>
           ) : null}
 
           {achievements.length > 0 ? (
-            <DetailPanel delay={0.16}>
-              <div className="nv-dpanel__label">
+            <DetailPanel delay={0.14} className="p-6">
+              <div className="nv-dpanel__label mb-4">
                 <span className="nv-dpanel__icon" aria-hidden>
-                  <Award />
+                  <Award className="h-4 w-4 text-amber-700" />
                 </span>
                 <div>
-                  <p className="nv-dpanel__kicker">Highlights</p>
-                  <h3 className="nv-dpanel__title">Key achievements</h3>
+                  <p className="nv-dpanel__kicker">Key Highlights</p>
+                  <h3 className="nv-dpanel__title">Major Contributions & Tenure Achievements</h3>
                 </div>
               </div>
-              <ul className="nv-achieve">
+              <ul className="space-y-3">
                 {achievements.map((item, j) => (
-                  <li key={j}>
-                    <span className="nv-achieve__dot" aria-hidden />
-                    <span>{item}</span>
+                  <li key={j} className="flex items-start gap-3 rounded-xl border border-amber-900/10 bg-amber-50/50 p-3.5 transition-all hover:bg-amber-50">
+                    <CheckCircle2 className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-slate-800 leading-snug">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -194,17 +219,17 @@ export default function LeadershipHistoryDetailPage({
           ) : null}
 
           {!bio && achievements.length === 0 ? (
-            <DetailPanel>
+            <DetailPanel className="p-6">
               <EmptyState
                 title="Profile details coming soon"
-                description="A full biography will appear here once published."
+                description="A full biography and achievements record will appear here once published."
               />
             </DetailPanel>
           ) : null}
         </div>
       </div>
 
-      <DetailDivider delay={0.12} />
+      <DetailDivider delay={0.16} />
       <div className="nv-dfooter">
         <DetailLinkChip href="/leadership/history">Back to History</DetailLinkChip>
       </div>
