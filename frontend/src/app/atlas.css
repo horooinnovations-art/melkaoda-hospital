@@ -5496,27 +5496,27 @@ transition: background-position 0.4s ease;
 
 /* ---------- Fancy twilight page hero (interior pages) ---------- */
 .g-page-hero {
-  --ph-sky: #2dd4a7;
-  --ph-teal: #2dd4a7;
-  --ph-rose: #2dd4a7;
-  --ph-amber: #2dd4a7;
-  --ph-ink: #0f172a;
+  --ph-sky: #ffebaa;
+  --ph-teal: #e6c875;
+  --ph-rose: #fff3ce;
+  --ph-amber: #b89343;
+  --ph-ink: #3f3013;
   --ph-frame: clamp(0.7rem, 1.6vw, 1.15rem);
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-bottom: 0;
+  border-bottom: 1px solid rgba(255, 225, 155, 0.3);
   background:
-    radial-gradient(ellipse 70% 80% at 0% 0%, rgba(15, 23, 42, 0.78), transparent 58%),
-    radial-gradient(ellipse 55% 60% at 100% 10%, rgba(45, 212, 167, 0.22), transparent 55%),
+    radial-gradient(ellipse 70% 80% at 0% 0%, rgba(255, 225, 155, 0.2), transparent 58%),
     linear-gradient(
       125deg,
-      #0f172a 0%,
-      #1e293b 28%,
-      #e2e8f0 68%,
-      #f8fafc 100%
+      #4d3a1a 0%,
+      #634d23 28%,
+      #755c2c 55%,
+      #57431e 80%,
+      #3f3013 100%
     );
-  padding: 7rem 0 3.4rem;
+  padding: 5rem 0 2rem;
 }
 
 .g-page-hero--detail {

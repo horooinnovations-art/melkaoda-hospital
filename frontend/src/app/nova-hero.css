@@ -684,12 +684,12 @@
 }
 
 .nv-hero__title {
-  margin-top: 26px;
+  margin-top: 20px;
   font-family: var(--nv-font-display);
   font-weight: 700;
-  font-size: clamp(2.65rem, 6.8vw, 5.4rem);
-  line-height: 0.94;
-  letter-spacing: -0.042em;
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
   color: var(--nv-text);
   text-wrap: balance;
   /* Two dark shadows, no glow. The tight one gives the glyphs an edge against a
@@ -720,13 +720,13 @@
 .nv-hero__title-sub {
   display: block;
   position: relative;
-  margin-top: 20px;
-  padding-top: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
   font-family: var(--nv-font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(1.5rem, 3.1vw, 2.4rem);
-  line-height: 1.08;
+  font-size: clamp(1.2rem, 2.2vw, 1.75rem);
+  line-height: 1.1;
   letter-spacing: -0.015em;
   color: var(--nv-text-dim);
   text-shadow: 0 6px 22px rgb(var(--nv-scrim-rgb) / 0.4);
@@ -1490,16 +1490,16 @@ a.nv-reel__card:hover .nv-reel__title { color: var(--nv-text); }
   }
 
   .nv-hero__title {
-    margin-top: 22px;
-    font-size: clamp(2.15rem, 10.2vw, 3rem);
-    letter-spacing: -0.036em;
+    margin-top: 18px;
+    font-size: clamp(1.7rem, 6.5vw, 2.3rem);
+    letter-spacing: -0.03em;
   }
 
   .nv-hero__title-sub {
-    margin-top: 16px;
-    padding-top: 16px;
-    font-size: clamp(1.24rem, 5.8vw, 1.62rem);
-    line-height: 1.16;
+    margin-top: 14px;
+    padding-top: 14px;
+    font-size: clamp(1.1rem, 4.5vw, 1.45rem);
+    line-height: 1.14;
   }
 
   .nv-hero__lede {

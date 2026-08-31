@@ -988,3 +988,48 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- Fancy Gold Hero Styling for Admin Pages ---------- */
+.hb-welcome,
+.ld-hero,
+.nx-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 225, 155, 0.35) !important;
+  border-radius: calc(var(--ld-radius) + 2px);
+  background:
+    radial-gradient(100% 120% at 20% 20%, rgba(255, 225, 155, 0.22) 0%, transparent 65%),
+    linear-gradient(135deg, #4d3a1a 0%, #634d23 45%, #755c2c 75%, #3f3013 100%) !important;
+  padding: 1.35rem 1.25rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.ld-hero::before {
+  content: "";
+  position: absolute;
+  inset: auto -20% -40% auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 225, 155, 0.28), transparent 68%);
+  pointer-events: none;
+}
+
+.ld-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #ffffff, #ffe8a3);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.hb-kicker,
+.ld-kicker,
+.nx-kicker {
+  color: #ffffff !important;
+}
+

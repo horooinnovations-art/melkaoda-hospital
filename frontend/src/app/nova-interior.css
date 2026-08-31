@@ -40,13 +40,16 @@
 .nv-mast {
   /* One dot interval and one arc tint, so the ground can be retuned here. */
   --mast-dot: clamp(22px, 2.2vw, 30px);
-  --mast-arc: rgb(var(--nv-metal-rgb) / 0.15);
-  --mast-arc-soft: rgb(var(--nv-metal-rgb) / 0.085);
+  --mast-arc: rgba(255, 235, 180, 0.24);
+  --mast-arc-soft: rgba(255, 235, 180, 0.12);
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: var(--nv-paper);
-  padding: clamp(108px, 11.5vw, 168px) 0 clamp(56px, 5.8vw, 84px);
+  background:
+    radial-gradient(110% 120% at 18% 18%, rgba(255, 225, 155, 0.22) 0%, transparent 65%),
+    linear-gradient(135deg, #4d3a1a 0%, #634d23 28%, #755c2c 55%, #57431e 80%, #3f3013 100%);
+  padding: clamp(76px, 5vw, 96px) 0 clamp(24px, 2.5vw, 40px);
+  border-bottom: 1px solid rgba(255, 225, 155, 0.3);
 }
 
 /* Detail pages carry a portrait and a long document below them, so the opening
@@ -58,12 +61,12 @@
    characters, and at the list-page size that is four lines of 78px display type
    before the reader reaches the story. */
 .nv-mast--tight {
-  padding-bottom: clamp(38px, 4vw, 58px);
+  padding-bottom: clamp(18px, 1.8vw, 28px);
 }
 
 .nv-mast--tight .nv-mast__title {
   max-width: 27ch;
-  font-size: clamp(1.95rem, 3.6vw, 3.05rem);
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
   line-height: 1.04;
   letter-spacing: -0.03em;
 }
@@ -79,12 +82,12 @@
   z-index: -2;
   pointer-events: none;
   background-image: radial-gradient(
-    rgb(var(--nv-ink-rgb) / 0.105) 1px,
-    transparent 1px
+    rgba(255, 245, 210, 0.25) 1.2px,
+    transparent 1.2px
   );
   background-size: var(--mast-dot) var(--mast-dot);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
   animation: nv-mast-drift 64s linear infinite;
   will-change: transform;
 }
@@ -110,6 +113,7 @@
   pointer-events: none;
   border: 1px solid var(--mast-arc);
   border-radius: 50%;
+  box-shadow: 0 0 30px rgba(255, 240, 180, 0.15);
   -webkit-mask-image: linear-gradient(
     170deg,
     transparent 46%,
@@ -159,7 +163,7 @@
   pointer-events: none;
   background: radial-gradient(
     60% 54% at 22% 44%,
-    rgb(var(--nv-metal-rgb) / 0.085),
+    rgba(255, 235, 170, 0.25),
     transparent 72%
   );
   animation: nv-mast-breathe 26s ease-in-out infinite alternate;
@@ -171,7 +175,7 @@
   width: 56%;
   background: radial-gradient(
     56% 50% at 78% 62%,
-    rgb(var(--nv-ink-rgb) / 0.03),
+    rgba(255, 220, 140, 0.2),
     transparent 74%
   );
   animation-delay: -13s;
@@ -198,8 +202,8 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgb(var(--nv-glaze-rgb) / 0.045) 44%,
-    rgb(var(--nv-glaze-rgb) / 0.085) 52%,
+    rgba(255, 245, 210, 0.15) 44%,
+    rgba(255, 240, 180, 0.3) 52%,
     transparent
   );
   transform: translate3d(-170%, 0, 0) rotate(9deg);
@@ -221,8 +225,8 @@
   pointer-events: none;
   background: radial-gradient(
     124% 94% at 46% 32%,
-    transparent 44%,
-    var(--nv-vignette) 100%
+    transparent 40%,
+    rgba(85, 64, 25, 0.45) 100%
   );
 }
 
@@ -231,17 +235,18 @@
   position: absolute;
   bottom: 0;
   inset-inline: 0;
-  height: 1px;
+  height: 2px;
   z-index: 3;
   pointer-events: none;
   background: linear-gradient(
     90deg,
     transparent,
-    var(--nv-hairline) 20%,
-    var(--nv-champagne-line) 50%,
-    var(--nv-hairline) 80%,
+    rgba(255, 235, 175, 0.4) 15%,
+    #ffebaa 50%,
+    rgba(255, 235, 175, 0.4) 85%,
     transparent
   );
+  box-shadow: 0 0 10px rgba(255, 235, 175, 0.5);
 }
 
 /* ── 6 · the page glyph ───────────────────────────────────────────────────
@@ -269,7 +274,8 @@
   width: clamp(300px, 33vw, 500px);
   z-index: -1;
   display: none;
-  color: rgb(var(--nv-metal-rgb) / 0.07);
+  color: rgba(255, 215, 0, 0.14);
+  filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.22));
   pointer-events: none;
   transform: translateY(-48%);
   animation: nv-mast-float 22s ease-in-out infinite alternate;
@@ -329,17 +335,17 @@
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--nv-faint);
+  color: #d8c290;
 }
 
 .nv-mast__crumb {
   color: inherit;
   text-decoration: none;
-  transition: color 0.4s var(--nv-ease-lux);
+  transition: color 0.4s var(--nv-ease-lux), text-shadow 0.4s var(--nv-ease-lux);
 }
 
-.nv-mast__crumb:hover { color: var(--nv-champagne); }
-.nv-mast__crumb--here { color: var(--nv-text-dim); }
+.nv-mast__crumb:hover { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+.nv-mast__crumb--here { color: #fff6e0; font-weight: 600; }
 
 .nv-mast__step {
   display: inline-flex;
@@ -352,7 +358,8 @@
   width: 4px;
   height: 4px;
   flex: none;
-  background: var(--nv-champagne-line);
+  background: #ffd700;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
   transform: rotate(45deg);
 }
 
@@ -365,24 +372,24 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: clamp(22px, 2.4vw, 32px);
+  margin-top: clamp(10px, 1.2vw, 16px);
 }
 
 .nv-mast__ord {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   flex: none;
-  border: 1px solid var(--nv-champagne-line);
-  background: var(--nv-champagne-faint);
-  box-shadow: inset 0 1px 0 var(--nv-edge-soft);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  background: rgba(255, 215, 0, 0.14);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255, 235, 170, 0.3);
   font-family: var(--nv-font-mono);
   font-size: 0.625rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
-  color: var(--nv-champagne);
+  color: #ffe8a3;
 }
 
 .nv-mast__org {
@@ -394,17 +401,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--nv-champagne-dim);
+  color: #e6cb85;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .nv-mast__ident-rule {
   flex: 1;
   min-width: 24px;
-  height: 1px;
+  height: 1.5px;
   background: linear-gradient(
     90deg,
-    var(--nv-champagne-line),
-    var(--nv-hairline) 46%,
+    #ffd700,
+    rgba(212, 175, 55, 0.4) 46%,
     transparent
   );
   transform: scaleX(0);
@@ -422,24 +430,28 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-top: clamp(26px, 2.8vw, 36px);
-  padding: 0 15px;
+  margin-top: clamp(12px, 1.4vw, 18px);
+  padding: 3px 14px;
   font-family: var(--nv-font-mono);
-  font-size: 0.656rem;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--nv-champagne);
+  color: #fff3ce;
+  background: rgba(212, 175, 55, 0.14);
+  border-radius: 4px;
+  box-shadow: inset 0 0 12px rgba(255, 215, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .nv-mast__tag::before,
 .nv-mast__tag::after {
   content: "";
   position: absolute;
-  top: -6px;
-  bottom: -6px;
-  width: 6px;
-  border: 1px solid var(--nv-champagne-line);
+  top: -5px;
+  bottom: -5px;
+  width: 5px;
+  border: 1px solid #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
   opacity: 0;
   transition: opacity 0.9s var(--nv-ease-lux) 0.3s;
 }
@@ -467,14 +479,15 @@
    makes the line read as composed rather than as a heading in a template, and
    it costs one prop. */
 .nv-mast__title {
-  margin-top: clamp(16px, 1.8vw, 24px);
-  max-width: 21ch;
+  margin-top: clamp(10px, 1.2vw, 16px);
+  max-width: 22ch;
   font-family: var(--nv-font-display);
-  font-size: clamp(2.6rem, 5.9vw, 4.9rem);
+  font-size: clamp(2.1rem, 4.2vw, 3.6rem);
   font-weight: 500;
-  line-height: 0.98;
-  letter-spacing: -0.038em;
-  color: var(--nv-text);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
 }
 
 .nv-mast__w {
@@ -498,7 +511,10 @@
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.012em;
-  color: var(--nv-champagne-hi);
+  background: linear-gradient(135deg, #fff6db 0%, #ffd700 35%, #e6b800 68%, #ffecb3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 14px rgba(255, 215, 0, 0.45));
 }
 
 /* ── Jewel rule ───────────────────────────────────────────────────────────
@@ -509,7 +525,7 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  margin-top: clamp(24px, 2.6vw, 34px);
+  margin-top: clamp(14px, 1.6vw, 20px);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.4s var(--nv-ease-lux) 0.3s;
@@ -518,27 +534,30 @@
 .nv-mast[data-shown="true"] .nv-mast__rule { transform: scaleX(1); }
 
 .nv-mast__rule-bar {
-  width: clamp(38px, 4.4vw, 54px);
+  width: clamp(34px, 3.8vw, 48px);
   height: 2px;
   flex: none;
-  background: linear-gradient(90deg, var(--nv-champagne), var(--nv-champagne-hi));
+  background: linear-gradient(90deg, #ffe599, #ffd700, #b8860b);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
 }
 
 .nv-mast__rule-node {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   flex: none;
-  border: 1px solid var(--nv-champagne);
+  border: 1px solid #ffd700;
+  background: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
   transform: rotate(45deg);
 }
 
 .nv-mast__rule-line {
-  width: clamp(90px, 16vw, 240px);
+  width: clamp(80px, 14vw, 200px);
   height: 1px;
   background: linear-gradient(
     90deg,
-    var(--nv-champagne-line),
-    var(--nv-hairline) 56%,
+    rgba(255, 215, 0, 0.7),
+    rgba(212, 175, 55, 0.3) 56%,
     transparent
   );
 }
@@ -548,11 +567,12 @@
    under about 55 the paragraph reads cramped beside a 78px title. It fades up
    behind the title's last word rather than with it. */
 .nv-mast__lede {
-  margin-top: clamp(20px, 2.2vw, 28px);
+  margin-top: clamp(12px, 1.4vw, 18px);
   max-width: 60ch;
-  font-size: clamp(1.03rem, 1.16vw, 1.145rem);
-  line-height: 1.72;
-  color: var(--nv-text-dim);
+  font-size: clamp(0.98rem, 1.08vw, 1.08rem);
+  line-height: 1.62;
+  color: #e8dbbc;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   opacity: 0;
   transform: translate3d(0, 14px, 0);
   transition:
@@ -572,34 +592,38 @@
 .nv-mast__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
-  margin-top: clamp(24px, 2.6vw, 32px);
+  gap: 8px;
+  margin-top: clamp(14px, 1.5vw, 20px);
 }
 
 .nv-mast__badge {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 7px 14px 7px 12px;
-  border: 1px solid var(--nv-hairline);
+  gap: 8px;
+  padding: 5px 12px 5px 10px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.42);
+  background: rgba(42, 31, 10, 0.65);
+  backdrop-filter: blur(10px);
   font-family: var(--nv-font-mono);
-  font-size: 0.625rem;
+  font-size: 0.6rem;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--nv-muted);
+  color: #fff0c7;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 235, 170, 0.25);
   transition:
     border-color 0.45s var(--nv-ease-lux),
     color 0.45s var(--nv-ease-lux),
-    background 0.45s var(--nv-ease-lux);
+    background 0.45s var(--nv-ease-lux),
+    box-shadow 0.45s var(--nv-ease-lux);
 }
 
 .nv-mast__badge svg {
-  width: 13px;
-  height: 13px;
-  color: var(--nv-champagne);
+  width: 12px;
+  height: 12px;
+  color: #ffd700;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.7));
   transition: color 0.45s var(--nv-ease-lux);
 }
 
@@ -608,14 +632,15 @@
   height: 5px;
   flex: none;
   border-radius: 999px;
-  background: var(--nv-champagne);
-  box-shadow: 0 0 0 3px rgb(var(--nv-metal-rgb) / 0.12);
+  background: #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
 }
 
 .nv-mast__badge:hover {
-  border-color: var(--nv-champagne-line);
-  background: var(--nv-champagne-faint);
-  color: var(--nv-champagne-hi);
+  border-color: #ffd700;
+  background: rgba(212, 175, 55, 0.3);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.35);
 }
 
 /* ── Figure cluster ───────────────────────────────────────────────────────
@@ -626,13 +651,13 @@
 .nv-mast__figs {
   display: flex;
   flex-wrap: wrap;
-  margin-top: clamp(34px, 3.6vw, 48px);
-  border-top: 1px solid var(--nv-hairline);
+  margin-top: clamp(16px, 1.8vw, 24px);
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .nv-mast__fig {
   position: relative;
-  padding: clamp(18px, 2vw, 24px) clamp(22px, 2.8vw, 38px) 2px;
+  padding: clamp(12px, 1.4vw, 18px) clamp(18px, 2.2vw, 30px) 2px;
 }
 
 .nv-mast__fig:first-child { padding-left: 0; }
@@ -641,10 +666,10 @@
   content: "";
   position: absolute;
   left: 0;
-  top: clamp(18px, 2vw, 24px);
-  bottom: 8px;
+  top: clamp(12px, 1.4vw, 18px);
+  bottom: 6px;
   width: 1px;
-  background: var(--nv-hairline);
+  background: rgba(212, 175, 55, 0.3);
 }
 
 /* The warm segment over the shared rule. Sits on ::after so ::before is free
@@ -656,8 +681,9 @@
   top: -1px;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, var(--nv-champagne), transparent);
+  height: 2px;
+  background: linear-gradient(90deg, #ffd700, transparent);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.1s var(--nv-ease-lux);
@@ -672,30 +698,31 @@
 .nv-mast__fig-value {
   display: block;
   font-family: var(--nv-font-mono);
-  font-size: clamp(1.5rem, 2.1vw, 1.95rem);
-  font-weight: 600;
+  font-size: clamp(1.3rem, 1.7vw, 1.65rem);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: var(--nv-text);
+  color: #ffd700;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.45);
 }
 
 .nv-mast__fig-label {
   display: block;
-  margin-top: 11px;
+  margin-top: 8px;
   font-family: var(--nv-font-mono);
-  font-size: 0.625rem;
+  font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--nv-faint);
+  color: #d6c08d;
 }
 
 .nv-mast__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-top: clamp(30px, 3.2vw, 40px);
+  gap: 10px;
+  margin-top: clamp(16px, 1.8vw, 24px);
 }
 
 /* ── Back link (detail pages) ─────────────────────────────────────────────
@@ -738,15 +765,15 @@
      side column — cropping a 16:9 press photograph to 4:5 at full width throws
      away most of the frame. */
   aspect-ratio: 16 / 10;
-  border: 1px solid var(--nv-hairline);
+  border: 1px solid rgba(255, 215, 0, 0.45);
   border-radius: 28px 28px 28px 0;
-  background: var(--nv-plate-well);
-  box-shadow: var(--nv-lift);
+  background: #1e160a;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(212, 175, 55, 0.3);
 }
 
 .nv-mast__frame img {
   object-fit: cover;
-  filter: saturate(0.92) contrast(1.02);
+  filter: saturate(0.96) contrast(1.04);
 }
 
 /* Inner hairline plus a seating gradient at the base, on one layer. An inset
@@ -762,11 +789,11 @@
   background: linear-gradient(
     180deg,
     transparent 58%,
-    rgb(var(--nv-scrim-rgb) / 0.34) 100%
+    rgba(15, 11, 4, 0.6) 100%
   );
   box-shadow:
-    inset 0 0 0 1px var(--nv-hairline),
-    inset 0 1px 0 var(--nv-edge);
+    inset 0 0 0 1px rgba(255, 215, 0, 0.35),
+    inset 0 1px 0 rgba(255, 235, 170, 0.3);
 }
 
 .nv-mast__frame::before,
@@ -777,7 +804,8 @@
   width: 26px;
   height: 26px;
   pointer-events: none;
-  border: 1px solid var(--nv-metal-on-media-line);
+  border: 1.5px solid #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
 .nv-mast__frame::before {
