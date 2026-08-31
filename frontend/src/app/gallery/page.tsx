@@ -196,218 +196,70 @@ export default function GalleryPage() {
               }
             />
           ) : (
-            <div className="space-y-6">
-              {/* A featured pair: one large tile beside two stacked ones. Only on
-                  the unfiltered view, and only when there are enough images that
-                  promoting three of them still leaves a grid behind. */}
-              {category === "all" && filtered.length >= 3 && (
-                <div className="grid gap-5 lg:grid-cols-3">
-                  {(() => {
-                    const item = filtered[0];
-                    const image = getImageFromItem(
-                      item as unknown as Record<string, unknown>
-                    );
-                    const excerpt = item.description
-                      ? stripHtml(String(item.description))
-                      : "";
-                    return (
-                      <NovaReveal key={item.id} from="up" className="lg:col-span-2">
-                        <div className="nv-gtile nv-gtile--hero group">
-                          <div className="nv-gtile__frame">
-                            {image ? (
-                              <SmartImage
-                                src={image}
-                                // Decorative: .nv-gtile__title carries this
-                                // photograph's caption over the frame.
-                                alt=""
-                                fill
-                                optimizeWidth={1200}
-                                className="nv-gtile__img"
-                                sizes="(max-width: 1024px) 100vw, 66vw"
-                              />
-                            ) : (
-                              <span className="nv-gtile__fallback" aria-hidden>
-                                {(item.title || "?").charAt(0)}
-                              </span>
-                            )}
-                          </div>
+            <div className="nv-grid-3">
+              {filtered.map((item, idx) => {
+                const image = getImageFromItem(
+                  item as unknown as Record<string, unknown>
+                );
 
-                          {item.category && (
-                            <span className="nv-gtile__tag">{item.category}</span>
-                          )}
-
-                          <div className="nv-gtile__acts">
-                            <button
-                              type="button"
-                              onClick={() => setLightboxIndex(0)}
-                              className="nv-gtile__act"
-                              title="Expand photo"
-                            >
-                              <Expand aria-hidden />
-                            </button>
-                            <Link
-                              href={galleryHref(item)}
-                              className="nv-gtile__act"
-                              title="Photo details"
-                            >
-                              <ArrowUpRight aria-hidden />
-                            </Link>
-                          </div>
-
-                          <div className="nv-gtile__cap">
-                            <h3 className="nv-gtile__title">{item.title}</h3>
-                            {excerpt && (
-                              <p className="nv-post__excerpt !mt-2 max-w-2xl">
-                                {excerpt}
-                              </p>
-                            )}
-                            <span className="nv-gtile__meta">
-                              <Eye aria-hidden />
-                              View fullscreen
-                            </span>
-                          </div>
-                        </div>
-                      </NovaReveal>
-                    );
-                  })()}
-
-                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
-                    {filtered.slice(1, 3).map((item, idx) => {
-                      const actualIdx = idx + 1;
-                      const image = getImageFromItem(
-                        item as unknown as Record<string, unknown>
-                      );
-                      return (
-                        <NovaReveal
-                          key={item.id}
-                          from="up"
-                          delay={actualIdx * 0.09}
-                        >
-                          <div className="nv-gtile group h-full">
-                            <div className="nv-gtile__frame h-full">
-                              {image ? (
-                                <SmartImage
-                                  src={image}
-                                  alt=""
-                                  fill
-                                  optimizeWidth={800}
-                                  className="nv-gtile__img"
-                                  sizes="(max-width: 1024px) 50vw, 33vw"
-                                />
-                              ) : (
-                                <span className="nv-gtile__fallback" aria-hidden>
-                                  {(item.title || "?").charAt(0)}
-                                </span>
-                              )}
-                            </div>
-
-                            {item.category && (
-                              <span className="nv-gtile__tag">{item.category}</span>
-                            )}
-
-                            <div className="nv-gtile__acts">
-                              <button
-                                type="button"
-                                onClick={() => setLightboxIndex(actualIdx)}
-                                className="nv-gtile__act"
-                                title="Expand photo"
-                              >
-                                <Expand aria-hidden />
-                              </button>
-                              <Link
-                                href={galleryHref(item)}
-                                className="nv-gtile__act"
-                                title="Photo details"
-                              >
-                                <ArrowUpRight aria-hidden />
-                              </Link>
-                            </div>
-
-                            <div className="nv-gtile__cap">
-                              <h4 className="nv-gtile__title">{item.title}</h4>
-                            </div>
-                          </div>
-                        </NovaReveal>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div className="nv-grid-3">
-                {(category === "all" && filtered.length >= 3
-                  ? filtered.slice(3)
-                  : filtered
-                ).map((item, idx) => {
-                  const actualIdx =
-                    category === "all" && filtered.length >= 3 ? idx + 3 : idx;
-                  const image = getImageFromItem(
-                    item as unknown as Record<string, unknown>
-                  );
-                  const excerpt = item.description
-                    ? stripHtml(String(item.description))
-                    : "";
-
-                  return (
-                    <NovaReveal
-                      key={item.id}
-                      from="up"
-                      delay={Math.min(Math.floor(idx / 3), 5) * 0.12}
-                      className="h-full w-full"
-                    >
-                      <div className="nv-gtile group h-full w-full flex flex-col justify-between">
-                        <div className="nv-gtile__frame">
-                          {image ? (
-                            <SmartImage
-                              src={image}
-                              alt=""
-                              fill
-                              optimizeWidth={800}
-                              className="nv-gtile__img"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            />
-                          ) : (
-                            <span className="nv-gtile__fallback" aria-hidden>
-                              {(item.title || "?").charAt(0)}
-                            </span>
-                          )}
-                        </div>
-
-                        {item.category && (
-                          <span className="nv-gtile__tag">{item.category}</span>
+                return (
+                  <NovaReveal
+                    key={item.id}
+                    from="up"
+                    delay={Math.min(Math.floor(idx / 3), 5) * 0.1}
+                    className="h-full w-full"
+                  >
+                    <div className="nv-gtile group h-full w-full flex flex-col justify-between">
+                      <div className="nv-gtile__frame">
+                        {image ? (
+                          <SmartImage
+                            src={image}
+                            alt=""
+                            fill
+                            optimizeWidth={800}
+                            className="nv-gtile__img"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <span className="nv-gtile__fallback" aria-hidden>
+                            {(item.title || "?").charAt(0)}
+                          </span>
                         )}
-
-                        <div className="nv-gtile__acts">
-                          <button
-                            type="button"
-                            onClick={() => setLightboxIndex(actualIdx)}
-                            className="nv-gtile__act"
-                            title="View full screen"
-                          >
-                            <Expand aria-hidden />
-                          </button>
-                          <Link
-                            href={galleryHref(item)}
-                            className="nv-gtile__act"
-                            title="View details"
-                          >
-                            <ArrowUpRight aria-hidden />
-                          </Link>
-                        </div>
-
-                        <div className="nv-gtile__cap">
-                          <h3 className="nv-gtile__title">{item.title}</h3>
-                          {excerpt && (
-                            <p className="nv-post__excerpt !mt-2 line-clamp-1">
-                              {excerpt}
-                            </p>
-                          )}
-                        </div>
                       </div>
-                    </NovaReveal>
-                  );
-                })}
-              </div>
+
+                      {item.category && (
+                        <span className="nv-gtile__tag">{item.category}</span>
+                      )}
+
+                      <div className="nv-gtile__acts">
+                        <button
+                          type="button"
+                          onClick={() => setLightboxIndex(idx)}
+                          className="nv-gtile__act"
+                          title="View full screen"
+                        >
+                          <Expand aria-hidden />
+                        </button>
+                        <Link
+                          href={galleryHref(item)}
+                          className="nv-gtile__act"
+                          title="View details"
+                        >
+                          <ArrowUpRight aria-hidden />
+                        </Link>
+                      </div>
+
+                      <div className="nv-gtile__cap">
+                        <h3 className="nv-gtile__title">{item.title}</h3>
+                        <span className="nv-gtile__meta">
+                          <Eye aria-hidden />
+                          View fullscreen
+                        </span>
+                      </div>
+                    </div>
+                  </NovaReveal>
+                );
+              })}
             </div>
           )}
       </PageBody>
