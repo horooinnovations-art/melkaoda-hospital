@@ -30,6 +30,8 @@ import { query, queryOne } from '../config/db.js';
 const router = Router();
 const authLimiter = rateLimit({ windowMs: 60_000, max: 8 });
 const formLimiter = rateLimit({ windowMs: 60_000, max: 10 });
+/** Download-counter pings: a visitor may legitimately take several files. */
+const trackLimiter = rateLimit({ windowMs: 60_000, max: 60 });
 
 /** Roles allowed into the admin panel (Deder RoleMiddleware). */
 const PANEL_ROLES = ['admin', 'super_admin', 'editor', 'doctor', 'staff'];
@@ -158,6 +160,7 @@ mountCrud('events', R.events, { fileField: 'featured_image' });
 mountCrud('careers', R.careers, { fileField: 'file' });
 mountCrud('testimonials', R.testimonials, { fileField: 'patient_photo' });
 mountCrud('faqs', R.faqs, { fileField: 'file' });
+mountCrud('downloads', R.downloads, { fileField: 'file' });
 mountCrud('insurance', R.insurance, { fileField: 'logo' });
 mountCrud('emergency-services', R.emergencyServices, { fileField: 'featured_image' });
 mountCrud('health-education', R.healthEducation, { fileField: 'featured_image' });
@@ -198,6 +201,7 @@ router.delete('/admin/permissions/:id', authenticate, requireSuperAdmin, RBAC.de
 // Public forms
 router.post('/public/careers/:slug/apply', formLimiter, upload.single('resume'), R.applyCareer);
 router.post('/public/events/:slug/register', formLimiter, R.registerEvent);
+router.post('/public/downloads/:id/track', trackLimiter, R.trackDownload);
 
 // Short in-memory cache so navigations / revalidates don't re-hit every table.
 let homeCache = { at: 0, payload: null };

@@ -188,3 +188,24 @@ export function isPublicItemActive(item: Record<string, unknown> | null | undefi
   return true;
 }
 
+/**
+ * Human-readable file size for the Downloads page.
+ *
+ * `downloads.file_size` arrives as a string from MySQL BIGINT, so the numeric
+ * coercion is not optional. Returns "" for missing / zero rather than "0 B" —
+ * a download whose size was never recorded should print nothing at all.
+ */
+export function formatFileSize(bytes?: number | string | null): string {
+  const size = Number(bytes);
+  if (!Number.isFinite(size) || size <= 0) return "";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = size;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  // Bytes and KB are whole numbers; MB upward keeps one decimal.
+  const rounded = unit <= 1 ? Math.round(value) : Math.round(value * 10) / 10;
+  return `${rounded} ${units[unit]}`;
+}

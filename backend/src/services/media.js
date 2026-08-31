@@ -24,6 +24,9 @@ export const upload = multer({
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase().replace(/^\./, '');
     const mime = String(file.mimetype || '').toLowerCase();
+    // Office / text formats: Windows and some browsers send
+    // application/octet-stream for these, so the extension is what we trust.
+    const OCTET = 'application/octet-stream';
     const allowed = {
       jpg: ['image/jpeg'],
       jpeg: ['image/jpeg'],
@@ -33,6 +36,21 @@ export const upload = multer({
       pdf: ['application/pdf'],
       mp4: ['video/mp4'],
       webm: ['video/webm'],
+      // Downloads centre document formats.
+      doc: ['application/msword', OCTET],
+      docx: [
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/zip',
+        OCTET,
+      ],
+      xls: ['application/vnd.ms-excel', OCTET],
+      xlsx: [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/zip',
+        OCTET,
+      ],
+      csv: ['text/csv', 'application/csv', 'text/plain', OCTET],
+      txt: ['text/plain', OCTET],
     };
     const okExt = Boolean(allowed[ext]);
     const okMime = okExt && allowed[ext].includes(mime);
@@ -79,13 +97,15 @@ export async function saveMedia(file, userId = null, folder = 'general') {
     url = `/uploads/${path.basename(file.path)}`;
   }
 
-  const type = file.mimetype.startsWith('video')
-    ? 'video'
-    : file.mimetype.startsWith('audio')
-      ? 'audio'
-      : file.mimetype.includes('pdf')
-        ? 'document'
-        : 'image';
+  // `media.type` is enum('image','document','video','audio') — anything that is
+  // not obviously media (Word, Excel, CSV, PDF…) is filed as a document.
+  const type = file.mimetype.startsWith('image')
+    ? 'image'
+    : file.mimetype.startsWith('video')
+      ? 'video'
+      : file.mimetype.startsWith('audio')
+        ? 'audio'
+        : 'document';
 
   // Match Deder media schema (no disk / cloudinary_public_id columns)
   const result = await query(

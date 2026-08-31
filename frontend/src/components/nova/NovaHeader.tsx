@@ -21,7 +21,9 @@ import {
   CalendarDays,
   ChevronDown,
   CircleHelp,
+  ClipboardCheck,
   ClipboardList,
+  Download,
   GraduationCap,
   Handshake,
   HeartPulse,
@@ -123,6 +125,18 @@ const NAV: NavGroup[] = [
       { href: "/announcements", label: "Announcements", hint: "Hospital notices", icon: ClipboardList },
       { href: "/events", label: "Events", hint: "What is coming up", icon: CalendarDays },
       { href: "/careers", label: "Careers", hint: "Join the team", icon: Briefcase },
+    ],
+  },
+  {
+    label: "Visit",
+    blurb:
+      "Plan a visit — visiting hours, what to bring, and the forms you may need before you arrive.",
+    allHref: "/patient-guide",
+    allLabel: "Read the patient guide",
+    links: [
+      { href: "/patient-guide", label: "Patient guide", hint: "Plan your visit", icon: ClipboardCheck },
+      { href: "/downloads", label: "Downloads", hint: "Forms and resources", icon: Download },
+      { href: "/contact", label: "Contact", hint: "Reach the front desk", icon: Phone },
     ],
   },
   { label: "Contact", href: "/contact" },

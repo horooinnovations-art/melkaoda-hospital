@@ -30,6 +30,7 @@ const COLUMNS = [
       { href: "/services", label: "Services" },
       { href: "/doctors", label: "Doctors" },
       { href: "/emergency", label: "Emergency" },
+      { href: "/patient-guide", label: "Patient guide" },
     ],
   },
   {
@@ -49,6 +50,7 @@ const COLUMNS = [
       { href: "/careers", label: "Careers" },
       { href: "/contact", label: "Contact" },
       { href: "/insurance", label: "Insurance" },
+      { href: "/downloads", label: "Downloads" },
     ],
   },
 ];

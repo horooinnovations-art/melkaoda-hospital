@@ -15,6 +15,7 @@ export const ADMIN_ROUTE_PERMISSIONS: Record<string, string | null> = {
   "/admin/events": "manage_events",
   "/admin/testimonials": "manage_testimonials",
   "/admin/faqs": "manage_faqs",
+  "/admin/downloads": "manage_downloads",
   "/admin/health-education": "manage_health_education",
   "/admin/departments": "manage_departments",
   "/admin/department-categories": "manage_departments",

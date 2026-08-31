@@ -57,7 +57,13 @@ function FileField({
 
   const resolvedExisting = existingUrl ? resolveMediaUrl(existingUrl) : undefined;
   const preview = objectUrl || resolvedExisting || null;
-  const accept = field.name === "media_file" ? "image/*,video/*" : "image/*,.pdf,.doc,.docx";
+  // Keep in step with the extension whitelist in backend/src/services/media.js —
+  // a picker that offers a format the upload filter rejects is a dead end the
+  // editor only discovers after choosing the file.
+  const accept =
+    field.name === "media_file"
+      ? "image/*,video/*"
+      : "image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt";
   const isImagePreview =
     !!objectUrl ||
     (!!preview &&

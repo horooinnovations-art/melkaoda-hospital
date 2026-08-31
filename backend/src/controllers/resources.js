@@ -529,6 +529,88 @@ export const faqs = createCrud({
   orderBy: '`order` ASC, id ASC',
 });
 
+/** Extension of a filename or URL, upper-cased, e.g. "PDF". */
+function fileExtLabel(value) {
+  const name = String(value || '').split(/[?#]/)[0];
+  const match = name.match(/\.([A-Za-z0-9]{1,8})$/);
+  return match ? match[1].toUpperCase() : '';
+}
+
+const MIME_LABELS = {
+  'application/pdf': 'PDF',
+  'application/msword': 'DOC',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+  'application/vnd.ms-excel': 'XLS',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+  'text/csv': 'CSV',
+  'text/plain': 'TXT',
+};
+
+/**
+ * Copy the uploaded media row's url / name / type / size onto the download so
+ * the public list can print them without joining `media` per row. Admins who
+ * paste an external `file_url` instead of uploading keep that value; only the
+ * derived label fields are filled in for them.
+ */
+async function syncDownloadFileMeta(row) {
+  if (!row?.id) return;
+  const sets = {};
+
+  if (row.file_id) {
+    const media = await queryOne(
+      `SELECT url, filename, original_filename, mime_type, size
+       FROM media WHERE id = :id LIMIT 1`,
+      { id: row.file_id }
+    );
+    if (media) {
+      const name = media.original_filename || media.filename || '';
+      sets.file_url = media.url || row.file_url || null;
+      sets.file_name = name || row.file_name || null;
+      sets.file_type =
+        fileExtLabel(name) || MIME_LABELS[String(media.mime_type || '').toLowerCase()] || null;
+      sets.file_size = media.size ?? null;
+    }
+  } else if (row.file_url) {
+    if (!row.file_name) sets.file_name = decodeURIComponent(String(row.file_url).split(/[?#]/)[0].split('/').pop() || '');
+    if (!row.file_type) sets.file_type = fileExtLabel(row.file_url) || null;
+  }
+
+  const keys = Object.keys(sets).filter((key) => sets[key] !== row[key]);
+  if (!keys.length) return;
+
+  const assignments = keys.map((key) => `\`${key}\` = :${key}`).join(', ');
+  const params = Object.fromEntries(keys.map((key) => [key, sets[key]]));
+  params.id = row.id;
+  await query(`UPDATE \`downloads\` SET ${assignments} WHERE id = :id`, params);
+  for (const key of keys) row[key] = sets[key];
+}
+
+export const downloads = createCrud({
+  table: 'downloads',
+  slugFrom: 'title',
+  mediaField: 'file_id',
+  mediaAs: 'file',
+  mediaFolder: 'downloads',
+  publicFilter: 'is_active = 1',
+  searchable: ['title', 'description', 'category', 'file_name'],
+  orderBy: '`order` ASC, id DESC',
+  mapIncoming: async (data, _req, mode) => {
+    if (mode === 'create' && data.is_active === undefined) data.is_active = 1;
+    if (mode === 'create' && data.is_featured === undefined) data.is_featured = 0;
+    for (const field of ['published_at', 'file_id', 'file_size']) {
+      if (data[field] === '') data[field] = null;
+    }
+    if (data.category !== undefined) data.category = String(data.category || '').trim() || null;
+    if (data.file_url !== undefined) data.file_url = String(data.file_url || '').trim() || null;
+    // download_count is a public counter, never an editable form field.
+    delete data.download_count;
+    return data;
+  },
+  afterSave: async (row) => {
+    await syncDownloadFileMeta(row);
+  },
+});
+
 export const insurance = createCrud({
   table: 'insurance',
   softDelete: false,
@@ -781,6 +863,48 @@ export async function applyCareer(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+/**
+ * Public download counter. Called by the /downloads page when a visitor opens a
+ * file, so the admin list can show which forms people actually take.
+ */
+export async function trackDownload(req, res) {
+  try {
+    const key = String(req.params.id || '').trim();
+    if (!key) return fail(res, 'Download not found', 404);
+
+    let row = null;
+    if (/^\d+$/.test(key)) {
+      row = await queryOne(
+        `SELECT id FROM downloads WHERE id = :id AND deleted_at IS NULL AND is_active = 1 LIMIT 1`,
+        { id: Number(key) }
+      );
+    } else {
+      for (const candidate of slugLookupCandidates(key)) {
+        row = await queryOne(
+          `SELECT id FROM downloads
+           WHERE LOWER(slug) = LOWER(:slug) AND deleted_at IS NULL AND is_active = 1
+           LIMIT 1`,
+          { slug: candidate }
+        );
+        if (row) break;
+      }
+    }
+    if (!row) return fail(res, 'Download not found', 404);
+
+    await query(
+      `UPDATE downloads SET download_count = download_count + 1 WHERE id = :id`,
+      { id: row.id }
+    );
+    const updated = await queryOne(`SELECT download_count FROM downloads WHERE id = :id`, {
+      id: row.id,
+    });
+    return ok(res, { id: row.id, download_count: Number(updated?.download_count || 0) });
+  } catch (err) {
+    console.error(err);
+    return fail(res, err.message, 500);
   }
 }
 

@@ -36,10 +36,12 @@ const ORDER: Array<[string, SectionGroup, string]> = [
   ["/emergency", "Care", "Emergency"],
   ["/insurance", "Care", "Insurance"],
   ["/health-education", "Care", "Health Education"],
+  ["/patient-guide", "Care", "Patient Guide"],
   ["/news", "Newsroom", "News"],
   ["/announcements", "Newsroom", "Announcements"],
   ["/events", "Newsroom", "Events"],
   ["/careers", "Newsroom", "Careers"],
+  ["/downloads", "Visit", "Downloads"],
   ["/contact", "Visit", "Contact"],
 ];
 

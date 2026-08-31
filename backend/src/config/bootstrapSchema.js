@@ -176,6 +176,116 @@ async function ensurePartnershipCategoriesTable() {
   }
 }
 
+/**
+ * Downloads centre storage (public /downloads, admin CRUD).
+ * `file_*` columns are denormalized from the `media` row on save so the public
+ * list can print a size and a type without joining media for every entry.
+ */
+async function ensureDownloadsTable() {
+  try {
+    await query(
+      `CREATE TABLE IF NOT EXISTS \`downloads\` (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        title VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) DEFAULT NULL,
+        description TEXT NULL,
+        category VARCHAR(150) DEFAULT NULL,
+        file_id BIGINT UNSIGNED DEFAULT NULL,
+        file_url VARCHAR(500) DEFAULT NULL,
+        file_name VARCHAR(255) DEFAULT NULL,
+        file_type VARCHAR(32) DEFAULT NULL,
+        file_size BIGINT UNSIGNED DEFAULT NULL,
+        version VARCHAR(60) DEFAULT NULL,
+        published_at DATE NULL,
+        download_count INT UNSIGNED NOT NULL DEFAULT 0,
+        \`order\` INT NOT NULL DEFAULT 0,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        is_featured TINYINT(1) NOT NULL DEFAULT 0,
+        meta_title VARCHAR(255) DEFAULT NULL,
+        meta_description TEXT NULL,
+        created_at DATETIME NULL,
+        updated_at DATETIME NULL,
+        deleted_at DATETIME NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uniq_downloads_slug (slug),
+        KEY idx_downloads_public (is_active, \`order\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+    );
+    console.log('[schema] ensured downloads table exists');
+  } catch (err) {
+    console.warn(`[schema] downloads table check skipped: ${err.message}`);
+  }
+}
+
+/**
+ * Opening copy for the two settings-driven public pages.
+ *
+ * These are seeds, not defaults baked into the frontend: every one of these keys
+ * is an editable field in Admin → Settings (Patient Guide / Downloads tabs), and
+ * the seed exists so those pages are not blank on a database that predates them.
+ * Written with INSERT IGNORE, so an editor's own wording is never overwritten —
+ * including a deliberately emptied field, which keeps its empty row.
+ *
+ * `patient_guide_directions` and `patient_guide_admission` are intentionally
+ * absent: the first falls back to the address on the Address tab, and the second
+ * is optional, so seeding either would invent hospital policy.
+ */
+const SEED_CONTENT_SETTINGS = {
+  patient_guide_intro:
+    'Everything you need to plan your visit and make the most of your healthcare experience.',
+  visiting_hours: 'Daily: 02:00 – 06:00 and 07:00 – 11:00 LT',
+  patient_guide_insurance:
+    '<ol>' +
+    '<li>Accepted payment methods include Community Based Health Insurance (CBHI), exempted government services, and cash.</li>' +
+    '<li>Please carry a valid insurance card and verify your eligibility at the registration desk before service.</li>' +
+    '<li>Credit-based care is available to government offices, NGOs and religious institutions that hold an agreement with the hospital.</li>' +
+    '</ol>',
+  patient_guide_documents:
+    '<ul>' +
+    '<li>National ID or Kebele ID</li>' +
+    '<li>Prior medical records, if available</li>' +
+    '<li>Current medication list or prescriptions</li>' +
+    '<li>Valid insurance or CBHI card</li>' +
+    '<li>Institutional unique ID card, where a credit agreement with the hospital exists</li>' +
+    '</ul>',
+  patient_guide_additional:
+    '<ul>' +
+    '<li>Restrictions may apply in critical care units.</li>' +
+    '<li>Only one visitor is allowed per patient during visiting time.</li>' +
+    '<li>Please arrive early for registration and screening procedures.</li>' +
+    '<li>Follow hospital rules and infection prevention guidelines at all times.</li>' +
+    '</ul>',
+  patient_guide_tips:
+    '<h3>Arrive Early</h3><p>Arrive 15–30 minutes before your appointment for registration.</p>' +
+    '<h3>Bring a Companion</h3><p>A companion can help with forms and offer support during your visit.</p>' +
+    '<h3>List Your Questions</h3><p>Write down your questions for the physician in advance.</p>',
+  patient_guide_help:
+    'Our patient services team is happy to answer any question before you arrive.',
+  downloads_intro:
+    'Access forms, guides, and essential resources for patients, partners, and healthcare professionals.',
+};
+
+/**
+ * Insert the seed copy for any key the database has never held.
+ *
+ * `settings.key` carries a unique index, so INSERT IGNORE is the whole guard:
+ * a key that exists — with any value, including an empty one — is skipped.
+ */
+async function seedContentSettings() {
+  for (const [key, value] of Object.entries(SEED_CONTENT_SETTINGS)) {
+    try {
+      const result = await query(
+        `INSERT IGNORE INTO \`settings\` (\`key\`, value, type, created_at, updated_at)
+         VALUES (:key, :value, 'string', NOW(), NOW())`,
+        { key, value }
+      );
+      if (result?.affectedRows) console.log(`[schema] seeded settings.${key}`);
+    } catch (err) {
+      console.warn(`[schema] could not seed settings.${key}: ${err.message}`);
+    }
+  }
+}
+
 export async function bootstrapSchema() {
   // Visibility toggle for gallery images (hide from public without deleting).
   await ensureColumn(
@@ -193,6 +303,12 @@ export async function bootstrapSchema() {
 
   // Ensure partnership category storage exists for admin select options.
   await ensurePartnershipCategoriesTable();
+
+  // Downloads centre (public /downloads + Admin → Downloads).
+  await ensureDownloadsTable();
+
+  // Opening copy for /patient-guide and /downloads, if never set.
+  await seedContentSettings();
 
   // Fill in slugs for any gallery rows created before this column existed.
   await backfillGallerySlugs();

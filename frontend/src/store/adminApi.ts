@@ -26,6 +26,7 @@ export type AdminResource =
   | "careers"
   | "testimonials"
   | "faqs"
+  | "downloads"
   | "insurance"
   | "emergency-services"
   | "health-education"

@@ -4449,3 +4449,347 @@
   width: clamp(20px, 2.4vw, 30px);
   height: clamp(20px, 2.4vw, 30px);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DOWNLOADS CENTRE  (/downloads)
+   A file is not a story, so these are not the editorial cards the news grid
+   uses. Each entry is a plate whose first mark is the format — an editor
+   uploading "CBHI-form.pdf" gets a PDF tile, and a visitor scanning for a
+   spreadsheet finds it by shape before reading a word. The action sits on a
+   ruled foot so a row of cards with unequal copy still ends on one line.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* One category's worth of files. Groups stack; the label rules them apart. */
+.nv-dlgroup + .nv-dlgroup {
+  margin-top: clamp(30px, 3.4vw, 46px);
+}
+
+.nv-dlgroup__label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-bottom: 13px;
+  margin-bottom: clamp(16px, 1.8vw, 22px);
+  border-bottom: 1px solid var(--nv-hairline);
+  font-family: var(--nv-font-mono);
+  font-size: 0.656rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-dlgroup__label b {
+  font-family: var(--nv-font-mono);
+  font-weight: 400;
+  color: var(--nv-faint);
+}
+
+.nv-dlgrid {
+  display: grid;
+  gap: clamp(14px, 1.6vw, 20px);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 700px) {
+  .nv-dlgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1120px) {
+  .nv-dlgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-dlfile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(18px, 2vw, 24px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 16px;
+  background: var(--nv-plate);
+  box-shadow: var(--nv-lift);
+  transition:
+    border-color 0.55s var(--nv-ease-lux),
+    box-shadow 0.55s var(--nv-ease-lux),
+    transform 0.55s var(--nv-ease-lux);
+}
+
+.nv-dlfile:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: var(--nv-hairline-hi);
+  box-shadow: var(--nv-lift-hi);
+}
+
+.nv-dlfile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--nv-edge) 42%, transparent);
+}
+
+/* A featured file keeps the champagne rule the rest of the system reserves for
+   the one thing on a page that is being pointed at. */
+.nv-dlfile--feat {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-dlfile__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 14px;
+}
+
+/* The format, set as a plate rather than an icon: "PDF" and "XLSX" carry more
+   than one generic document glyph repeated down the grid. */
+.nv-dlfile__ext {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 13px;
+  background: var(--nv-champagne-faint);
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.08em;
+  color: var(--nv-champagne);
+}
+
+.nv-dlfile__ext svg {
+  width: 17px;
+  height: 17px;
+}
+
+.nv-dlfile__title {
+  font-family: var(--nv-font-display);
+  font-size: 1.01rem;
+  font-weight: 500;
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+}
+
+.nv-dlfile__desc {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+.nv-dlfile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.nv-dlfile__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 8px;
+  background: var(--nv-plate-well);
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+.nv-dlfile__chip svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* `margin-top: auto` is what lands every card's button on the same line. */
+.nv-dlfile__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.nv-dlfile__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 10px;
+  background: var(--nv-champagne-faint);
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-champagne);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.45s var(--nv-ease-lux),
+    color 0.45s var(--nv-ease-lux),
+    transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-dlfile__go svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.45s var(--nv-ease-lux);
+}
+
+.nv-dlfile__go:hover {
+  border-color: var(--nv-champagne);
+  color: var(--nv-champagne-hi);
+}
+
+.nv-dlfile__go:hover svg {
+  transform: translate3d(0, 2px, 0);
+}
+
+/* Missing file: an entry saved without an upload or a URL. Still listed, so an
+   editor sees the gap on the public page rather than only in the admin table. */
+.nv-dlfile__go[aria-disabled="true"] {
+  border-color: var(--nv-hairline);
+  background: var(--nv-plate-well);
+  color: var(--nv-faint);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Category prospectus, shown only while nothing is uploaded yet. An empty
+   Downloads page still has to tell a visitor what will eventually live here, and
+   three named shelves say it better than one apologetic sentence. The names
+   match the categories the admin form suggests, so the first upload lands under
+   a heading the page has already promised. */
+.nv-dlcats {
+  display: grid;
+  gap: clamp(14px, 1.6vw, 20px);
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: clamp(26px, 3vw, 38px);
+}
+
+@media (min-width: 760px) {
+  .nv-dlcats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-dlcat {
+  display: grid;
+  gap: 11px;
+  padding: clamp(18px, 2vw, 24px);
+  border: 1px solid var(--nv-hairline);
+  border-radius: 15px;
+  background: var(--nv-plate-well);
+  transition: border-color 0.45s var(--nv-ease-lux);
+}
+
+.nv-dlcat:hover {
+  border-color: var(--nv-champagne-line);
+}
+
+.nv-dlcat__ico {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--nv-hairline);
+  border-radius: 11px;
+  color: var(--nv-muted);
+}
+
+.nv-dlcat__ico svg { width: 16px; height: 16px; }
+
+.nv-dlcat__title {
+  font-family: var(--nv-font-display);
+  font-size: 0.975rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--nv-text);
+}
+
+.nv-dlcat__desc {
+  font-size: 0.813rem;
+  line-height: 1.62;
+  color: var(--nv-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PATIENT GUIDE  (/patient-guide)
+   Every section of this page is one settings field, so the page is mostly the
+   shared detail furniture — panels, tile lists, value cards. The two things it
+   needs of its own are the hours plate, which is the single fact most visitors
+   arrive for, and the numeral that turns an editor's ordered list into steps.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nv-pgh {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: clamp(18px, 2.2vw, 26px);
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 16px;
+  background: var(--nv-champagne-faint);
+}
+
+.nv-pgh__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--nv-font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-champagne-dim);
+}
+
+.nv-pgh__label svg { width: 14px; height: 14px; }
+
+/* Set in the display face at figure scale: this is a number to be read across
+   a waiting room, not a line of body copy. */
+.nv-pgh__value {
+  font-family: var(--nv-font-display);
+  font-size: clamp(1.05rem, 2vw, 1.42rem);
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.02em;
+  color: var(--nv-text);
+}
+
+/* Step numeral for an ordered settings list, sized to sit in a .nv-tile's
+   leading column so ordered and unordered lists share one row rhythm. */
+.nv-pgn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--nv-champagne-line);
+  border-radius: 8px;
+  background: var(--nv-champagne-faint);
+  font-family: var(--nv-font-mono);
+  font-size: 0.594rem;
+  color: var(--nv-champagne);
+}
+
+/* Check / info glyph for an unordered settings list, same footprint as .nv-pgn
+   so the two list kinds line up when they sit in adjacent sections. */
+.nv-pgb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--nv-champagne);
+}
+
+.nv-pgb svg { width: 15px; height: 15px; }

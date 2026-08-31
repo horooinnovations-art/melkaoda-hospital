@@ -24,6 +24,7 @@ const COLUMNS = [
       { href: "/emergency", label: "Emergency" },
       { href: "/insurance", label: "Insurance" },
       { href: "/health-education", label: "Health education" },
+      { href: "/patient-guide", label: "Patient guide" },
     ],
   },
   {
@@ -44,6 +45,7 @@ const COLUMNS = [
       { href: "/announcements", label: "Announcements" },
       { href: "/events", label: "Events" },
       { href: "/careers", label: "Careers" },
+      { href: "/downloads", label: "Downloads" },
       { href: "/contact", label: "Contact" },
     ],
   },

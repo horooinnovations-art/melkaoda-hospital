@@ -224,6 +224,24 @@ export interface Partner extends BaseResource {
   collaboration_highlights?: string[];
 }
 
+export interface DownloadFile extends BaseResource {
+  title: string;
+  category?: string | null;
+  file?: MediaRef | null;
+  file_url?: string | null;
+  file_name?: string | null;
+  /** Upper-cased extension, e.g. "PDF". Derived on save. */
+  file_type?: string | null;
+  /** Bytes. */
+  file_size?: number | string | null;
+  version?: string | null;
+  published_at?: string | null;
+  download_count?: number | string | null;
+  order?: number;
+  is_active?: boolean | number;
+  is_featured?: boolean | number;
+}
+
 export type PublicResource =
   | "departments"
   | "doctors"
@@ -241,4 +259,5 @@ export type PublicResource =
   | "insurance"
   | "emergency-services"
   | "health-education"
-  | "partnerships";
+  | "partnerships"
+  | "downloads";

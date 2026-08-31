@@ -193,3 +193,15 @@ export async function registerEvent(
   }
   return json;
 }
+
+/**
+ * Bump a download's public counter. Fire-and-forget: the visitor's file must
+ * open whether or not the ping lands, so callers ignore the result.
+ */
+export async function trackDownload(idOrSlug: string | number) {
+  try {
+    await fetch(buildUrl(`/public/downloads/${idOrSlug}/track`), { method: "POST" });
+  } catch {
+    /* counter is best-effort */
+  }
+}

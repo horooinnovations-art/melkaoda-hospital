@@ -65,6 +65,7 @@ export const apiSlice = createApi({
     "Emergency",
     "HealthEducation",
     "Partnerships",
+    "Downloads",
   ],
   endpoints: (builder) => ({
     getHome: builder.query<HomeData, void>({
@@ -116,6 +117,22 @@ export const apiSlice = createApi({
       }),
       transformResponse: (res: ApiResponse<{ id: number }>) => res.data,
     }),
+    /**
+     * Public download counter. Deliberately provides no tags: the count is
+     * shown in the admin list, not on the public page, so invalidating the
+     * Downloads list here would refetch the whole grid on every click.
+     */
+    trackDownload: builder.mutation<
+      { id: number; download_count: number },
+      { idOrSlug: string | number }
+    >({
+      query: ({ idOrSlug }) => ({
+        url: `/public/downloads/${idOrSlug}/track`,
+        method: "POST",
+      }),
+      transformResponse: (res: ApiResponse<{ id: number; download_count: number }>) =>
+        res.data,
+    }),
     applyCareer: builder.mutation<{ message: string }, { slug: string; formData: FormData }>({
       query: ({ slug, formData }) => ({
         url: `/public/careers/${slug}/apply`,
@@ -164,6 +181,7 @@ function tagForResource(resource: PublicResource) {
     "emergency-services": "Emergency",
     "health-education": "HealthEducation",
     partnerships: "Partnerships",
+    downloads: "Downloads",
   };
   return map[resource] as
     | "Departments"
@@ -182,7 +200,8 @@ function tagForResource(resource: PublicResource) {
     | "Insurance"
     | "Emergency"
     | "HealthEducation"
-    | "Partnerships";
+    | "Partnerships"
+    | "Downloads";
 }
 
 export const {
@@ -191,6 +210,7 @@ export const {
   useGetResourceListQuery,
   useGetResourceItemQuery,
   useSubmitContactMutation,
+  useTrackDownloadMutation,
   useApplyCareerMutation,
   useRegisterEventMutation,
 } = apiSlice;
