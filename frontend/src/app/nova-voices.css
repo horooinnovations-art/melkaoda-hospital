@@ -95,7 +95,7 @@
   font-family: var(--nv-font-serif);
   font-size: clamp(9rem, 15vw, 15rem);
   line-height: 0.62;
-  color: rgb(var(--nv-metal-rgb) / 0.055);
+  color: rgb(var(--nv-metal-rgb) / 0.07);
   pointer-events: none;
   user-select: none;
   animation: nv-vox-drift 26s ease-in-out infinite alternate;
@@ -138,10 +138,32 @@
   .nv-vox__stage { grid-template-columns: minmax(0, 1fr) 330px; }
 
   /* One story, no index: the stage takes the sheet rather than leaving a third
-     of it empty beside a list of one. */
+     of it empty beside a list of one. With the index gone there is room to set
+     the attribution as a standing column at the side of the quote instead of a
+     line under it — which is what keeps a single story from reading as a short
+     paragraph adrift on a wide plate. */
   .nv-vox[data-solo="true"] .nv-vox__stage {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .nv-vox[data-solo="true"] .nv-vox__pane {
+    display: grid;
+    grid-template-columns: minmax(0, 46ch) minmax(0, 250px);
+    justify-content: start;
+    gap: clamp(30px, 3.2vw, 54px);
+    align-items: start;
+  }
+
+  .nv-vox[data-solo="true"] .nv-vox__by {
+    display: block;
+    margin-top: 6px;
+    padding-top: 0;
+    padding-left: clamp(20px, 2vw, 30px);
+    border-top: 0;
+    border-left: 1px solid var(--nv-hairline);
+  }
+
+  .nv-vox[data-solo="true"] .nv-vox__name { margin-top: 18px; }
 }
 
 .nv-vox__main {
@@ -164,11 +186,23 @@
 
 /* The one moment of solid metal in the section, and the only thing on the sheet
    that moves without being asked: the sheen crosses the glyph on a long cycle,
-   which is what makes a printed ornament read as a cut one. */
+   which is what makes a printed ornament read as a cut one.
+
+   The padding and the matching negative margins are load-bearing, not spacing.
+   `background-clip: text` clips the fill to the glyph AND to the element's
+   painting area, and the ink of a quotation mark sits above the top of a
+   line-height:1 box — so squeezing the line-height, as the ornament this replaced
+   did, paints only the bottom few pixels of the mark. The padding grows the
+   painting area upward past the ink; the margins take that growth back out of the
+   layout, so the box still occupies about as much room as the mark itself. */
 .nv-vox__mark {
+  display: block;
   font-family: var(--nv-font-serif);
-  font-size: clamp(3rem, 4.4vw, 4.2rem);
-  line-height: 0.62;
+  font-size: clamp(4.4rem, 6vw, 6.6rem);
+  line-height: 1;
+  padding-top: 0.34em;
+  margin-top: -0.34em;
+  margin-bottom: -0.52em;
   letter-spacing: -0.02em;
   background: var(--nv-grad-metal);
   background-size: 240% 100%;

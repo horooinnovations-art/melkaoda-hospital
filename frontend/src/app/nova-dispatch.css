@@ -312,6 +312,10 @@
 .nv-disp__entry:hover .nv-disp__ord { color: rgb(var(--nv-metal-rgb) / 0.48); }
 
 .nv-disp__title {
+  /* A measure, not a column. The sheet is as wide as the page and a notice title
+     set across all of it is a line nobody can track back from; the space to the
+     right of the cap is where the folio number sits. */
+  max-width: 44ch;
   font-family: var(--nv-font-serif);
   font-size: clamp(1.06rem, 1.6vw, 1.34rem);
   font-weight: 500;
@@ -332,6 +336,7 @@
    absurd, this decides what the row actually shows. */
 .nv-disp__excerpt {
   display: -webkit-box;
+  max-width: 76ch;
   margin-top: 10px;
   overflow: hidden;
   font-size: 0.855rem;

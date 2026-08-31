@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import {
   ArrowUpRight,
   Baby,
@@ -123,9 +124,83 @@ function ReelCard({ item, clone }: { item: Feature; clone?: boolean }) {
         <span className="nv-reel__title">{item.title}</span>
         <p className="nv-reel__desc">{item.desc}</p>
       </span>
+      {/* Ledger mark: a champagne hairline that grows down the card's leading
+          edge on hover. It is the same "attention" gesture the figures use, so
+          a card that is only being read is distinguishable from one being
+          followed without the plate itself having to change. */}
+      <span className="nv-reel__edge" aria-hidden />
     </Link>
   );
 }
+
+/**
+ * The hero's pointer-tracked light. It writes the cursor position, in pixels
+ * relative to the hero box, into two custom properties that `.nv-hero__torch`
+ * reads as a transform — so the layer is moved by the compositor and nothing
+ * repaints as the pointer travels.
+ *
+ * Three deliberate refusals:
+ *   · nothing runs under `prefers-reduced-motion`
+ *   · nothing runs on touch, where there is no cursor to follow and the layer
+ *     would only ever be stuck wherever the last tap landed
+ *   · the position is read once per frame inside the rAF callback, not on every
+ *     `pointermove`, so a fast pointer cannot force a layout per event
+ */
+function useHeroTorch<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+    let cx = 0;
+    let cy = 0;
+    let raf = 0;
+
+    const paint = () => {
+      raf = 0;
+      const box = el.getBoundingClientRect();
+      el.style.setProperty("--nv-mx", `${cx - box.left}px`);
+      el.style.setProperty("--nv-my", `${cy - box.top}px`);
+    };
+
+    const onMove = (event: PointerEvent) => {
+      cx = event.clientX;
+      cy = event.clientY;
+      if (!raf) raf = window.requestAnimationFrame(paint);
+    };
+
+    const onEnter = () => el.setAttribute("data-torch", "on");
+    const onLeave = () => el.removeAttribute("data-torch");
+
+    el.addEventListener("pointermove", onMove, { passive: true });
+    el.addEventListener("pointerenter", onEnter);
+    el.addEventListener("pointerleave", onLeave);
+
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerenter", onEnter);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, []);
+
+  return ref;
+}
+
+/**
+ * The trace ruled across the foot of the hero. One cardiac complex on an
+ * otherwise flat baseline — the hairline that closes the section and the
+ * monitor line are the same line, which is the whole point of it.
+ *
+ * `pathLength` is normalised to 1000 so the travelling dash below can be
+ * expressed in thousandths of the path and stays correct at any width.
+ */
+const VITALS_PATH =
+  "M0 15 H392 Q404 7 416 15 Q428 22 440 15 H470 L481 19 L494 2 L507 27 L517 15 " +
+  "H548 Q574 5 600 15 H1200";
 
 export default function NovaHero({
   data,
@@ -145,6 +220,8 @@ export default function NovaHero({
   images?: string[];
   place?: string;
 }) {
+  const heroRef = useHeroTorch<HTMLElement>();
+
   const brand = cleanPublicText(name) || SITE_NAME;
   const brandWords = brand.trim().split(/\s+/).filter(Boolean);
   const headline = cleanPublicText(tagline) || "Care you can trust, close to home.";
@@ -164,21 +241,33 @@ export default function NovaHero({
   ].filter(Boolean) as Array<{ value: string; label: string }>;
 
   return (
-    <section className="nv-hero">
+    <section className="nv-hero" ref={heroRef}>
       {/* Behind the copy, not around it: full-bleed, scrimmed, non-interactive. */}
       {images && images.length > 0 ? (
         <NovaHeroBackdrop images={images} />
       ) : null}
 
-      {/* Light over the photographs: drifting rails, a warm pool that breathes
-          and one specular sweep. All CSS, all additive, none of it interactive —
-          and all of it present even with no photographs, which is what keeps an
-          image-less hero from going flat. */}
+      {/* Light over the photographs: drifting rails, a warm pool that breathes,
+          a slow halo turning behind the headline and one specular sweep. All
+          CSS, all additive, none of it interactive — and all of it present even
+          with no photographs, which is what keeps an image-less hero from going
+          flat. */}
       <div className="nv-hero__aura" aria-hidden>
         <span className="nv-hero__rails" />
         <span className="nv-hero__pool" />
+        <span className="nv-hero__halo" />
         <span className="nv-hero__sweep" />
       </div>
+
+      {/* The pointer's own light, on its own layer above the aura so it can be
+          moved by transform alone. Hidden entirely on touch — see useHeroTorch. */}
+      <div className="nv-hero__torch" aria-hidden />
+
+      {/* Two corner brackets ruled into the top of the hero. Architectural
+          rather than decorative: they give the full-bleed photograph an edge to
+          be framed by, and they are the reason the band reads as a plate and
+          not as a background image. */}
+      <div className="nv-hero__frame" aria-hidden />
 
       <div className="nv-shell nv-shell--wide">
         <div className="nv-hero__grid">
@@ -202,7 +291,7 @@ export default function NovaHero({
             <div className="nv-hero__cta">
               <Link
                 href="/departments"
-                className="nv-btn nv-btn--primary nv-btn--lg"
+                className="nv-btn nv-btn--primary nv-btn--lg nv-hero__go"
               >
                 Explore our care
                 <ArrowUpRight className="h-4 w-4" />
@@ -211,7 +300,7 @@ export default function NovaHero({
               {emergency ? (
                 <a
                   href={`tel:${emergency}`}
-                  className="nv-btn nv-btn--glass nv-btn--lg"
+                  className="nv-btn nv-btn--glass nv-btn--lg nv-hero__dial"
                 >
                   <Phone className="h-4 w-4" />
                   {emergency}
@@ -219,14 +308,14 @@ export default function NovaHero({
               ) : (
                 <Link
                   href="/emergency"
-                  className="nv-btn nv-btn--glass nv-btn--lg"
+                  className="nv-btn nv-btn--glass nv-btn--lg nv-hero__dial"
                 >
                   <Siren className="h-4 w-4" />
                   Emergency
                 </Link>
               )}
 
-              <Link href="/doctors" className="nv-btn nv-btn--ghost">
+              <Link href="/doctors" className="nv-btn nv-btn--ghost nv-hero__aside">
                 Meet the doctors
               </Link>
             </div>
@@ -241,8 +330,19 @@ export default function NovaHero({
             </div>
           </div>
 
-          {/* Service reel: the list is rendered twice so the -50% loop is seamless. */}
+          {/* Service reel: the list is rendered twice so the -50% loop is
+              seamless. Below the two-column breakpoint the same markup becomes a
+              swipeable horizontal rail — see nova-hero.css — because eleven
+              stacked cards is not a hero on a phone, it is a page. */}
           <div className="nv-reel">
+            <div className="nv-reel__lead" aria-hidden>
+              <span className="nv-reel__lead-k">Departments &amp; services</span>
+              <span className="nv-reel__lead-hint">
+                Swipe
+                <i />
+              </span>
+            </div>
+
             <div className="nv-reel__viewport">
               <div className="nv-reel__track">
                 {FEATURES.map((item) => (
@@ -258,12 +358,34 @@ export default function NovaHero({
 
         {/* Closes the hero and points down. Decorative: the section below is
             the real target and it is one scroll away, so there is nothing here
-            to announce or to click. */}
+            to announce or to click. The closing hairline is drawn as a cardiac
+            trace, with one bright segment travelling along it — the rule that
+            ends the section and the monitor line are the same line. */}
         <div className="nv-hero__cue" aria-hidden>
-          <span>Scroll</span>
-          <span className="nv-hero__cue-rail">
-            <i />
-          </span>
+          <svg
+            className="nv-hero__vitals"
+            viewBox="0 0 1200 30"
+            preserveAspectRatio="none"
+            focusable="false"
+          >
+            <path
+              className="nv-hero__vitals-base"
+              d={VITALS_PATH}
+              pathLength={1000}
+            />
+            <path
+              className="nv-hero__vitals-run"
+              d={VITALS_PATH}
+              pathLength={1000}
+            />
+          </svg>
+
+          <div className="nv-hero__cue-row">
+            <span>Scroll</span>
+            <span className="nv-hero__cue-rail">
+              <i />
+            </span>
+          </div>
         </div>
       </div>
     </section>

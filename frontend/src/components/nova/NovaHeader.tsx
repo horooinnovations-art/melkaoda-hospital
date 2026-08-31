@@ -550,6 +550,15 @@ export default function NovaHeader({
         className="nvh"
         data-solid={solid || undefined}
         data-open={openGroup ? "" : undefined}
+        /* The bar is transparent until it is scrolled or opened, so on the home
+           page it spends its first screenful sitting on the hero — which is a
+           dark island: charcoal ground, white copy. The header's own ink is the
+           page's dark ink, so without this the hospital's name in the lockup is
+           near-black on near-black, and the ghost and burger outlines vanish
+           with it. Interior pages open on a porcelain masthead and must keep the
+           dark ink, which is why this is the route and not the scroll position
+           alone. See the token block in nova-nav.css. */
+        data-over={pathname === "/" && !solid && !openGroup ? "dark" : undefined}
         onMouseEnter={cancelClose}
         onMouseLeave={scheduleClose}
       >

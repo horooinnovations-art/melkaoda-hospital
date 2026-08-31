@@ -824,6 +824,7 @@ main:not(.admin-shell-content) h2:not([class*="nv-"]) {
    ═════════════════════════════════════════════════════════════════════════ */
 .nv-on-media,
 .nv-hero,
+.nvh[data-over="dark"],
 .nv-lb,
 .nv-gtile__cap,
 .nv-card__badge,

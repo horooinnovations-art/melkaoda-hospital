@@ -31,6 +31,65 @@
   padding-top: clamp(120px, 16vh, 180px);
   padding-bottom: clamp(56px, 7vw, 96px);
   overflow: clip;
+
+  /* Resting position for the pointer light, in the hero's own coordinates. It
+     is set here rather than left unset so the torch has somewhere to be before
+     the first `pointermove` — low-left, over the headline, which is where the
+     pool already sits. Viewport units, not percentages: these are consumed
+     inside a `translate3d`, where a percentage would resolve against the torch's
+     own width rather than against the hero. On touch the layer never paints. */
+  --nv-mx: 32vw;
+  --nv-my: 54vh;
+}
+
+/* ── Plane -1 · the ground ──────────────────────────────────────────────────
+   The hero is one of the dark islands listed in nova-core.css: every rule inside
+   it reads its colours through tokens that have been re-pointed to light ink, so
+   the copy here is white. That ink needs something dark under it, and until now
+   the only thing supplying it was the scrim inside NovaHeroBackdrop — which is
+   mounted only when the API returned photographs.
+
+   So with no images the entire hero rendered white-on-porcelain: headline,
+   tagline, lede, two of the three buttons. That is not a rare state either — it
+   is what a visitor sees whenever the gallery is empty or the settings request
+   fails, and it was the first paint on any page load where the images had not
+   arrived yet.
+
+   The ground fixes that by belonging to the section rather than to the backdrop.
+   `.nv-hero__back` is `inset: 0` and opaque, so when photographs *do* load they
+   cover this completely and nothing here is double-darkened; it is purely the
+   floor underneath them.
+
+   Two radials and a vertical ramp: the champagne wash the rest of the page is
+   lit by, a warmer pool low and left behind the headline, and a charcoal ramp
+   that lands on --nv-paper so an image-less hero still dissolves into the page
+   instead of ending on a hard edge.
+   ------------------------------------------------------------------------- */
+.nv-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      86% 56% at 50% -10%,
+      rgb(var(--nv-metal-rgb) / 0.15),
+      transparent 62%
+    ),
+    radial-gradient(
+      58% 64% at 16% 46%,
+      rgb(var(--nv-metal-rgb) / 0.1),
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(var(--nv-scrim-rgb) / 0.97) 0%,
+      rgb(var(--nv-scrim-rgb) / 0.95) 48%,
+      rgb(var(--nv-scrim-rgb) / 0.91) 76%,
+      rgb(var(--nv-scrim-rgb) / 0.78) 90%,
+      var(--nv-paper) 100%
+    );
 }
 
 /* ── Plane 0 · photographic backdrop ────────────────────────────────────────
@@ -240,6 +299,64 @@
   to { transform: scale(1.12) translate3d(2%, -1.5%, 0); opacity: 1; }
 }
 
+/* Halo — a conic wheel of warm light turning behind the headline once every
+   72 seconds. It is the one thing in the hero that is genuinely radial, and it
+   is what stops the copy column from being lit by a flat wash: as it turns, the
+   warmth behind the words gathers and thins, which is what light coming through
+   a window does over the course of an afternoon.
+
+   Two masks do the work of restraint. The radial mask removes the wheel's own
+   centre and its outer edge, so there is no hub to see and no rim to notice —
+   only a band of moving warmth. The stops are then spaced 40deg and more apart
+   so the conic's own interpolation is the softening: a `blur()` filter would do
+   it more convincingly, but on a layer this size it is a multi-megapixel
+   gaussian on every composited frame, and the spokes are not visible at these
+   alphas anyway.
+
+   Sized in `vmax` and centred on a point rather than stretched to the box, so
+   it stays a circle at every aspect ratio; a stretched conic gradient shears its
+   stops and the spokes come back. */
+.nv-hero__halo {
+  position: absolute;
+  top: 58%;
+  left: 24%;
+  width: 78vmax;
+  height: 78vmax;
+  margin: -39vmax 0 0 -39vmax;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(var(--nv-metal-rgb) / 0.1) 42deg,
+    transparent 96deg,
+    rgb(var(--nv-glaze-rgb) / 0.055) 168deg,
+    transparent 224deg,
+    rgb(var(--nv-metal-rgb) / 0.075) 292deg,
+    transparent 360deg
+  );
+  -webkit-mask-image: radial-gradient(
+    closest-side,
+    transparent 14%,
+    #000 46%,
+    #000 66%,
+    transparent 92%
+  );
+  mask-image: radial-gradient(
+    closest-side,
+    transparent 14%,
+    #000 46%,
+    #000 66%,
+    transparent 92%
+  );
+  animation: nv-hero-halo 72s linear infinite;
+  will-change: transform;
+}
+
+@keyframes nv-hero-halo {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Sweep — one soft specular bar, raked at 16deg, crossing the whole hero and
    then absent for most of the cycle. It is the single moment of glint in the
    section: 19s apart, 4.5s wide, and only 22% of the cycle is spent on screen,
@@ -272,14 +389,154 @@
   100% { transform: translate3d(280%, 0, 0) rotate(16deg); }
 }
 
-/* ── Plane 2 · grid ─────────────────────────────────────────────────────── */
+/* ── Plane 1b · the pointer's light ─────────────────────────────────────────
+   A soft warm disc that follows the cursor across the hero. It is the only part
+   of this section that responds to the visitor rather than to a clock, which is
+   what makes the band feel like a surface being lit rather than a picture being
+   played.
+
+   It is a fixed-size element moved by `transform`, not a gradient whose centre
+   is repositioned: `background-position` on a layer this large repaints it on
+   every frame, whereas a transform is handed to the compositor and costs
+   nothing. `useHeroTorch` in NovaHero.tsx writes the two custom properties once
+   per animation frame.
+
+   `screen` for the same reason the aura uses it — it can only ever lighten, so
+   the photograph underneath cannot be dulled and the copy above (which paints
+   in a higher stacking level) is never tinted.
+   ------------------------------------------------------------------------- */
+.nv-hero__torch {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: clamp(30rem, 46vw, 48rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--nv-metal-rgb) / 0.15),
+    rgb(var(--nv-metal-rgb) / 0.055) 44%,
+    transparent 72%
+  );
+  /* The -50% centres the disc on the recorded point; the two custom properties
+     are the point itself, in the hero's own coordinate space. */
+  transform: translate3d(
+    calc(var(--nv-mx) - 50%),
+    calc(var(--nv-my) - 50%),
+    0
+  );
+  /* Long, so the light arrives and leaves rather than switching. */
+  transition: opacity 1.2s var(--nv-ease-lux);
+  will-change: transform, opacity;
+}
+
+.nv-hero[data-torch="on"] .nv-hero__torch { opacity: 1; }
+
+/* There is no cursor to follow on a touch screen, so the layer would only ever
+   sit wherever the last tap happened to land. The hook declines to attach for
+   the same reason; this is the paint side of the same decision. */
+@media (hover: none), (pointer: coarse) {
+  .nv-hero__torch { display: none; }
+}
+
+/* ── Plane 1c · corner brackets ─────────────────────────────────────────────
+   Two L-shaped hairlines ruled into the upper corners of the band. They are
+   what give a full-bleed photograph an edge to be framed by — without them the
+   image simply runs off the top of the document and the hero reads as a
+   background rather than as a plate.
+
+   Offset below `--nvh-h` because the header is fixed: at the hero's true top
+   edge the brackets would be drawn underneath the navigation bar.
+
+   They draw themselves in on arrival, from the corner outward, which is the
+   same gesture the rule under the tagline makes.
+   ------------------------------------------------------------------------- */
+.nv-hero__frame {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--nvh-h, 62px) + clamp(16px, 2.4vw, 40px));
+  left: clamp(12px, 1.6vw, 30px);
+  right: clamp(12px, 1.6vw, 30px);
+  height: clamp(40px, 4.6vw, 78px);
+  pointer-events: none;
+}
+
+.nv-hero__frame::before,
+.nv-hero__frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: clamp(34px, 4.2vw, 70px);
+  height: 100%;
+  border-top: 1px solid rgb(var(--nv-metal-rgb) / 0.32);
+  animation: nv-hero-frame 1.6s var(--nv-ease-lux) 0.24s both;
+}
+
+.nv-hero__frame::before {
+  left: 0;
+  border-left: 1px solid rgb(var(--nv-metal-rgb) / 0.32);
+  border-top-left-radius: 15px;
+  -webkit-mask-image: linear-gradient(
+    145deg,
+    #000,
+    rgb(0 0 0 / 0.25) 82%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    145deg,
+    #000,
+    rgb(0 0 0 / 0.25) 82%,
+    transparent
+  );
+}
+
+.nv-hero__frame::after {
+  right: 0;
+  border-right: 1px solid rgb(var(--nv-metal-rgb) / 0.32);
+  border-top-right-radius: 15px;
+  -webkit-mask-image: linear-gradient(
+    215deg,
+    #000,
+    rgb(0 0 0 / 0.25) 82%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    215deg,
+    #000,
+    rgb(0 0 0 / 0.25) 82%,
+    transparent
+  );
+}
+
+@keyframes nv-hero-frame {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ── Plane 2 · grid ─────────────────────────────────────────────────────────
+   `minmax(0, 1fr)` rather than a bare implicit column, and `min-width: 0` on
+   both items. Neither is cosmetic: a grid item's automatic minimum size is its
+   min-content size, and the reel below the breakpoint is a horizontal scroller
+   holding eleven 350px plates. Left to size itself, it asked the single column
+   for 1880px — on a 390px phone — and every child of the hero inherited that
+   width and ran off the right of the screen: the headline, the buttons, the
+   figures, all of it. `minmax(0, …)` is what caps the track at the container,
+   and `min-width: 0` is what stops the items themselves from insisting.
+   ------------------------------------------------------------------------- */
 .nv-hero__grid {
   position: relative;
   z-index: 2;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(44px, 5vw, 76px);
   align-items: center;
 }
+
+.nv-hero__copy,
+.nv-reel { min-width: 0; }
 
 @media (min-width: 1080px) {
   .nv-hero__grid {
@@ -299,6 +556,43 @@
    animation on the container would fight it.
    ------------------------------------------------------------------------- */
 .nv-hero__copy { position: relative; max-width: 660px; }
+
+/* A wide champagne bloom sitting behind the headline block, drawn at z-index -1
+   so it is behind the words and in front of the aura. This is the light the copy
+   is read against, and it is the reason the accent word can stay a flat metal
+   rather than becoming a gradient: the warmth is added *behind* the glyphs,
+   where it cannot cost a thin stroke any contrast.
+
+   Deliberately not on `.nv-hero__title .nv-ink`. NovaWords wraps every word in
+   an `overflow: hidden` box so it can rise out of its own mask, which would clip
+   a glow drawn on the word itself and leave a visible cut across it.
+
+   It bleeds well past the column on purpose — a bloom with an edge reads as a
+   shape, and this one must read as light.
+   ------------------------------------------------------------------------- */
+.nv-hero__copy::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -14%;
+  left: -22%;
+  width: 118%;
+  height: 84%;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 50% at 38% 46%,
+    rgb(var(--nv-metal-rgb) / 0.13),
+    rgb(var(--nv-metal-rgb) / 0.04) 52%,
+    transparent 78%
+  );
+  animation: nv-hero-bloom 26s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+
+@keyframes nv-hero-bloom {
+  from { opacity: 0.66; transform: scale(0.96) translate3d(-1%, 1%, 0); }
+  to { opacity: 1; transform: scale(1.06) translate3d(2%, -1%, 0); }
+}
 
 @keyframes nv-hero-rise {
   from { opacity: 0; transform: translate3d(0, 22px, 0); }
@@ -323,6 +617,7 @@
    expanding a ring outward rather than by changing its own brightness, so
    nothing blinks. */
 .nv-hero__place {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 11px;
@@ -332,13 +627,45 @@
   background: rgb(var(--nv-scrim-rgb) / 0.6);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  box-shadow: inset 0 1px 0 var(--nv-edge);
+  box-shadow:
+    inset 0 1px 0 var(--nv-edge),
+    0 14px 34px -22px rgb(var(--nv-ink-rgb) / 0.5);
   font-family: var(--nv-font-mono);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--nv-champagne-dim);
+  /* The shimmer below is clipped to the pill, and the pill is a 999px capsule —
+     `overflow: hidden` on a border-radius that large is what keeps the highlight
+     from squaring off at the ends. */
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* One narrow highlight crossing the chip every 9 seconds. It is the smallest
+   piece of movement above the fold and it is on the first thing read, which is
+   why it is a pass of light rather than anything that changes state. */
+.nv-hero__place::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    104deg,
+    transparent 34%,
+    rgb(var(--nv-glaze-rgb) / 0.16) 50%,
+    transparent 66%
+  );
+  transform: translateX(-130%);
+  animation: nv-hero-chip 9s var(--nv-ease-io) 1.4s infinite;
+}
+
+@keyframes nv-hero-chip {
+  0% { transform: translateX(-130%); }
+  /* On the chip for the first fifth of the cycle, parked off it for the rest. */
+  22%,
+  100% { transform: translateX(130%); }
 }
 
 .nv-hero__place i {
@@ -360,11 +687,22 @@
   margin-top: 26px;
   font-family: var(--nv-font-display);
   font-weight: 700;
-  font-size: clamp(2.8rem, 6.8vw, 5.4rem);
+  font-size: clamp(2.65rem, 6.8vw, 5.4rem);
   line-height: 0.94;
   letter-spacing: -0.042em;
   color: var(--nv-text);
   text-wrap: balance;
+  /* Two dark shadows, no glow. The tight one gives the glyphs an edge against a
+     photograph; the wide one is the shadow the headline casts on it, and it is
+     what stops a light-coloured frame in the image from swallowing a stroke.
+
+     Both are dark on purpose. NovaWords clips each word to an `overflow: hidden`
+     box for its reveal, so any shadow wider than the glyph box is cut at the
+     box edge — invisible when the shadow is darker than the scrim, a hard line
+     across the word the moment it is brighter. */
+  text-shadow:
+    0 1px 1px rgb(var(--nv-scrim-rgb) / 0.36),
+    0 10px 30px rgb(var(--nv-scrim-rgb) / 0.42);
 }
 
 /* The accent word inside the headline. Flat champagne, not a gradient: this
@@ -391,6 +729,8 @@
   line-height: 1.08;
   letter-spacing: -0.015em;
   color: var(--nv-text-dim);
+  text-shadow: 0 6px 22px rgb(var(--nv-scrim-rgb) / 0.4);
+  text-wrap: balance;
 }
 
 .nv-hero__title-sub::before {
@@ -406,6 +746,31 @@
   animation: nv-hero-rule 1.4s var(--nv-ease-lux) 0.72s both;
 }
 
+/* A single lit bead travelling the length of that rule, once every eleven
+   seconds. It is the smallest ornament in the hero and it is doing one job:
+   marking where the hospital's name ends and its promise begins. */
+.nv-hero__title-sub::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--nv-champagne-hi);
+  box-shadow: 0 0 9px 1px rgb(var(--nv-metal-rgb) / 0.55);
+  animation: nv-hero-bead 11s var(--nv-ease-io) 2.1s infinite;
+}
+
+@keyframes nv-hero-bead {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  /* Ends on the rule's far end — the rule is `clamp(64px, 8vw, 104px)` wide and
+     the bead is 3px, so the travel is expressed against the bead's own width. */
+  46% { transform: translateX(clamp(61px, 8vw - 3px, 101px)); opacity: 0; }
+  100% { transform: translateX(clamp(61px, 8vw - 3px, 101px)); opacity: 0; }
+}
+
 @keyframes nv-hero-rule {
   to { transform: scaleX(1); }
 }
@@ -416,6 +781,8 @@
   font-size: clamp(0.96rem, 1.1vw, 1.08rem);
   line-height: 1.78;
   color: var(--nv-muted);
+  /* Avoids the one-word last line a 54ch measure produces often at this size. */
+  text-wrap: pretty;
 }
 
 .nv-hero__lede b { color: var(--nv-text-dim); font-weight: 600; }
@@ -428,6 +795,46 @@
   gap: 12px;
 }
 
+/* The primary action gets a warm cast under it, so on a photographic backdrop
+   it still reads as the lit object in the row rather than as one of three
+   pills. The lift on hover is the shared button behaviour; this is only depth. */
+.nv-hero__go {
+  box-shadow:
+    0 12px 30px -14px rgb(var(--nv-ink-rgb) / 0.22),
+    0 26px 60px -30px rgb(var(--nv-metal-rgb) / 0.55),
+    inset 0 1px 0 var(--nv-edge);
+}
+
+/* The emergency number. It is the one thing on the page a visitor may be
+   looking for in a hurry, so it carries a slow breath — an inset champagne ring
+   that fills and fades rather than a dot that blinks.
+
+   Inset, because `.nv-btn` is `overflow: hidden` for its own shine sweep and an
+   outward ring would be cut off at the pill's edge.
+   ------------------------------------------------------------------------- */
+.nv-hero__dial {
+  animation: nv-hero-dial 4.2s var(--nv-ease-io) infinite;
+}
+
+@keyframes nv-hero-dial {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 1px rgb(var(--nv-metal-rgb) / 0);
+    border-color: var(--nv-hairline-hi);
+  }
+  50% {
+    box-shadow: inset 0 0 0 1px rgb(var(--nv-metal-rgb) / 0.34);
+    border-color: var(--nv-champagne-line);
+  }
+}
+
+/* Hover and keyboard focus must win over the breath. Pausing is not enough — a
+   paused animation still holds the property at its current keyframe value, which
+   would beat `:hover` at equal specificity — so the animation is removed
+   outright and `.nv-btn`'s own border transition carries the change. */
+.nv-hero__dial:hover,
+.nv-hero__dial:focus-visible { animation: none; }
+
 /* ── Figures ────────────────────────────────────────────────────────────────
    One machined strip rather than three floating numbers: a single hairline
    plate on dark glass, divided by hairlines, lit along its top edge. `auto-fit`
@@ -435,11 +842,20 @@
    the API returned those stats.
    ------------------------------------------------------------------------- */
 .nv-hero__trust {
+  position: relative;
   margin-top: 40px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  /* The plate hugs its cells rather than filling the column. Two of the three
+     figures only exist if the API returned those stats, and stretched to the
+     full 660px measure a single surviving cell reads as an empty banner with a
+     number in the corner. Under `fit-content` the `1fr` columns still resolve
+     equal to each other — so three cells stay a ruled strip and one cell stays a
+     plaque. */
+  width: fit-content;
+  max-width: 100%;
   border: 1px solid var(--nv-hairline);
-  border-radius: 18px;
+  border-radius: 20px;
   background: linear-gradient(
     180deg,
     rgb(var(--nv-scrim-rgb) / 0.52),
@@ -451,6 +867,36 @@
     var(--nv-lift),
     inset 0 1px 0 var(--nv-edge);
   overflow: hidden;
+  isolation: isolate;
+}
+
+/* One long specular pass across the plate every fifteen seconds, on the same
+   16deg rake as the hero's own sweep so the two read as the same light source
+   crossing the section at different scales. Behind the cells, never over the
+   figures — a highlight over a numeral is a smudge. */
+.nv-hero__trust::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -60%;
+  bottom: -60%;
+  left: 0;
+  width: 34%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(var(--nv-glaze-rgb) / 0.09) 50%,
+    transparent
+  );
+  transform: translate3d(-160%, 0, 0) rotate(16deg);
+  animation: nv-hero-plate 15s var(--nv-ease-io) 2.6s infinite;
+}
+
+@keyframes nv-hero-plate {
+  0% { transform: translate3d(-160%, 0, 0) rotate(16deg); }
+  30%,
+  100% { transform: translate3d(400%, 0, 0) rotate(16deg); }
 }
 
 .nv-hero__trust-item {
@@ -493,6 +939,9 @@
 .nv-hero__trust-item:hover::before { transform: scaleX(1); }
 
 .nv-hero__trust-value {
+  position: relative;
+  align-self: start;
+  padding-bottom: 8px;
   font-family: var(--nv-font-display);
   font-size: clamp(1.5rem, 2vw, 1.8rem);
   font-weight: 700;
@@ -501,6 +950,22 @@
   /* Tabular figures so a row of numbers of different widths still lines up. */
   font-variant-numeric: tabular-nums;
   color: var(--nv-text);
+}
+
+/* A short champagne tick under each figure, as wide as the figure itself. It is
+   what stops the three cells from reading as a table: the number is underscored
+   like an entry in a ledger, and the metal is the page's own. */
+.nv-hero__trust-value::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--nv-champagne),
+    rgb(var(--nv-metal-rgb) / 0.18)
+  );
 }
 
 .nv-hero__trust-label {
@@ -529,6 +994,63 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* The rail's own heading. It exists only below the two-column breakpoint, where
+   the reel stops being a column beside the headline and becomes a swipeable
+   strip that needs saying what it is — and needs telling the visitor it moves
+   sideways, because a horizontal scroller with no visible right edge is a strip
+   most people never touch.
+   ------------------------------------------------------------------------- */
+.nv-reel__lead { display: none; }
+
+.nv-reel__lead-k,
+.nv-reel__lead-hint {
+  font-family: var(--nv-font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.nv-reel__lead-k { color: var(--nv-champagne-dim); }
+
+.nv-reel__lead-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--nv-faint);
+}
+
+/* The hint's arrow: a 14px hairline with a champagne head, nudging right on a
+   slow four-second cycle. Drawn rather than typeset so it lines up with the
+   mono cap-height instead of sitting on a glyph's own baseline. */
+.nv-reel__lead-hint i {
+  position: relative;
+  width: 16px;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, transparent, var(--nv-champagne));
+  animation: nv-reel-nudge 4s var(--nv-ease-io) infinite;
+}
+
+.nv-reel__lead-hint i::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid var(--nv-champagne-hi);
+  border-right: 1px solid var(--nv-champagne-hi);
+  transform: rotate(45deg);
+  transform-origin: top right;
+}
+
+@keyframes nv-reel-nudge {
+  0%,
+  100% { transform: translateX(0); opacity: 0.7; }
+  50% { transform: translateX(5px); opacity: 1; }
 }
 
 .nv-reel__viewport {
@@ -615,6 +1137,8 @@
   padding: 18px 20px;
   border-radius: 17px;
   border: 1px solid var(--nv-hairline);
+  /* Clips the ledger mark on the leading edge to the plate's own radius. */
+  overflow: hidden;
   background: linear-gradient(
     180deg,
     rgb(var(--nv-scrim-rgb) / 0.58),
@@ -679,6 +1203,39 @@ a.nv-reel__card:hover .nv-reel__ic {
 
 .nv-reel__ic svg { width: 20px; height: 20px; }
 
+/* The ledger mark. A 2px champagne bar on the card's leading edge that grows
+   from the middle outward when the card is pointed at or focused — the plate
+   itself barely changes, which is what keeps a hovered card from looking like a
+   different card. It is clipped by the plate's own radius, hence `overflow` on
+   `.nv-reel__card` above.
+   ------------------------------------------------------------------------- */
+.nv-reel__edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--nv-champagne) 32%,
+    var(--nv-champagne-hi) 50%,
+    var(--nv-champagne) 68%,
+    transparent
+  );
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.7s var(--nv-ease-lux);
+}
+
+a.nv-reel__card:hover .nv-reel__edge,
+a.nv-reel__card:focus-visible .nv-reel__edge { transform: scaleY(1); }
+
+/* The urgent services carry the mark at rest, at a third strength. It is the
+   same distinction the champagne icon plate makes, said a second way for anyone
+   scanning the strip's edge rather than reading it. */
+.nv-reel__card--gold .nv-reel__edge { transform: scaleY(0.34); }
+
 .nv-reel__body { min-width: 0; }
 
 .nv-reel__title {
@@ -702,27 +1259,77 @@ a.nv-reel__card:hover .nv-reel__title { color: var(--nv-text); }
 }
 
 /* -- Plane 3 - baseline -----------------------------------------------------
-   One hairline across the foot of the hero with a mono label and a short
-   vertical rail down which a champagne mark travels. It closes the section -
-   without it the hero simply stops - and it tells a visitor who has landed on a
-   near-full-height photograph that there is more underneath it.
+   The rule that closes the hero, and the mark that points past it.
+
+   The rule is drawn as a cardiac trace rather than as a border: one flat
+   baseline with a single complex in it, with a short bright segment running the
+   length of the path every seven and a half seconds. It is the only literal
+   thing in the section - everything else here is light and hairlines - and it is
+   the hospital saying what it is at the point where the page hands over.
+
+   Without something here the hero simply stops, and a visitor who has landed on
+   a near-full-height photograph has no reason to believe there is more
+   underneath it.
    ------------------------------------------------------------------------- */
 .nv-hero__cue {
   position: relative;
   z-index: 2;
   margin-top: clamp(48px, 6vw, 84px);
-  padding-top: 18px;
-  border-top: 1px solid var(--nv-hairline);
+  animation: nv-hero-rise 1.05s var(--nv-ease-lux) 0.9s both;
+}
+
+.nv-hero__vitals {
+  display: block;
+  width: 100%;
+  height: 30px;
+  /* The running segment carries a drop-shadow glow, and an SVG root clips to its
+     viewport by default - which would shear the glow off along the top edge. */
+  overflow: visible;
+}
+
+.nv-hero__vitals-base,
+.nv-hero__vitals-run {
+  fill: none;
+  /* The viewBox is stretched horizontally to whatever the shell is wide, so the
+     stroke has to be exempted from that scaling or the line thickens with the
+     viewport and the trace stops being a hairline. */
+  vector-effect: non-scaling-stroke;
+}
+
+.nv-hero__vitals-base {
+  stroke: var(--nv-hairline);
+  stroke-width: 1;
+}
+
+/* `pathLength` is declared as 1000 on the path, so the dash below is 26
+   thousandths of the trace regardless of how wide the hero is. The offset
+   travels from 0 to -1000, which walks that one dash from the start of the path
+   to past its end exactly once per cycle. */
+.nv-hero__vitals-run {
+  stroke: var(--nv-champagne-hi);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 26 974;
+  filter: drop-shadow(0 0 5px rgb(var(--nv-metal-rgb) / 0.75));
+  animation: nv-hero-trace 7.5s linear infinite;
+}
+
+@keyframes nv-hero-trace {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -1000; }
+}
+
+.nv-hero__cue-row {
   display: flex;
   align-items: center;
   gap: 15px;
+  padding-top: 6px;
   font-family: var(--nv-font-mono);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--nv-faint);
-  animation: nv-hero-rise 1.05s var(--nv-ease-lux) 0.9s both;
 }
 
 .nv-hero__cue-rail {
@@ -748,26 +1355,239 @@ a.nv-reel__card:hover .nv-reel__title { color: var(--nv-text); }
   to { transform: translate3d(0, 240%, 0); }
 }
 
-/* Below the two-column breakpoint the reel becomes a plain static list - no
-   marquee, nothing clipped, no rail, and the duplicate copy stays hidden. */
+/* -- Below the two-column breakpoint ---------------------------------------
+   The reel stops being a column beside the headline and becomes a strip under
+   it. What was here before turned the marquee into a plain static list, which
+   was correct for the desktop layout and wrong for a phone: eleven plates
+   stacked vertically is not a hero, it is a second page the visitor has to
+   scroll past before reaching the first real section.
+
+   So the same markup is re-laid as a horizontal, snapping rail. No JavaScript
+   and no duplicate DOM - the clones stay hidden, the flex direction turns, and
+   the scroller is the visitor's rather than a clock's. Auto-scrolling a strip
+   the visitor can also drag is the one thing worse than either.
+   ------------------------------------------------------------------------- */
 @media (max-width: 1079px) {
-  .nv-reel { display: block; }
+  .nv-reel {
+    display: block;
+    /* Bleeds to the viewport edges so the strip visibly continues past the
+       screen; the shell's own inset is handed back as padding inside the
+       scroller, which is what keeps the first card's edge aligned with the
+       headline above it. */
+    --nv-reel-pad: 20px;
+    margin-inline: calc(var(--nv-reel-pad) * -1);
+  }
+
+  .nv-reel__lead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 var(--nv-reel-pad) 14px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid var(--nv-hairline);
+  }
 
   .nv-reel__viewport {
     height: auto;
     max-height: none;
-    max-width: 100%;
-    overflow: visible;
-    -webkit-mask-image: none;
-    mask-image: none;
+    max-width: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline-start: var(--nv-reel-pad);
+    -webkit-overflow-scrolling: touch;
+    /* The rail's own scrollbar would be a grey slab under a row of glass plates;
+       the fade at both ends and the arrow in the lead say the same thing. */
+    scrollbar-width: none;
+    /* Fades the strip out at both ends rather than cutting it, so the cards read
+       as continuing past the bezel. */
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 7%,
+      #000 86%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 7%,
+      #000 86%,
+      transparent
+    );
   }
 
+  .nv-reel__viewport::-webkit-scrollbar { display: none; }
+
+  /* The vertical rail and its travelling highlight belong to a marquee that no
+     longer runs here. */
   .nv-reel__viewport::before,
   .nv-reel__viewport::after { display: none; }
 
-  .nv-reel__track { padding-left: 0; animation: none; }
+  .nv-reel__track {
+    flex-direction: row;
+    gap: 12px;
+    padding: 2px var(--nv-reel-pad);
+    animation: none;
+    will-change: auto;
+  }
 
   .nv-reel__track > [data-clone="true"] { display: none; }
+
+  .nv-reel__card {
+    /* Just under four fifths, so the next plate's edge is always in frame. That
+       sliver is the most reliable signal a strip has that it scrolls. */
+    flex: 0 0 79%;
+    max-width: 350px;
+    scroll-snap-align: start;
+  }
+
+  /* Nothing hovers on a touch screen, so the plate's lift never fires and the
+     transform would only ever be a wasted composite. */
+  a.nv-reel__card:hover { transform: none; }
+}
+
+/* The shell's inset steps up at 768px, so the rail's bleed has to step with it
+   or the first card stops lining up with the headline. */
+@media (min-width: 768px) and (max-width: 1079px) {
+  .nv-reel { --nv-reel-pad: 32px; }
+}
+
+/* -- Phones -----------------------------------------------------------------
+   Everything here is either a size the desktop clamp does not reach on a 360px
+   screen, or a cost the phone should not be asked to pay.
+   ------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .nv-hero {
+    padding-top: clamp(102px, 15vh, 138px);
+    padding-bottom: 44px;
+  }
+
+  /* The brackets shrink so they frame the band rather than crowd it. */
+  .nv-hero__frame {
+    top: calc(var(--nvh-h, 62px) + 14px);
+    left: 12px;
+    right: 12px;
+    height: 34px;
+  }
+
+  .nv-hero__frame::before,
+  .nv-hero__frame::after { width: 28px; }
+
+  /* The halo is a 78vmax layer under a perpetual rotation. On a phone it is the
+     most expensive thing in the hero and the least visible: the copy runs the
+     full width, so there is no column for the warmth to gather behind. */
+  .nv-hero__halo { display: none; }
+
+  .nv-hero__grid { gap: 40px; }
+
+  .nv-hero__place {
+    gap: 9px;
+    padding: 7px 14px 7px 11px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+
+  .nv-hero__title {
+    margin-top: 22px;
+    font-size: clamp(2.15rem, 10.2vw, 3rem);
+    letter-spacing: -0.036em;
+  }
+
+  .nv-hero__title-sub {
+    margin-top: 16px;
+    padding-top: 16px;
+    font-size: clamp(1.24rem, 5.8vw, 1.62rem);
+    line-height: 1.16;
+  }
+
+  .nv-hero__lede {
+    margin-top: 20px;
+    font-size: 0.94rem;
+    line-height: 1.72;
+  }
+
+  .nv-hero__cta { margin-top: 26px; }
+
+  .nv-hero__trust {
+    margin-top: 30px;
+    border-radius: 16px;
+    /* Full width on a phone: there is no second column for the plate to be
+       narrower than, and a hugged plate beside 20px of nothing reads as a
+       mistake rather than as a decision. */
+    width: 100%;
+    /* 88px is what fits three cells across a 360px screen once the shell's inset
+       is taken off. Still `auto-fit`, because two of the three only exist if the
+       API returned those stats. */
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  }
+
+  .nv-hero__trust-item { gap: 4px; padding: 14px 13px 15px; }
+  .nv-hero__trust-value { padding-bottom: 7px; font-size: 1.3rem; }
+  .nv-hero__trust-label { font-size: 8px; letter-spacing: 0.14em; }
+
+  .nv-hero__cue { margin-top: 38px; }
+  .nv-hero__vitals { height: 24px; }
+  .nv-hero__cue-row { gap: 12px; letter-spacing: 0.2em; }
+  .nv-hero__cue-rail { height: 26px; }
+
+  /* Cheaper glass. Thirteen blurred surfaces over a full-bleed photograph is
+     the hero's entire mobile paint cost, and at this size the blur is doing far
+     less of the readability work than the scrim behind it. */
+  .nv-hero__place,
+  .nv-hero__trust,
+  .nv-reel__card {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .nv-reel__card { gap: 13px; padding: 15px 16px; }
+  .nv-reel__ic { width: 36px; height: 36px; border-radius: 11px; }
+  .nv-reel__ic svg { width: 18px; height: 18px; }
+  .nv-reel__title { font-size: 15.5px; }
+  .nv-reel__desc { font-size: 12px; }
+}
+
+/* -- Narrow phones ----------------------------------------------------------
+   Two full-width actions and one quiet link, instead of three pills wrapping
+   into an uneven stack. Below about 600px "Explore our care" and the emergency
+   number cannot share a line without one of them truncating, and a telephone
+   number that has to be read out under pressure is not a thing to shrink.
+   ------------------------------------------------------------------------- */
+@media (max-width: 599px) {
+  .nv-hero__cta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .nv-hero__go,
+  .nv-hero__dial { width: 100%; }
+
+  /* The third action is a link, not a button: it is the only one of the three a
+     visitor is browsing rather than acting on, and giving it the same pill on a
+     360px screen would put three equal-weight targets in a column. */
+  .nv-hero__aside {
+    justify-self: start;
+    margin-top: 2px;
+    padding: 9px 2px;
+    border-radius: 0;
+    border-color: transparent;
+    background: none;
+    color: var(--nv-champagne-dim);
+    box-shadow: inset 0 -1px 0 var(--nv-champagne-line);
+  }
+
+  .nv-hero__aside:hover,
+  .nv-hero__aside:focus-visible {
+    background: none;
+    border-color: transparent;
+    color: var(--nv-champagne-hi);
+  }
+
+  /* One card and a clear sliver of the next, on the narrowest screens too. */
+  .nv-reel__card { flex: 0 0 84%; }
 }
 
 /* -- Reduced motion ---------------------------------------------------------
@@ -779,11 +1599,44 @@ a.nv-reel__card:hover .nv-reel__title { color: var(--nv-text); }
 @media (prefers-reduced-motion: reduce) {
   .nv-hero__rails,
   .nv-hero__pool,
+  .nv-hero__halo,
   .nv-hero__sweep,
+  .nv-hero__copy::before,
+  .nv-hero__place::after,
   .nv-hero__place i,
+  .nv-hero__title-sub::after,
+  .nv-hero__dial,
+  .nv-hero__trust::before,
+  .nv-hero__vitals-run,
   .nv-hero__cue-rail i,
+  .nv-reel__lead-hint i,
   .nv-reel__viewport::after,
   .nv-reel__track { animation: none !important; }
+
+  /* The torch follows a pointer, which is motion the visitor is making rather
+     than motion the page is making — but it is still a light sliding across the
+     band, and the hook declines to attach at all under this preference. This is
+     the paint side of that, so a stale layer cannot be left behind. */
+  .nv-hero__torch { display: none; }
+
+  /* Three things are scaled or offset to nothing at rest, so switching their
+     animation off would delete them rather than reveal them. Each has to be
+     placed by hand. */
+  .nv-hero__title-sub::before {
+    animation: none !important;
+    transform: scaleX(1);
+  }
+
+  .nv-hero__frame::before,
+  .nv-hero__frame::after {
+    animation: none !important;
+    opacity: 1;
+    clip-path: none;
+  }
+
+  /* The trace keeps its baseline and loses its running segment: the rule that
+     closes the hero is the base path, and it does not move. */
+  .nv-hero__vitals-run { display: none; }
 
   .nv-hero__place,
   .nv-hero__title-sub,
@@ -796,14 +1649,9 @@ a.nv-reel__card:hover .nv-reel__title { color: var(--nv-text); }
     transform: none;
   }
 
-  /* The rule under the tagline is scaled to nothing at rest, so switching its
-     animation off would delete it rather than reveal it. It has to be placed. */
-  .nv-hero__title-sub::before {
-    animation: none !important;
-    transform: scaleX(1);
-  }
-
   .nv-hero__trust-item::before { transition: none; }
+
+  .nv-reel__edge { transition: none; }
 
   .nv-hero__shot { transition: none; }
 

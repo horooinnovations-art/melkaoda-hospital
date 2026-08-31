@@ -40,6 +40,47 @@
     backdrop-filter 0.35s var(--nv-ease);
 }
 
+/* ── Over the hero ──────────────────────────────────────────────────────────
+   On the home page the transparent bar spends its first screenful on the hero,
+   which is a dark island — charcoal ground, white copy. `.nvh[data-over="dark"]`
+   is listed with the other dark islands in nova-core.css, which re-points the
+   ink, the metal and the hairlines for the whole subtree.
+
+   Three tokens are not in that list because nothing else on a dark ground uses
+   them, and the header does:
+
+     --nv-line       the ghost button, the burger and the brand chip's outline.
+                     A dark ink line on a charcoal hero is not a faint edge, it
+                     is no edge, and both controls lose their shape entirely.
+     --nv-accent     the 2px tab marker under the active item, and the focus
+                     ring. The cool slate it normally is reads as a smudge here;
+                     over the hero the marker becomes the page's own metal.
+
+   The colour transitions matter as much as the colours. A custom property flips
+   discretely, so without them the ink would snap from white to near-black at the
+   8px scroll threshold while the bar was still a third of the way through fading
+   in — a legible bar, an illegible one, then a legible one again. Matching the
+   bar's own 0.35s means the two cross over together.
+   ------------------------------------------------------------------------- */
+.nvh[data-over="dark"] {
+  --nv-line: rgb(255 255 255 / 0.2);
+  --nv-line-soft: rgb(255 255 255 / 0.11);
+  --nv-accent: var(--nv-metal-on-media);
+}
+
+.nvh__name,
+.nvh__place {
+  transition: color 0.35s var(--nv-ease);
+}
+
+/* The chip is a near-black square with a cool mark in it, which on porcelain is
+   the brand's own contrast and on the hero is a hole. Over the dark ground it
+   becomes glass with a champagne mark, like every other small plate up there. */
+.nvh[data-over="dark"] .nvh__mark {
+  background: rgb(255 255 255 / 0.07);
+  color: var(--nv-metal-on-media);
+}
+
 .nvh[data-solid] .nvh__bar,
 .nvh[data-open] .nvh__bar {
   background: rgb(255 255 255 / 0.94);
@@ -75,7 +116,13 @@
   border: 1px solid var(--nv-line);
   background: var(--nv-void);
   color: var(--nv-accent);
-  transition: border-color 0.3s var(--nv-ease);
+  /* Colour and fill are in here as well as the border because the chip changes
+     all three when the bar is over the hero — see the `[data-over]` block above,
+     and the note there on why these have to cross-fade with the bar. */
+  transition:
+    border-color 0.3s var(--nv-ease),
+    background-color 0.35s var(--nv-ease),
+    color 0.35s var(--nv-ease);
 }
 
 .nvh__brand:hover .nvh__mark { border-color: rgb(var(--nv-ink-rgb) / 0.4); }
