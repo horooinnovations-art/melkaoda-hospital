@@ -571,37 +571,41 @@ export default function AboutPage() {
                 />
                 <div className="nv-asec__grid">
                   {mission && (
-                    <NovaReveal from="up" delay={0.06}>
-                      <div className="nv-mv">
-                        <div className="nv-mv__head">
-                          <span className="nv-dpanel__icon" aria-hidden>
-                            <Target />
-                          </span>
-                          <div>
-                            <p className="nv-dpanel__kicker">Our purpose</p>
-                            <h3 className="nv-dpanel__title">Mission</h3>
+                    <NovaReveal from="up" delay={0.06} className="h-full w-full">
+                      <div className="nv-mv h-full flex flex-col justify-between">
+                        <div>
+                          <div className="nv-mv__head">
+                            <span className="nv-dpanel__icon" aria-hidden>
+                              <Target />
+                            </span>
+                            <div>
+                              <p className="nv-dpanel__kicker">Our purpose</p>
+                              <h3 className="nv-dpanel__title">Mission</h3>
+                            </div>
                           </div>
-                        </div>
-                        <div className="nv-mv__body">
-                          <RichBody value={mission} />
+                          <div className="nv-mv__body">
+                            <RichBody value={mission} />
+                          </div>
                         </div>
                       </div>
                     </NovaReveal>
                   )}
                   {vision && (
-                    <NovaReveal from="up" delay={0.14}>
-                      <div className="nv-mv">
-                        <div className="nv-mv__head">
-                          <span className="nv-dpanel__icon" aria-hidden>
-                            <Eye />
-                          </span>
-                          <div>
-                            <p className="nv-dpanel__kicker">Our aspiration</p>
-                            <h3 className="nv-dpanel__title">Vision</h3>
+                    <NovaReveal from="up" delay={0.14} className="h-full w-full">
+                      <div className="nv-mv h-full flex flex-col justify-between">
+                        <div>
+                          <div className="nv-mv__head">
+                            <span className="nv-dpanel__icon" aria-hidden>
+                              <Eye />
+                            </span>
+                            <div>
+                              <p className="nv-dpanel__kicker">Our aspiration</p>
+                              <h3 className="nv-dpanel__title">Vision</h3>
+                            </div>
                           </div>
-                        </div>
-                        <div className="nv-mv__body">
-                          <RichBody value={vision} />
+                          <div className="nv-mv__body">
+                            <RichBody value={vision} />
+                          </div>
                         </div>
                       </div>
                     </NovaReveal>

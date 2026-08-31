@@ -111,8 +111,10 @@ export function DetailPanel({
   tone?: 1 | 2 | 3 | 4;
 }) {
   return (
-    <NovaReveal from="up" delay={delay}>
-      <div className={cn("nv-dpanel", className)}>{children}</div>
+    <NovaReveal from="up" delay={delay} className="h-full w-full">
+      <div className={cn("nv-dpanel h-full flex flex-col justify-between", className)}>
+        {children}
+      </div>
     </NovaReveal>
   );
 }

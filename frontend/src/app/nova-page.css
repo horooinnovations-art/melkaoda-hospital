@@ -2737,8 +2737,27 @@
 .nv-asec__grid {
   display: grid;
   gap: clamp(26px, 3.4vw, 44px);
-  align-items: start;
+  align-items: stretch;
   margin-top: clamp(24px, 2.8vw, 34px);
+}
+
+.nv-asec__grid > [data-nv-reveal],
+.nv-mvgrid > [data-nv-reveal],
+.nv-vgrid > [data-nv-reveal] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.nv-asec__grid .nv-dpanel,
+.nv-asec__grid .nv-mv,
+.nv-vgrid .nv-vcard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  flex: 1 1 auto;
 }
 
 @media (min-width: 820px) {
