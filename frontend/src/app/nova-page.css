@@ -3660,21 +3660,50 @@
    A framed photograph with its caption over the base. The scrim and the frame
    sit on ::after above the image; the hover actions are a separate overlay so
    they can fade independently of the caption underneath. */
+/* ── Gallery cards & grid (Fancy equal height glassmorphism) ────────── */
+.nv-grid-3 {
+  display: grid;
+  gap: clamp(20px, 2.5vw, 32px);
+  align-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .nv-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .nv-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.nv-grid-3 > [data-nv-reveal] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
 .nv-gtile {
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
-  border-radius: 18px;
-  background: var(--nv-plate-well);
-  box-shadow: var(--nv-lift);
+  border-radius: 20px;
+  background: #141008;
+  border: 1px solid rgba(255, 225, 155, 0.25);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
   transition:
+    border-color 0.55s var(--nv-ease-lux),
     box-shadow 0.55s var(--nv-ease-lux),
     transform 0.55s var(--nv-ease-lux);
 }
 
 .nv-gtile:hover {
-  transform: translate3d(0, -3px, 0);
-  box-shadow: var(--nv-lift-hi);
+  transform: translate3d(0, -6px, 0);
+  border-color: rgba(255, 215, 0, 0.65);
+  box-shadow: 0 22px 50px rgba(184, 134, 11, 0.25), inset 0 1px 0 rgba(255, 235, 175, 0.35);
 }
 
 .nv-gtile::after {
@@ -3686,38 +3715,41 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    transparent 42%,
-    rgb(var(--nv-scrim-rgb) / 0.58) 82%,
-    rgb(var(--nv-scrim-rgb) / 0.86) 100%
+    transparent 35%,
+    rgba(18, 14, 6, 0.82) 75%,
+    rgba(12, 9, 3, 0.96) 100%
   );
   box-shadow:
-    inset 0 0 0 1px var(--nv-hairline),
-    inset 0 1px 0 var(--nv-edge);
+    inset 0 0 0 1px rgba(255, 215, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: box-shadow 0.55s var(--nv-ease-lux);
 }
 
 .nv-gtile:hover::after {
   box-shadow:
-    inset 0 0 0 1px var(--nv-champagne-line),
-    inset 0 1px 0 var(--nv-edge);
-}
-
-.nv-gtile__img {
-  object-fit: cover;
-  transition: transform 1.7s var(--nv-ease-lux);
-}
-
-.nv-gtile:hover .nv-gtile__img {
-  transform: scale(1.055);
+    inset 0 0 0 1px rgba(255, 215, 0, 0.5),
+    inset 0 1px 0 rgba(255, 235, 175, 0.4);
 }
 
 .nv-gtile__frame {
   position: relative;
+  width: 100%;
   aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #1a140b;
 }
 
 .nv-gtile--hero .nv-gtile__frame {
   aspect-ratio: 16 / 11;
+}
+
+.nv-gtile__img {
+  object-fit: cover;
+  transition: transform 1.2s var(--nv-ease-lux);
+}
+
+.nv-gtile:hover .nv-gtile__img {
+  transform: scale(1.08);
 }
 
 .nv-gtile__fallback {
@@ -3727,26 +3759,28 @@
   place-items: center;
   font-family: var(--nv-font-display);
   font-size: clamp(2.4rem, 6vw, 4rem);
-  color: rgb(var(--nv-metal-rgb) / 0.12);
+  color: rgba(255, 215, 0, 0.25);
   user-select: none;
 }
 
 /* Category tag, top-left. */
 .nv-gtile__tag {
   position: absolute;
-  top: 13px;
-  left: 13px;
+  top: 14px;
+  left: 14px;
   z-index: 4;
-  padding: 5px 11px;
-  border: 1px solid var(--nv-metal-on-media-line);
+  padding: 5px 13px;
+  border: 1px solid rgba(255, 215, 0, 0.45);
   border-radius: 999px;
-  background: rgb(var(--nv-scrim-rgb) / 0.62);
-  backdrop-filter: blur(6px);
+  background: rgba(30, 22, 10, 0.78);
+  backdrop-filter: blur(10px);
   font-family: var(--nv-font-mono);
-  font-size: 0.563rem;
+  font-size: 0.6rem;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--nv-metal-on-media);
+  color: #ffe8a3;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 /* Caption, over the base of the frame. */
@@ -3755,23 +3789,22 @@
   inset-inline: 0;
   bottom: 0;
   z-index: 4;
-  padding: clamp(14px, 1.8vw, 22px);
+  padding: clamp(16px, 2vw, 24px);
+  background: linear-gradient(180deg, transparent 0%, rgba(14, 10, 4, 0.92) 100%);
 }
-
-/* The caption re-points the ink tokens in nova-core.css rather than setting a
-   colour per child, which matters because the markup reuses .nv-post__excerpt
-   here and that class is page-ink everywhere else. */
 
 .nv-gtile__title {
   font-family: var(--nv-font-display);
-  font-size: clamp(1rem, 1.5vw, 1.18rem);
-  font-weight: 500;
-  line-height: 1.24;
+  font-size: clamp(1.05rem, 1.4vw, 1.22rem);
+  font-weight: 600;
+  line-height: 1.28;
   letter-spacing: -0.018em;
-  color: var(--nv-on-media);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #ffffff;
+  transition: color 0.35s var(--nv-ease-lux);
+}
+
+.nv-gtile:hover .nv-gtile__title {
+  color: #ffe8a3;
 }
 
 .nv-gtile--hero .nv-gtile__title {
@@ -3782,17 +3815,18 @@
 .nv-gtile__meta {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   margin-top: 8px;
   font-family: var(--nv-font-mono);
-  font-size: 0.594rem;
+  font-size: 0.6rem;
+  font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--nv-metal-on-media);
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
-/* Hover actions. Hidden until hover on a pointer device; always available via
-   the tile's own link, so nothing here is the only route to the image. */
+/* Hover actions */
 .nv-gtile__acts {
   position: absolute;
   inset: 0;
@@ -3800,10 +3834,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 11px;
+  gap: 14px;
   opacity: 0;
-  background: rgb(var(--nv-scrim-rgb) / 0.42);
-  backdrop-filter: blur(2px);
+  background: rgba(18, 14, 6, 0.55);
+  backdrop-filter: blur(4px);
   transition: opacity 0.4s var(--nv-ease-lux);
 }
 
@@ -3814,26 +3848,31 @@
 .nv-gtile__act {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgb(255 255 255 / 0.26);
-  border-radius: 13px;
-  background: rgb(var(--nv-scrim-rgb) / 0.78);
-  backdrop-filter: blur(8px);
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  border-radius: 14px;
+  background: rgba(26, 19, 8, 0.85);
+  backdrop-filter: blur(12px);
   cursor: pointer;
-  color: var(--nv-on-media-dim);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   transition:
     border-color 0.35s var(--nv-ease-lux),
     color 0.35s var(--nv-ease-lux),
-    transform 0.35s var(--nv-ease-lux);
+    background 0.35s var(--nv-ease-lux),
+    transform 0.35s var(--nv-ease-lux),
+    box-shadow 0.35s var(--nv-ease-lux);
 }
 
-.nv-gtile__act svg { width: 17px; height: 17px; }
+.nv-gtile__act svg { width: 18px; height: 18px; }
 
 .nv-gtile__act:hover {
-  transform: scale(1.07);
-  border-color: var(--nv-metal-on-media);
-  color: var(--nv-metal-on-media);
+  transform: scale(1.1);
+  border-color: #ffd700;
+  background: rgba(212, 175, 55, 0.35);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
 }
 
 @media (prefers-reduced-motion: reduce) {

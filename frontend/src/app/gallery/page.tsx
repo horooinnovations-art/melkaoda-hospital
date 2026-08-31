@@ -353,8 +353,9 @@ export default function GalleryPage() {
                       key={item.id}
                       from="up"
                       delay={Math.min(Math.floor(idx / 3), 5) * 0.12}
+                      className="h-full w-full"
                     >
-                      <div className="nv-gtile group h-full">
+                      <div className="nv-gtile group h-full w-full flex flex-col justify-between">
                         <div className="nv-gtile__frame">
                           {image ? (
                             <SmartImage
