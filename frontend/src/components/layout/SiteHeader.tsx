@@ -201,31 +201,78 @@ export default function SiteHeader() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.25 }}
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
               key="mobile-panel"
-              className="g-mobile g-mobile--open g-mobile--plain"
+              className="g-mobile g-mobile--open g-mobile--fancy"
               role="dialog"
               aria-modal="true"
-              aria-label="Site menu"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: EASE }}
+              aria-label="Site navigation menu"
+              initial={{ opacity: 0, y: -16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: EASE }}
             >
+              <div className="g-mobile__aura" aria-hidden />
+              <div className="g-mobile__sparkles" aria-hidden>
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+
               <nav className="g-mobile__nav mx-auto max-w-xl">
-                <div className="g-mobile__intro">
-                  <p className="g-mobile__kicker">Menu</p>
-                  <h2 className="g-mobile__title">Navigate</h2>
+                <div className="g-mobile__header">
+                  <div className="g-mobile__intro">
+                    <span className="g-mobile__kicker">
+                      <span className="g-mobile__kicker-dot" />
+                      Melkaoda
+                    </span>
+                    <h2 className="g-mobile__title">Menu & Services</h2>
+                  </div>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="g-mobile__close-btn"
+                    onClick={() => setMobileOpen(false)}
+                    aria-label="Close menu"
+                  >
+                    <X className="h-4 w-4" />
+                  </motion.button>
                 </div>
 
-                <div className="g-mobile__stack">
-                  {NAV.map((item) => {
+                <motion.div
+                  className="g-mobile__stack"
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.05, delayChildren: 0.04 },
+                    },
+                  }}
+                >
+                  {NAV.map((item, index) => {
+                    const idxStr = String(index + 1).padStart(2, "0");
                     if (item.href) {
                       return (
-                        <div key={item.label} className="g-mobile__tile">
+                        <motion.div
+                          key={item.label}
+                          variants={{
+                            hidden: { opacity: 0, y: 15, scale: 0.98 },
+                            show: {
+                              opacity: 1,
+                              y: 0,
+                              scale: 1,
+                              transition: { type: "spring", stiffness: 350, damping: 24 },
+                            },
+                          }}
+                          className="g-mobile__tile"
+                        >
                           <Link
                             href={item.href}
                             className={cn(
@@ -233,6 +280,7 @@ export default function SiteHeader() {
                               isActive(item.href) && "g-mobile__link--active"
                             )}
                           >
+                            <span className="g-mobile__index">{idxStr}</span>
                             <span className="g-mobile__link-copy">
                               <span className="g-mobile__link-label">
                                 {item.label}
@@ -242,14 +290,23 @@ export default function SiteHeader() {
                               <ArrowUpRight className="g-mobile__link-arrow" />
                             </span>
                           </Link>
-                        </div>
+                        </motion.div>
                       );
                     }
 
                     const open = mobileSection === item.label;
                     return (
-                      <div
+                      <motion.div
                         key={item.label}
+                        variants={{
+                          hidden: { opacity: 0, y: 15, scale: 0.98 },
+                          show: {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            transition: { type: "spring", stiffness: 350, damping: 24 },
+                          },
+                        }}
                         className={cn(
                           "g-mobile__group g-mobile__tile",
                           open && "g-mobile__group--open"
@@ -269,18 +326,24 @@ export default function SiteHeader() {
                             )
                           }
                         >
+                          <span className="g-mobile__index">{idxStr}</span>
                           <span className="g-mobile__link-copy">
                             <span className="g-mobile__link-label">
                               {item.label}
                             </span>
+                            {item.children && (
+                              <span className="g-mobile__link-hint">
+                                {item.children.length} options
+                              </span>
+                            )}
                           </span>
                           <span className="g-mobile__link-go" aria-hidden>
-                            <ChevronDown
-                              className={cn(
-                                "g-mobile__chev",
-                                open && "g-mobile__chev--open"
-                              )}
-                            />
+                            <motion.div
+                              animate={{ rotate: open ? 180 : 0 }}
+                              transition={{ duration: 0.25, ease: EASE }}
+                            >
+                              <ChevronDown className="g-mobile__chev" />
+                            </motion.div>
                           </span>
                         </button>
                         <AnimatePresence initial={false}>
@@ -290,17 +353,26 @@ export default function SiteHeader() {
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.22, ease: EASE }}
+                              transition={{ duration: 0.28, ease: EASE }}
                             >
-                              {item.children?.map((child) => {
+                              {item.children?.map((child, childIdx) => {
                                 const Icon = child.icon;
+                                const isChildActive = isActive(child.href);
                                 return (
-                                  <li key={child.href}>
+                                  <motion.li
+                                    key={child.href}
+                                    initial={{ opacity: 0, x: -8 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{
+                                      delay: childIdx * 0.03,
+                                      duration: 0.2,
+                                    }}
+                                  >
                                     <Link
                                       href={child.href}
                                       className={cn(
                                         "g-mobile__child",
-                                        isActive(child.href) &&
+                                        isChildActive &&
                                           "g-mobile__child--active"
                                       )}
                                     >
@@ -309,28 +381,34 @@ export default function SiteHeader() {
                                       </span>
                                       <span className="g-mobile__child-copy">
                                         <span>{child.label}</span>
+                                        {child.hint && (
+                                          <span className="g-mobile__child-hint">
+                                            {child.hint}
+                                          </span>
+                                        )}
                                       </span>
+                                      <ArrowUpRight className="g-mobile__child-arrow" />
                                     </Link>
-                                  </li>
+                                  </motion.li>
                                 );
                               })}
                             </motion.ul>
                           )}
                         </AnimatePresence>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
 
                 <div className="g-mobile__cta">
-                  <p className="g-mobile__cta-kicker">Need care now?</p>
+                  <p className="g-mobile__cta-kicker">Need immediate assistance?</p>
                   {emergency && (
                     <a
                       href={`tel:${emergency}`}
                       className="g-btn g-btn--signal g-btn--block"
                     >
                       <Phone className="h-4 w-4" />
-                      Call emergency
+                      Call emergency ({emergency})
                     </a>
                   )}
                   <Link href="/doctors" className="g-btn g-btn--ink g-btn--block">
@@ -530,20 +608,38 @@ export default function SiteHeader() {
             Find a doctor
             <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
           </Link>
-          <button
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
             className={cn("g-burger", mobileOpen && "g-burger--open")}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((o) => !o)}
           >
+            <span className="g-burger__glow" aria-hidden />
             <span className="g-burger__ring" aria-hidden />
-            {mobileOpen ? (
-              <X className="h-4 w-4" />
-            ) : (
-              <Menu className="h-4 w-4" />
-            )}
-          </button>
+            <div className="g-burger__bars" aria-hidden>
+              <motion.span
+                animate={mobileOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+                transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                className="g-burger__bar g-burger__bar--top"
+              />
+              <motion.span
+                animate={mobileOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+                transition={{ duration: 0.15 }}
+                className="g-burger__bar g-burger__bar--mid"
+              />
+              <motion.span
+                animate={mobileOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+                transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                className="g-burger__bar g-burger__bar--bot"
+              />
+            </div>
+            <span className="g-burger__label">
+              {mobileOpen ? "Close" : "Menu"}
+            </span>
+          </motion.button>
         </div>
       </div>
     </header>

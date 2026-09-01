@@ -41,6 +41,8 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/media";
 import { useGetSettingsQuery } from "@/store/slices/apiSlice";
@@ -417,144 +419,252 @@ export default function NovaHeader({
     mounted &&
     panelMounted &&
     createPortal(
-      <>
-        <button
-          type="button"
-          className="nvh-scrim"
-          data-show={panelShown || undefined}
-          aria-label="Close menu"
-          onClick={closePanel}
-        />
-
-        <aside
-          className="nvh-panel"
-          data-show={panelShown || undefined}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Site menu"
-        >
-          <div className="nvh-panel__head">
-            <span className="nvh-panel__title">Menu</span>
-            <button
+      <AnimatePresence>
+        {panelShown && (
+          <>
+            <motion.button
+              key="nvh-scrim"
               type="button"
-              className="nvh-panel__x"
+              className="nvh-scrim"
               aria-label="Close menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
               onClick={closePanel}
+            />
+
+            <motion.aside
+              key="nvh-panel"
+              className="nvh-panel nvh-panel--fancy"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site navigation menu"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: "0%", opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              <X aria-hidden />
-            </button>
-          </div>
-
-          <div className="nvh-panel__body">
-            {NAV.map((group) => {
-              if (group.href) {
-                return (
-                  <Link
-                    key={group.label}
-                    href={group.href}
-                    className="nvh-row"
-                    data-on={isActive(group.href) || undefined}
-                  >
-                    {group.label}
-                    <ArrowUpRight aria-hidden />
-                  </Link>
-                );
-              }
-
-              const open = section === group.label;
-              return (
-                <div
-                  key={group.label}
-                  className="nvh-acc"
-                  data-open={open || undefined}
-                  style={{ "--n": group.links?.length ?? 0 } as CSSProperties}
-                >
-                  <button
-                    type="button"
-                    className="nvh-row"
-                    data-on={groupActive(group) || undefined}
-                    aria-expanded={open}
-                    onClick={() =>
-                      setSection((current) =>
-                        current === group.label ? null : group.label
-                      )
-                    }
-                  >
-                    {group.label}
-                    <ChevronDown aria-hidden />
-                  </button>
-
-                  <div className="nvh-acc__body">
-                    <ul className="nvh-acc__list">
-                      {group.links?.map((link) => {
-                        const Glyph = link.icon;
-                        return (
-                          <li key={link.href}>
-                            <Link
-                              href={link.href}
-                              className="nvh-sub"
-                              data-on={isActive(link.href) || undefined}
-                            >
-                              <Glyph aria-hidden />
-                              {link.label}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
+              <div className="nvh-panel__head flex items-center justify-between px-4 py-3.5 border-b border-slate-200/90 bg-slate-50/80">
+                <div className="flex flex-col gap-0.5">
+                  <span className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-amber-600">
+                    <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                    Melkaoda
+                  </span>
+                  <span className="text-base font-extrabold text-slate-900 tracking-tight">
+                    Menu & Services
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="nvh-panel__x border border-slate-200 bg-white text-slate-700 hover:bg-amber-100 hover:text-amber-900 hover:border-amber-400 shadow-sm"
+                  aria-label="Close menu"
+                  onClick={closePanel}
+                >
+                  <X className="h-4 w-4" aria-hidden />
+                </motion.button>
+              </div>
 
-          <div className="nvh-panel__foot">
-            {emergency ? (
-              <a
-                href={`tel:${emergency}`}
-                className="nv-btn nv-btn--signal nv-btn--block"
-              >
-                <Siren className="h-4 w-4" />
-                Call emergency
-              </a>
-            ) : (
-              <Link
-                href="/emergency"
-                className="nv-btn nv-btn--signal nv-btn--block"
-              >
-                <Siren className="h-4 w-4" />
-                Emergency care
-              </Link>
-            )}
+              <div className="nvh-panel__body bg-white">
+                <motion.div
+                  className="space-y-2 py-2 px-1"
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.05, delayChildren: 0.04 },
+                    },
+                  }}
+                >
+                  {NAV.map((group, index) => {
+                    const idxStr = String(index + 1).padStart(2, "0");
+                    if (group.href) {
+                      return (
+                        <motion.div
+                          key={group.label}
+                          variants={{
+                            hidden: { opacity: 0, x: 20 },
+                            show: {
+                              opacity: 1,
+                              x: 0,
+                              transition: { type: "spring", stiffness: 350, damping: 25 },
+                            },
+                          }}
+                        >
+                          <Link
+                            href={group.href}
+                            className="nvh-row group flex items-center justify-between p-3.5 rounded-xl bg-slate-50/90 hover:bg-amber-50/80 border border-slate-200/80 hover:border-amber-300/80 shadow-sm transition-all duration-200"
+                            data-on={isActive(group.href) || undefined}
+                          >
+                            <span className="flex items-center gap-3">
+                              <span className="text-xs font-mono font-bold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-md border border-amber-300/80 shadow-xs">
+                                {idxStr}
+                              </span>
+                              <span className="text-base font-bold text-slate-900 group-hover:text-amber-800">
+                                {group.label}
+                              </span>
+                            </span>
+                            <ArrowUpRight className="h-4 w-4 text-slate-500 group-hover:text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                          </Link>
+                        </motion.div>
+                      );
+                    }
 
-            <Link href="/doctors" className="nv-btn nv-btn--glass nv-btn--block">
-              Find a doctor
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
+                    const open = section === group.label;
+                    return (
+                      <motion.div
+                        key={group.label}
+                        variants={{
+                          hidden: { opacity: 0, x: 20 },
+                          show: {
+                            opacity: 1,
+                            x: 0,
+                            transition: { type: "spring", stiffness: 350, damping: 25 },
+                          },
+                        }}
+                        className="nvh-acc rounded-xl bg-slate-50/90 border border-slate-200/80 overflow-hidden transition-all shadow-sm"
+                        data-open={open || undefined}
+                      >
+                        <button
+                          type="button"
+                          className="nvh-row group flex items-center justify-between w-full p-3.5 text-left hover:bg-amber-50/80 transition-colors"
+                          data-on={groupActive(group) || undefined}
+                          aria-expanded={open}
+                          onClick={() =>
+                            setSection((current) =>
+                              current === group.label ? null : group.label
+                            )
+                          }
+                        >
+                          <span className="flex items-center gap-3">
+                            <span className="text-xs font-mono font-bold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-md border border-amber-300/80 shadow-xs">
+                              {idxStr}
+                            </span>
+                            <span className="text-base font-bold text-slate-900 group-hover:text-amber-800">
+                              {group.label}
+                            </span>
+                          </span>
+                          <motion.div
+                            animate={{ rotate: open ? 180 : 0 }}
+                            transition={{ duration: 0.25 }}
+                          >
+                            <ChevronDown className="h-4 w-4 text-slate-500 group-hover:text-amber-600" />
+                          </motion.div>
+                        </button>
 
-            <ul className="nvh-panel__meta">
-              {address && (
-                <li>
-                  <MapPin aria-hidden />
-                  <span>{address}</span>
-                </li>
-              )}
-              {phone && (
-                <li>
-                  <Phone aria-hidden />
-                  <a href={`tel:${phone}`}>{phone}</a>
-                </li>
-              )}
-              {email && (
-                <li>
-                  <Mail aria-hidden />
-                  <a href={`mailto:${email}`}>{email}</a>
-                </li>
-              )}
-            </ul>
-          </div>
-        </aside>
-      </>,
+                        <AnimatePresence initial={false}>
+                          {open && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                              className="overflow-hidden bg-amber-50/30 border-t border-slate-200/80"
+                            >
+                              <ul className="p-2 space-y-1">
+                                {group.links?.map((link, childIdx) => {
+                                  const Glyph = link.icon;
+                                  const isChildActive = isActive(link.href);
+                                  return (
+                                    <motion.li
+                                      key={link.href}
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: childIdx * 0.03, duration: 0.2 }}
+                                    >
+                                      <Link
+                                        href={link.href}
+                                        className={cn(
+                                          "flex items-center justify-between p-2.5 rounded-lg text-sm transition-all",
+                                          isChildActive
+                                            ? "bg-amber-100 border border-amber-300 text-amber-950 font-bold shadow-xs"
+                                            : "text-slate-800 hover:text-amber-900 hover:bg-amber-100/60 font-semibold"
+                                        )}
+                                      >
+                                        <span className="flex items-center gap-2.5">
+                                          <span className="p-1.5 rounded-md bg-amber-100 text-amber-700 border border-amber-300/80 shadow-xs">
+                                            <Glyph className="h-4 w-4" />
+                                          </span>
+                                          <span className="flex flex-col">
+                                            <span className="font-bold text-slate-900">{link.label}</span>
+                                            {link.hint && (
+                                              <span className="text-[11px] text-slate-600 font-medium">
+                                                {link.hint}
+                                              </span>
+                                            )}
+                                          </span>
+                                        </span>
+                                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-amber-700" />
+                                      </Link>
+                                    </motion.li>
+                                  );
+                                })}
+                              </ul>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              </div>
+
+              <div className="nvh-panel__foot border-t border-slate-200/90 bg-slate-50/90 p-4 space-y-3">
+                {emergency ? (
+                  <a
+                    href={`tel:${emergency}`}
+                    className="g-btn g-btn--signal g-btn--block flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-bold text-sm shadow-md shadow-red-500/20 hover:scale-[1.01] transition-transform"
+                  >
+                    <Siren className="h-4 w-4 animate-bounce" />
+                    Emergency Hotline ({emergency})
+                  </a>
+                ) : (
+                  <Link
+                    href="/emergency"
+                    className="g-btn g-btn--signal g-btn--block flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-bold text-sm shadow-md shadow-red-500/20 hover:scale-[1.01] transition-transform"
+                  >
+                    <Siren className="h-4 w-4 animate-bounce" />
+                    Emergency Care 24/7
+                  </Link>
+                )}
+
+                <Link
+                  href="/doctors"
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-bold text-sm border border-amber-400/80 shadow-md shadow-amber-400/20 transition-all hover:scale-[1.01]"
+                >
+                  Find a Doctor
+                  <ArrowUpRight className="h-4 w-4 font-bold" />
+                </Link>
+
+                <ul className="nvh-panel__meta text-xs text-slate-700 space-y-1.5 pt-2 border-t border-slate-200/80">
+                  {address && (
+                    <li className="flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                      <span className="font-medium text-slate-700">{address}</span>
+                    </li>
+                  )}
+                  {phone && (
+                    <li className="flex items-center gap-2">
+                      <Phone className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                      <a href={`tel:${phone}`} className="font-semibold text-slate-800 hover:text-amber-700">{phone}</a>
+                    </li>
+                  )}
+                  {email && (
+                    <li className="flex items-center gap-2">
+                      <Mail className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                      <a href={`mailto:${email}`} className="font-semibold text-slate-800 hover:text-amber-700">{email}</a>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>,
       document.body
     );
 
@@ -639,15 +749,33 @@ export default function NovaHeader({
                 </Link>
               )}
 
-              <button
+              <motion.button
                 type="button"
-                className="nvh__burger"
-                aria-label="Open menu"
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                className={cn("nvh__burger", panelShown && "nvh__burger--open")}
+                aria-label={panelShown ? "Close menu" : "Open menu"}
                 aria-expanded={panelShown}
-                onClick={openPanel}
+                onClick={panelShown ? closePanel : openPanel}
               >
-                <Menu aria-hidden />
-              </button>
+                <div className="g-burger__bars" aria-hidden>
+                  <motion.span
+                    animate={panelShown ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                    className="g-burger__bar g-burger__bar--top"
+                  />
+                  <motion.span
+                    animate={panelShown ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+                    transition={{ duration: 0.15 }}
+                    className="g-burger__bar g-burger__bar--mid"
+                  />
+                  <motion.span
+                    animate={panelShown ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                    className="g-burger__bar g-burger__bar--bot"
+                  />
+                </div>
+              </motion.button>
             </div>
           </div>
         </div>

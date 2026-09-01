@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Instrument_Serif, Source_Sans_3 } from "next/font/google";
+import { Bricolage_Grotesque, Fraunces, IBM_Plex_Mono, Instrument_Serif, Outfit, Source_Sans_3 } from "next/font/google";
 import { Toaster } from "sonner";
 import NextTopLoader from "nextjs-toploader";
 import StoreProvider from "@/components/providers/StoreProvider";
@@ -52,6 +52,26 @@ const novaSerif = Instrument_Serif({
   weight: "400",
   style: ["normal", "italic"],
   variable: "--font-nv-serif",
+  display: "swap",
+});
+
+/* ── Admin panel fonts (Turbopack-safe — no @import in admin.css) ── */
+const adminDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-admin-display",
+  display: "swap",
+});
+
+const adminBody = Outfit({
+  subsets: ["latin"],
+  variable: "--font-admin-body",
+  display: "swap",
+});
+
+const adminMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-admin-mono",
   display: "swap",
 });
 
@@ -118,12 +138,16 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sourceSans.variable} ${novaDisplay.variable} ${novaSerif.variable}`}
+      className={`${sourceSans.variable} ${novaDisplay.variable} ${novaSerif.variable} ${adminDisplay.variable} ${adminBody.variable} ${adminMono.variable}`}
       style={
         {
           ["--font-syne" as string]: "var(--font-nv-display)",
           ["--font-literata" as string]: "var(--font-nv-serif)",
           ["--font-figtree" as string]: "var(--font-source)",
+          // Admin panel font aliases → CSS vars used in admin.css
+          ["--font-display" as string]: "var(--font-admin-display)",
+          ["--font-body" as string]: "var(--font-admin-body)",
+          ["--font-mono" as string]: "var(--font-admin-mono)",
         } as CSSProperties
       }
     >
