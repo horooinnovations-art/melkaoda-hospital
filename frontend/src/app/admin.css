@@ -1055,7 +1055,7 @@
   outline: none !important;
 }
 
-.admin-login .text-\[var\(--ld-faint\)\] {
+.admin-login svg {
   color: rgba(240, 177, 64, 0.75) !important;
 }
 
@@ -1151,6 +1151,74 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ─── Global Safety Overrides for High-Contrast Dark Theme ────────────────── */
+.admin-shell .to-white,
+.admin-portal .to-white {
+  --tw-gradient-to: rgba(13, 20, 36, 0.95) !important;
+}
+
+.admin-shell .via-white,
+.admin-portal .via-white {
+  --tw-gradient-via: rgba(13, 20, 36, 0.8) !important;
+}
+
+.admin-shell .from-white,
+.admin-portal .from-white {
+  --tw-gradient-from: rgba(13, 20, 36, 0.95) !important;
+}
+
+.admin-shell .bg-slate-50,
+.admin-portal .bg-slate-50,
+.admin-shell .bg-slate-100,
+.admin-portal .bg-slate-100 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.admin-shell .text-slate-900,
+.admin-portal .text-slate-900,
+.admin-shell .text-slate-800,
+.admin-portal .text-slate-800,
+.admin-shell .text-slate-700,
+.admin-portal .text-slate-700,
+.admin-shell .text-ink,
+.admin-portal .text-ink {
+  color: var(--ld-ink) !important;
+}
+
+.admin-shell .text-slate-500,
+.admin-portal .text-slate-500,
+.admin-shell .text-slate-400,
+.admin-portal .text-slate-400,
+.admin-shell .text-ink-muted,
+.admin-portal .text-ink-muted {
+  color: var(--ld-muted) !important;
+}
+
+.admin-shell .border-slate-200,
+.admin-portal .border-slate-200,
+.admin-shell .border-slate-100,
+.admin-portal .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Search input & action button contrast fixes */
+.admin-shell form input,
+.admin-portal form input {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.admin-shell form input::placeholder,
+.admin-portal form input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.admin-shell .ld-table__actions button,
+.admin-portal .ld-table__actions button {
+  color: var(--ld-ink) !important;
 }
 
 

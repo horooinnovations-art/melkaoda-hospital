@@ -35,7 +35,6 @@ import {
 } from "@/store/adminApi";
 import { cn } from "@/lib/utils";
 
-import { getStoredPartners, saveStoredPartners } from "@/lib/partnersData";
 import {
   getStoredNewsCategories,
   saveStoredNewsCategories,
@@ -43,7 +42,6 @@ import {
   saveStoredGalleryCategories,
   type CategoryItem,
 } from "@/lib/categoriesData";
-import type { Partner } from "@/lib/types";
 
 interface AdminCrudPageProps {
   config: AdminResourceConfig;
@@ -83,10 +81,6 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
     emptyValues(config.fields)
   );
 
-  const [localPartners, setLocalPartners] = useState<Partner[]>(() =>
-    config.resource === "partnerships" ? getStoredPartners() : []
-  );
-
   const [localNewsCategories, setLocalNewsCategories] = useState<CategoryItem[]>(() =>
     config.resource === "news-categories" ? getStoredNewsCategories() : []
   );
@@ -106,17 +100,22 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
   const [updateItem, { isLoading: updating }] = useUpdateAdminItemMutation();
   const [deleteItem, { isLoading: deleting }] = useDeleteAdminItemMutation();
 
+  /**
+   * Resources that still shadow their writes into localStorage when the API call
+   * fails. `partnerships` was in this list and is not any more: it now has a
+   * real table, route and permission, so a failed save reports the failure
+   * instead of silently "succeeding" into one browser (MEL-CONTENT-001).
+   * news-categories and gallery-categories still have no backend resource.
+   */
   const isLocalResource =
-    config.resource === "partnerships" ||
     config.resource === "news-categories" ||
     config.resource === "gallery-categories";
 
   const getLocalItems = useCallback(() => {
-    if (config.resource === "partnerships") return localPartners as unknown as Record<string, unknown>[];
     if (config.resource === "news-categories") return localNewsCategories as unknown as Record<string, unknown>[];
     if (config.resource === "gallery-categories") return localGalleryCategories as unknown as Record<string, unknown>[];
     return [];
-  }, [config.resource, localPartners, localNewsCategories, localGalleryCategories]);
+  }, [config.resource, localNewsCategories, localGalleryCategories]);
 
   const rows = useMemo(() => {
     let list = (data?.data?.length ? data.data : isLocalResource ? getLocalItems() : []) ?? [];
@@ -210,50 +209,7 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
       }
       setDialogOpen(false);
     } catch (err) {
-      if (config.resource === "partnerships") {
-        const logoObj = uploadedFileUrl ? { id: Date.now(), url: uploadedFileUrl } : undefined;
-        if (editing?.id) {
-          const updated = localPartners.map((p) =>
-            p.id === editing.id
-              ? {
-                  ...p,
-                  name: String(values.name || p.name),
-                  slug: String(values.slug || p.slug || String(values.name || "").toLowerCase().replace(/\s+/g, "-")),
-                  category: String(values.category || p.category),
-                  description: String(values.description || p.description),
-                  short_description: String(values.description || "").replace(/<[^>]+>/g, "").slice(0, 120),
-                  website: String(values.website || p.website),
-                  order: Number(values.order || p.order || 0),
-                  is_active: Boolean(values.is_active !== undefined ? values.is_active : p.is_active),
-                  logo_url: uploadedFileUrl || p.logo_url || (p.logo?.url),
-                  logo: logoObj || p.logo,
-                }
-              : p
-          );
-          setLocalPartners(updated);
-          saveStoredPartners(updated);
-          toast.success("Updated successfully");
-        } else {
-          const newPartner: Partner = {
-            id: Date.now(),
-            name: String(values.name || "New Partner"),
-            slug: String(values.slug || String(values.name || "new-partner").toLowerCase().replace(/\s+/g, "-")),
-            category: String(values.category || "Government & Public Sector"),
-            description: String(values.description || ""),
-            short_description: String(values.description || "").replace(/<[^>]+>/g, "").slice(0, 120),
-            website: String(values.website || ""),
-            order: Number(values.order || 0),
-            is_active: Boolean(values.is_active !== undefined ? values.is_active : true),
-            logo_url: uploadedFileUrl,
-            logo: logoObj,
-          };
-          const updated = [newPartner, ...localPartners];
-          setLocalPartners(updated);
-          saveStoredPartners(updated);
-          toast.success("Created successfully");
-        }
-        setDialogOpen(false);
-      } else if (config.resource === "news-categories") {
+      if (config.resource === "news-categories") {
         if (editing?.id) {
           const updated = localNewsCategories.map((c) =>
             c.id === editing.id
@@ -335,12 +291,7 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
       await deleteItem({ resource: config.resource, id: row.id as number }).unwrap();
       toast.success("Deleted");
     } catch (err) {
-      if (config.resource === "partnerships") {
-        const updated = localPartners.filter((p) => p.id !== row.id);
-        setLocalPartners(updated);
-        saveStoredPartners(updated);
-        toast.success("Deleted");
-      } else if (config.resource === "news-categories") {
+      if (config.resource === "news-categories") {
         const updated = localNewsCategories.filter((c) => c.id !== row.id);
         setLocalNewsCategories(updated);
         saveStoredNewsCategories(updated);
@@ -376,14 +327,7 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
       }).unwrap();
       toast.success(newStatus ? "Activated successfully" : "Deactivated successfully");
     } catch (err) {
-      if (config.resource === "partnerships") {
-        const updated = localPartners.map((p) =>
-          p.id === row.id ? { ...p, is_active: newStatus } : p
-        );
-        setLocalPartners(updated);
-        saveStoredPartners(updated);
-        toast.success(newStatus ? "Activated successfully" : "Deactivated successfully");
-      } else if (config.resource === "news-categories") {
+      if (config.resource === "news-categories") {
         const updated = localNewsCategories.map((c) =>
           c.id === row.id ? { ...c, is_active: newStatus } : c
         );
@@ -437,12 +381,12 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
             }}
           >
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ld-accent)]" />
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder={`Search ${config.title.toLowerCase()}…`}
-                className="rounded-md pl-10"
+                className="rounded-md pl-10 bg-white/5 border-[var(--ld-line-strong)] text-[var(--ld-ink)] focus:border-[var(--ld-accent)]"
               />
             </div>
             <Button type="submit" variant="outline" className="ld-btn">
@@ -502,7 +446,7 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
               <table className="ld-table">
                 <thead>
                   <tr>
-                    <th>Record</th>
+                    <th>{config.titleField ? config.titleField.replace(/_/g, " ") : "Item"}</th>
                     {detailColumns.slice(0, 4).map((col) => (
                       <th key={col.key}>{col.label}</th>
                     ))}
@@ -551,10 +495,10 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                  "h-8 w-8",
+                                  "h-8 w-8 rounded-md transition-colors",
                                   isRowActive(row, config)
-                                    ? "text-[#111]"
-                                    : "text-zinc-400"
+                                    ? "text-[var(--ld-accent)] hover:bg-[var(--ld-accent-soft)] hover:text-[#ffc84d]"
+                                    : "text-[var(--ld-faint)] hover:bg-white/10 hover:text-[var(--ld-ink)]"
                                 )}
                                 onClick={() => handleToggleActive(row)}
                                 disabled={updating}
@@ -574,8 +518,9 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-8 w-8 rounded-md text-[var(--ld-ink)] hover:bg-white/10 hover:text-[var(--ld-accent)]"
                               onClick={() => openEdit(row)}
+                              title="Edit"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -583,9 +528,10 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-rose-700"
+                                className="h-8 w-8 rounded-md text-rose-400 hover:bg-rose-500/15 hover:text-rose-300"
                                 onClick={() => handleDelete(row)}
                                 disabled={deleting}
+                                title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -614,15 +560,15 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
       </section>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="admin-portal max-h-[90vh] max-w-3xl overflow-y-auto border border-[var(--ld-line-strong)] p-0">
-          <div className="border-b border-[var(--ld-line)] bg-gradient-to-r from-[var(--ld-accent-soft)] to-white px-6 py-5">
+        <DialogContent className="admin-portal max-h-[90vh] max-w-3xl overflow-y-auto border border-[var(--ld-line-strong)] bg-[#0d1424] p-0 text-[var(--ld-ink)]">
+          <div className="border-b border-[var(--ld-line)] bg-gradient-to-r from-[var(--ld-accent-soft)] to-[rgba(13,20,36,0.95)] px-6 py-5">
             <DialogHeader>
               <DialogTitle className="font-display text-2xl font-semibold text-[var(--ld-ink)]">
                 {editing
                   ? `Edit ${config.title.replace(/s$/, "")}`
                   : `New ${config.title.replace(/s$/, "")}`}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-[var(--ld-muted)]">
                 Fill in the details below. Required fields are marked with *.
               </DialogDescription>
             </DialogHeader>
@@ -658,13 +604,13 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
       </Dialog>
 
       <Dialog open={!!viewing} onOpenChange={(open) => !open && setViewing(null)}>
-        <DialogContent className="admin-portal max-h-[90vh] max-w-3xl overflow-y-auto border border-[var(--ld-line-strong)] p-0">
-          <div className="border-b border-[var(--ld-line)] bg-gradient-to-r from-[var(--ld-accent-soft)] to-white px-6 py-5">
+        <DialogContent className="admin-portal max-h-[90vh] max-w-3xl overflow-y-auto border border-[var(--ld-line-strong)] bg-[#0d1424] p-0 text-[var(--ld-ink)]">
+          <div className="border-b border-[var(--ld-line)] bg-gradient-to-r from-[var(--ld-accent-soft)] to-[rgba(13,20,36,0.95)] px-6 py-5">
             <DialogHeader>
               <DialogTitle className="font-display text-2xl font-semibold text-[var(--ld-ink)]">
                 {viewing ? getPrimaryLabel(viewing, config.titleField) : "Details"}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-[var(--ld-muted)]">
                 {config.title.replace(/s$/, "")} details
               </DialogDescription>
             </DialogHeader>
@@ -683,7 +629,7 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
                     const urlKey = viewing ? getRowMediaUrl(viewing, field.name) : undefined;
                     if (urlKey) {
                       displayValue = (
-                        <div className="relative mt-2 h-32 w-48 overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+                        <div className="relative mt-2 h-32 w-48 overflow-hidden rounded-md border border-[var(--ld-line-strong)] bg-black/40">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={urlKey} alt={field.label} className="h-full w-full object-cover" />
                         </div>
@@ -694,20 +640,20 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
                   } else if (field.type === "richtext") {
                     displayValue = (
                       <div
-                        className="prose prose-sm mt-2 max-w-none rounded-md border border-slate-200 bg-slate-50/80 p-4"
+                        className="prose prose-invert prose-sm mt-2 max-w-none rounded-md border border-[var(--ld-line-strong)] bg-white/5 p-4 text-[var(--ld-ink)]"
                         dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(String(value)) }}
                       />
                     );
                   } else if (field.type === "textarea") {
-                    displayValue = <p className="mt-1 whitespace-pre-wrap text-sm text-slate-500">{String(value)}</p>;
+                    displayValue = <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--ld-muted)]">{String(value)}</p>;
                   } else {
-                    displayValue = <span className="text-sm font-medium text-slate-900">{String(value)}</span>;
+                    displayValue = <span className="text-sm font-medium text-[var(--ld-ink)]">{String(value)}</span>;
                   }
                 }
 
                 return (
                   <div key={field.name} className={cn(field.colSpan === 2 || field.type === "richtext" || field.type === "textarea" ? "sm:col-span-2" : "sm:col-span-1")}>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--hb-accent)]">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--ld-accent)]">
                       {field.label}
                     </dt>
                     <dd className="mt-1">{displayValue}</dd>
@@ -715,8 +661,8 @@ export default function AdminCrudPage({ config, infoBanner, sortRows }: AdminCru
                 );
               })}
             </dl>
-            <div className="mt-8 flex justify-end border-t border-slate-100 pt-6">
-              <Button onClick={() => setViewing(null)} className="rounded-md">
+            <div className="mt-8 flex justify-end border-t border-[var(--ld-line)] pt-6">
+              <Button onClick={() => setViewing(null)} className="ld-btn">
                 Close
               </Button>
             </div>

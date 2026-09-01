@@ -14,6 +14,29 @@ export function fail(res, msg, status = 400) {
   return res.status(status).json({ success: false, message: msg });
 }
 
+/**
+ * Terminal handler for an unexpected exception.
+ *
+ * Every CRUD handler used to end in `fail(res, err.message, 500)`, which pushed
+ * raw MySQL text to the caller — `Unknown column 'department_id' in 'where
+ * clause'` was readable from an unauthenticated public endpoint (MEL-SEC-003).
+ * The real error goes to the log with a correlation id; the caller gets a fixed
+ * string plus that id, so a report can still be traced to a log line.
+ *
+ * Validation and business-rule rejections keep using `fail()` with their own
+ * wording — this is only for thrown exceptions.
+ */
+export function serverError(res, err, context = '') {
+  const ref = Math.random().toString(36).slice(2, 10);
+  const detail = err instanceof Error ? err.stack || err.message : String(err);
+  console.error(`[error ${ref}]${context ? ' ' + context + ':' : ''} ${detail}`);
+  return res.status(500).json({
+    success: false,
+    message: 'Something went wrong on our side. Please try again.',
+    ref,
+  });
+}
+
 export function slugify(text = '') {
   return String(text)
     .toLowerCase()

@@ -1,6 +1,6 @@
 import { createCrud } from './crudFactory.js';
 import { query, queryOne } from '../config/db.js';
-import { ok, fail, toBool, paginate, parseJsonField } from '../utils/helpers.js';
+import { ok, fail, toBool, paginate, parseJsonField, serverError } from '../utils/helpers.js';
 import { normalizeMediaUrl } from '../utils/mediaUrl.js';
 import { slugLookupCandidates } from '../utils/settings.js';
 
@@ -159,8 +159,7 @@ async function safeOptions(res, loader) {
     if (err?.code === 'ER_NO_SUCH_TABLE' || err?.code === 'ER_BAD_FIELD_ERROR') {
       return ok(res, []);
     }
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -203,6 +202,29 @@ export const partnershipCategories = createCrud({
   orderBy: '`order` ASC, name ASC',
 });
 
+/**
+ * Institutional partners shown on /partnerships.
+ *
+ * The public page used to render a hardcoded SAMPLE_PARTNERS array — which
+ * named a real university and its contact address as an affiliate — because no
+ * `partnerships` endpoint existed for it to call (MEL-CONTENT-001). The admin UI
+ * for it was already built; only the storage and the route were missing.
+ */
+export const partnerships = createCrud({
+  table: 'partnerships',
+  slugFrom: 'name',
+  mediaField: 'logo_id',
+  mediaFolder: 'partnerships',
+  mediaAs: 'logo',
+  publicFilter: 'is_active = 1',
+  searchable: ['name', 'category', 'partnership_type'],
+  orderBy: '`order` ASC, name ASC',
+  mapIncoming: async (data, _req, mode) => {
+    if (mode === 'create' && data.is_active === undefined) data.is_active = 1;
+    return data;
+  },
+});
+
 export async function listPartnershipCategories(req, res) {
   try {
     const rows = await query(
@@ -211,8 +233,7 @@ export async function listPartnershipCategories(req, res) {
     const options = rows.map((row) => ({ label: row.name, value: row.name }));
     return ok(res, options);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -799,8 +820,7 @@ export async function listAuditLogs(req, res) {
       },
     });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -826,8 +846,7 @@ export async function showAuditLog(req, res) {
 
     return ok(res, row);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -861,8 +880,7 @@ export async function applyCareer(req, res) {
     );
     return res.status(201).json({ success: true, message: 'Application submitted' });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, message: err.message });
+    return serverError(res, err, 'applyCareer');
   }
 }
 
@@ -903,8 +921,7 @@ export async function trackDownload(req, res) {
     });
     return ok(res, { id: row.id, download_count: Number(updated?.download_count || 0) });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -927,6 +944,6 @@ export async function registerEvent(req, res) {
     );
     return res.status(201).json({ success: true, message: 'Registration submitted' });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return serverError(res, err, 'registerEvent');
   }
 }

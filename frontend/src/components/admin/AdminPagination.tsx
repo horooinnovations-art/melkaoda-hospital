@@ -46,21 +46,21 @@ export default function AdminPagination({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 border-t border-slate-100 bg-gradient-to-r from-[var(--hb-paper)] via-white to-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6",
+        "flex flex-col gap-4 border-t border-[var(--ld-line)] bg-transparent px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6",
         className
       )}
     >
-      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+      <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--ld-muted)]">
         <span>
           Showing{" "}
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-[var(--ld-ink)]">
             {from}–{to}
           </span>{" "}
-          of <span className="font-semibold text-slate-900">{total}</span>
+          of <span className="font-semibold text-[var(--ld-ink)]">{total}</span>
         </span>
         {onPerPageChange && (
           <label className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.12em]">
-            <span className="text-slate-400">Per page</span>
+            <span className="text-[var(--ld-faint)]">Per page</span>
             <select
               value={perPage}
               disabled={isFetching}
@@ -68,10 +68,10 @@ export default function AdminPagination({
                 onPerPageChange(Number(e.target.value));
                 onPageChange(1);
               }}
-              className="h-9 rounded-md border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-800 outline-none transition focus:ring-2 focus:ring-[rgba(21,128,61,0.25)]"
+              className="h-9 rounded-md border border-[var(--ld-line-strong)] bg-white/5 px-2.5 text-sm font-medium text-[var(--ld-ink)] outline-none transition focus:ring-2 focus:ring-[var(--ld-accent)]"
             >
               {[10, 20, 50].map((n) => (
-                <option key={n} value={n}>
+                <option key={n} value={n} className="bg-[#0d1424] text-[var(--ld-ink)]">
                   {n}
                 </option>
               ))}
@@ -84,7 +84,7 @@ export default function AdminPagination({
         <Button
           variant="outline"
           size="sm"
-          className="rounded-md"
+          className="ld-btn h-9"
           disabled={safePage <= 1 || isFetching}
           onClick={() => onPageChange(safePage - 1)}
         >
@@ -95,7 +95,7 @@ export default function AdminPagination({
         <div className="flex items-center gap-1">
           {pages.map((item, idx) =>
             item === "…" ? (
-              <span key={`e-${idx}`} className="px-1 text-slate-400">
+              <span key={`e-${idx}`} className="px-1 text-[var(--ld-faint)]">
                 …
               </span>
             ) : (
@@ -107,8 +107,8 @@ export default function AdminPagination({
                 className={cn(
                   "inline-flex h-9 min-w-9 items-center justify-center rounded-md px-2 text-sm font-medium transition",
                   item === safePage
-                    ? "bg-[var(--hb-accent)] text-white shadow-sm shadow-none"
-                    : "text-slate-500 hover:bg-[var(--hb-accent-soft)] hover:text-[var(--hb-accent-ink)]"
+                    ? "bg-[var(--ld-accent)] font-bold text-[#080d18] shadow-sm"
+                    : "text-[var(--ld-muted)] hover:bg-white/10 hover:text-[var(--ld-ink)]"
                 )}
               >
                 {item}
@@ -120,7 +120,7 @@ export default function AdminPagination({
         <Button
           variant="outline"
           size="sm"
-          className="rounded-md"
+          className="ld-btn h-9"
           disabled={safePage >= lastPage || isFetching}
           onClick={() => onPageChange(safePage + 1)}
         >

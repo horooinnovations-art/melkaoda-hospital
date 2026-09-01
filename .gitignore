@@ -2,6 +2,10 @@ node_modules/
 dist/
 .next/
 .next-v2/
+.next-verify/
+.next-audit/
+.nvtmp/
+.nvtmp-*
 out/
 build/
 uploads/
@@ -22,3 +26,21 @@ coverage/
 deder.horooinnovations.com/
 backend/*.json
 
+
+# Database dumps. Two 5.2 MB backups containing users.password hashes and
+# contact_submissions PII were committed and pushed before this rule existed
+# (MEL-DATA-001). Keep dumps in object storage, never in git.
+*.sql
+!database/migrations/*.sql
+!database/leadership_history.sql
+!media-recovery.sql
+
+# Lighthouse / profiling output
+lighthouse-*.json
+audit-report.html
+
+# Copies of deployed environment variables. These hold live secrets — JWT
+# signing key, DB and Cloudinary credentials, SMTP password. Never commit them.
+deployed_env_file/
+*.env
+!*.env.example

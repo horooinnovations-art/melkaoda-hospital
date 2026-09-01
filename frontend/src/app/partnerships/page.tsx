@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Globe2,
@@ -16,7 +15,6 @@ import PageTransition from "@/components/motion/PageTransition";
 import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import type { Partner } from "@/lib/types";
-import { getStoredPartners, SAMPLE_PARTNERS } from "@/lib/partnersData";
 
 import { isPublicItemActive } from "@/lib/utils";
 
@@ -26,25 +24,14 @@ export default function PartnershipsPage() {
     perPage: 100,
   });
 
-  // Use state so we correctly hydrate on the client
-  const [localPartners, setLocalPartners] = useState<Partner[]>(SAMPLE_PARTNERS);
+  // Partners come from the API and nowhere else. This page previously fell back
+  // to a hardcoded SAMPLE_PARTNERS array — which named a real university and its
+  // contact address as an affiliate — whenever the request returned nothing, and
+  // it always returned nothing because the endpoint did not exist. A hospital
+  // must not publish affiliation claims that no one entered (MEL-CONTENT-001).
+  const partners: Partner[] = (data?.data ?? []) as Partner[];
 
-  useEffect(() => {
-    // Once on client, try loading from localStorage (falls back to SAMPLE_PARTNERS)
-    setLocalPartners(getStoredPartners());
-  }, []);
-
-  const apiPartners = (data?.data ?? []) as Partner[];
-
-  // Use API data if available, otherwise fall back to local/sample data
-  const partners: Partner[] =
-    apiPartners.length > 0
-      ? apiPartners
-      : localPartners;
-
-  // Only show loading skeleton during the initial API fetch — never show "coming soon"
-  // if we have fallback data available
-  const showSkeleton = isLoading && partners.length === 0;
+  const showSkeleton = isLoading;
 
   return (
     <PageTransition>

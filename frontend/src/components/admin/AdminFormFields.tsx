@@ -81,23 +81,23 @@ function FileField({
       <label
         htmlFor={field.name}
         className={cn(
-          "group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-md border border-dashed border-slate-300 bg-gradient-to-br from-[var(--hb-accent-soft)] to-white px-4 py-6 transition hover:border-[rgba(21,128,61,0.35)] hover:bg-[var(--hb-accent-soft)]",
+          "group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--ld-line-strong)] bg-white/5 px-4 py-6 transition hover:border-[var(--ld-accent)] hover:bg-[var(--ld-accent-soft)]",
           disabled && "pointer-events-none opacity-60"
         )}
       >
         {isImagePreview && preview ? (
-          <div className="relative mb-3 h-28 w-28 overflow-hidden rounded-md ring-1 ring-slate-200">
+          <div className="relative mb-3 h-28 w-28 overflow-hidden rounded-md ring-1 ring-[var(--ld-line-strong)]">
             <Image src={preview} alt="Preview" fill className="object-cover" unoptimized />
           </div>
         ) : (
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-white text-slate-900 shadow-sm ring-1 ring-slate-200">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-[var(--ld-accent-soft)] text-[var(--ld-accent)] shadow-sm ring-1 ring-[var(--ld-line-strong)]">
             <Upload className="h-5 w-5" />
           </div>
         )}
-        <p className="text-sm font-medium text-slate-900">
+        <p className="text-sm font-medium text-[var(--ld-ink)]">
           {file ? file.name : "Click to upload a file"}
         </p>
-        <p className="mt-1 text-xs text-ink-muted">Images, PDF, or Word documents</p>
+        <p className="mt-1 text-xs text-[var(--ld-muted)]">Images, PDF, or Word documents</p>
         <Input
           id={field.name}
           type="file"
@@ -167,7 +167,7 @@ export default function AdminFormFields({
   }, [fields]);
 
   const fieldClass =
-    "rounded-md border-slate-200 bg-white/90 focus-visible:ring-[rgba(21,128,61,0.25)]";
+    "rounded-md border-[var(--ld-line-strong)] bg-white/5 text-[var(--ld-ink)] focus-visible:ring-[var(--ld-accent)]";
 
   return (
     <div className="grid gap-5 sm:grid-cols-2">
@@ -190,7 +190,7 @@ export default function AdminFormFields({
           ) : null}
 
           {field.type !== "switch" && field.type !== "hidden" && (
-            <Label htmlFor={field.name} className="text-ink">
+            <Label htmlFor={field.name} className="text-[var(--ld-ink)]">
               {field.label}
               {field.required && <span className="ml-1 text-red-500">*</span>}
             </Label>
@@ -204,7 +204,7 @@ export default function AdminFormFields({
               readOnly
               disabled
               placeholder={field.placeholder}
-              className={cn(fieldClass, "bg-slate-100 text-ink-muted")}
+              className={cn(fieldClass, "bg-white/5 text-[var(--ld-muted)]")}
             />
           ) : null}
 
@@ -225,8 +225,8 @@ export default function AdminFormFields({
             <Input
               id={field.name}
               type="number"
-              value={values[field.name] === "" ? "" : String(values[field.name] ?? "")}
-              onChange={(e) => onChange(field.name, e.target.value)}
+              value={values[field.name] !== undefined && values[field.name] !== null ? Number(values[field.name]) : ""}
+              onChange={(e) => onChange(field.name, e.target.value === "" ? "" : Number(e.target.value))}
               placeholder={field.placeholder}
               required={field.required}
               disabled={disabled}
@@ -261,31 +261,7 @@ export default function AdminFormFields({
               placeholder={field.placeholder}
               required={field.required}
               disabled={disabled}
-              className={cn(fieldClass, "min-h-[7rem]")}
-            />
-          ) : null}
-
-          {field.type === "richtext" ? (
-            <RichTextEditor
-              id={field.name}
-              value={String(values[field.name] ?? "")}
-              onChange={(html) => onChange(field.name, html)}
-              placeholder={field.placeholder}
-              disabled={disabled}
-              minHeight={field.rows && field.rows >= 8 ? "14rem" : "10rem"}
-            />
-          ) : null}
-
-          {field.type === "textarea" ? (
-            <Textarea
-              id={field.name}
-              rows={field.rows ?? 4}
-              value={String(values[field.name] ?? "")}
-              onChange={(e) => onChange(field.name, e.target.value)}
-              placeholder={field.placeholder}
-              required={field.required}
-              disabled={disabled}
-              className={cn(fieldClass, "min-h-[7rem]")}
+              className={fieldClass}
             />
           ) : null}
 
@@ -306,16 +282,16 @@ export default function AdminFormFields({
               onValueChange={(v) => onChange(field.name, v)}
               disabled={disabled}
             >
-              <SelectTrigger id={field.name} className={cn("h-11", fieldClass)}>
-                <SelectValue placeholder="Select…" />
+              <SelectTrigger id={field.name} className={fieldClass}>
+                <SelectValue placeholder={field.placeholder || "Select option"} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#0d1424] border-[var(--ld-line-strong)] text-[var(--ld-ink)]">
                 {(
                   (dynamicOptions[field.name] && dynamicOptions[field.name].length > 0
                     ? dynamicOptions[field.name]
                     : field.options) ?? []
                 ).map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
+                  <SelectItem key={opt.value} value={String(opt.value)} className="hover:bg-white/10 text-[var(--ld-ink)] focus:bg-white/10 focus:text-white">
                     {opt.label}
                   </SelectItem>
                 ))}
@@ -324,13 +300,13 @@ export default function AdminFormFields({
           ) : null}
 
           {field.type === "multiselect" && (field.options || field.optionsUrl) ? (
-            <div className="max-h-56 overflow-y-auto rounded-md border border-slate-200 bg-white/90 p-2">
+            <div className="max-h-56 overflow-y-auto rounded-md border border-[var(--ld-line-strong)] bg-[#0d1424] p-2">
               {(
                 (dynamicOptions[field.name] && dynamicOptions[field.name].length > 0
                   ? dynamicOptions[field.name]
                   : field.options) ?? []
               ).length === 0 ? (
-                <p className="px-2 py-3 text-sm text-ink-muted">No options available</p>
+                <p className="px-2 py-3 text-sm text-[var(--ld-faint)]">No options available</p>
               ) : (
                 <div className="grid gap-2 sm:grid-cols-2">
                   {(
@@ -350,8 +326,8 @@ export default function AdminFormFields({
                         className={cn(
                           "flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm transition",
                           checked
-                            ? "border-[rgba(21,128,61,0.35)] bg-[var(--hb-accent-soft)] text-ink"
-                            : "border-slate-100 bg-stone/20 text-ink-muted"
+                            ? "border-[var(--ld-accent)] bg-[var(--ld-accent-soft)] text-[var(--ld-accent)] font-semibold"
+                            : "border-[var(--ld-line)] bg-white/5 text-[var(--ld-muted)]"
                         )}
                       >
                         <input
@@ -375,8 +351,8 @@ export default function AdminFormFields({
           ) : null}
 
           {field.type === "switch" ? (
-            <div className="flex items-center justify-between rounded-md border border-slate-200 bg-gradient-to-r from-[var(--hb-accent-soft)] to-white px-4 py-3.5">
-              <Label htmlFor={field.name} className="cursor-pointer text-ink">
+            <div className="flex items-center justify-between rounded-md border border-[var(--ld-line-strong)] bg-[#0d1424] px-4 py-3.5">
+              <Label htmlFor={field.name} className="cursor-pointer text-[var(--ld-ink)]">
                 {field.label}
               </Label>
               <Switch

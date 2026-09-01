@@ -53,9 +53,9 @@ function ToolbarButton({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 w-8 items-center justify-center rounded-md text-ink transition",
-        "hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40",
-        active && "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+        "inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--ld-muted)] transition",
+        "hover:bg-white/10 hover:text-[var(--ld-ink)] disabled:cursor-not-allowed disabled:opacity-40",
+        active && "bg-[var(--ld-accent-soft)] text-[var(--ld-accent)] shadow-sm ring-1 ring-[var(--ld-accent)]/40"
       )}
     >
       {children}
@@ -97,18 +97,18 @@ export default function RichTextEditor({
       attributes: {
         id: id ?? "",
         class: cn(
-          "prose-hospital max-w-none px-3 py-3 outline-none focus:outline-none",
-          "min-h-[10rem] text-sm leading-relaxed text-ink",
-          "[&_a]:text-[var(--hb-accent)] [&_a]:underline",
+          "prose prose-invert max-w-none px-3 py-3 outline-none focus:outline-none",
+          "min-h-[10rem] text-sm leading-relaxed text-[var(--ld-ink)]",
+          "[&_a]:text-[var(--ld-accent)] [&_a]:underline",
           "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
-          "[&_h1]:font-display [&_h1]:text-2xl [&_h1]:text-slate-900",
-          "[&_h2]:font-display [&_h2]:text-xl [&_h2]:text-slate-900",
-          "[&_h3]:font-display [&_h3]:text-lg [&_h3]:text-slate-900",
+          "[&_h1]:font-display [&_h1]:text-2xl [&_h1]:text-[var(--ld-ink)]",
+          "[&_h2]:font-display [&_h2]:text-xl [&_h2]:text-[var(--ld-ink)]",
+          "[&_h3]:font-display [&_h3]:text-lg [&_h3]:text-[var(--ld-ink)]",
           "[&_img]:my-3 [&_p]:my-2",
           "[&_.is-editor-empty:first-child::before]:pointer-events-none",
           "[&_.is-editor-empty:first-child::before]:float-left",
           "[&_.is-editor-empty:first-child::before]:h-0",
-          "[&_.is-editor-empty:first-child::before]:text-ink-muted/70",
+          "[&_.is-editor-empty:first-child::before]:text-[var(--ld-faint)]",
           "[&_.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]"
         ),
         style: `min-height:${minHeight}`,
@@ -188,11 +188,11 @@ export default function RichTextEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-md border border-slate-200 bg-white/90 shadow-sm",
+        "overflow-hidden rounded-md border border-[var(--ld-line-strong)] bg-[#0d1424] shadow-sm",
         disabled && "opacity-60"
       )}
     >
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-[#f3f4f6] px-2 py-1.5">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-[var(--ld-line)] bg-white/5 px-2 py-1.5">
         <div className="relative mr-1">
           <select
             aria-label="Text style"
@@ -215,14 +215,14 @@ export default function RichTextEditor({
               else if (v === "h3") chain.toggleHeading({ level: 3 }).run();
               else chain.setParagraph().run();
             }}
-            className="h-8 appearance-none rounded-md border-0 bg-transparent py-1 pl-2 pr-7 text-sm font-medium text-ink outline-none hover:bg-white"
+            className="h-8 appearance-none rounded-md border border-[var(--ld-line)] bg-[#0d1424] py-1 pl-2 pr-7 text-sm font-medium text-[var(--ld-ink)] outline-none hover:bg-white/10"
           >
-            <option value="p">Normal</option>
-            <option value="h1">Heading 1</option>
-            <option value="h2">Heading 2</option>
-            <option value="h3">Heading 3</option>
+            <option value="p" className="bg-[#0d1424] text-[var(--ld-ink)]">Normal</option>
+            <option value="h1" className="bg-[#0d1424] text-[var(--ld-ink)]">Heading 1</option>
+            <option value="h2" className="bg-[#0d1424] text-[var(--ld-ink)]">Heading 2</option>
+            <option value="h3" className="bg-[#0d1424] text-[var(--ld-ink)]">Heading 3</option>
           </select>
-          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
+          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ld-faint)]" />
           <span className="sr-only">{blockLabel}</span>
         </div>
 
@@ -251,7 +251,7 @@ export default function RichTextEditor({
           <UnderlineIcon className="h-4 w-4" />
         </ToolbarButton>
 
-        <span className="mx-1 h-5 w-px bg-slate-200" />
+        <span className="mx-1 h-5 w-px bg-[var(--ld-line)]" />
 
         <ToolbarButton
           title="Numbered list"
@@ -270,7 +270,7 @@ export default function RichTextEditor({
           <List className="h-4 w-4" />
         </ToolbarButton>
 
-        <span className="mx-1 h-5 w-px bg-slate-200" />
+        <span className="mx-1 h-5 w-px bg-[var(--ld-line)]" />
 
         <ToolbarButton title="Insert link" disabled={disabled || !editor} active={editor?.isActive("link")} onClick={setLink}>
           <Link2 className="h-4 w-4" />
@@ -283,7 +283,7 @@ export default function RichTextEditor({
           <ImageIcon className="h-4 w-4" />
         </ToolbarButton>
 
-        <span className="mx-1 h-5 w-px bg-slate-200" />
+        <span className="mx-1 h-5 w-px bg-[var(--ld-line)]" />
 
         <ToolbarButton
           title="Clear formatting"

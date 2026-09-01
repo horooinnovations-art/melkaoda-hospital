@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
 
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-7 w-7 animate-spin text-[#111]" />
+          <Loader2 className="h-7 w-7 animate-spin text-[var(--ld-accent)]" />
         </div>
       ) : (
         <>
@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <Link
                   href="/admin/contact-submissions"
-                  className="text-xs font-bold uppercase tracking-wide text-[var(--ld-accent-deep)] underline decoration-[var(--ld-accent)] underline-offset-4"
+                  className="text-xs font-bold uppercase tracking-wide text-[var(--ld-accent)] hover:underline"
                 >
                   Open inbox
                 </Link>
@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <Link
                   href="/admin/news"
-                  className="text-xs font-bold uppercase tracking-wide text-[var(--ld-accent-deep)] underline decoration-[var(--ld-accent)] underline-offset-4"
+                  className="text-xs font-bold uppercase tracking-wide text-[var(--ld-accent)] hover:underline"
                 >
                   Manage news
                 </Link>

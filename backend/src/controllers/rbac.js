@@ -1,6 +1,6 @@
 import { hashPassword } from '../utils/password.js';
 import { query, queryOne } from '../config/db.js';
-import { ok, fail, message, paginate, slugify } from '../utils/helpers.js';
+import { ok, fail, message, paginate, slugify, serverError } from '../utils/helpers.js';
 import { normalizeMediaUrl } from '../utils/mediaUrl.js';
 import { logAudit } from '../services/audit.js';
 
@@ -55,23 +55,27 @@ function isSuper(req) {
   return (req.user?.roles || []).includes('super_admin');
 }
 
-/** Email or name contains "admin" (case-insensitive). */
-function hasAdminTerm(user) {
-  const email = String(user?.email || '').toLowerCase();
-  const name = String(user?.name || '').toLowerCase();
-  return email.includes('admin') || name.includes('admin');
+/**
+ * Root-admin marker. This is a dedicated `users.is_root_admin` column that no
+ * request payload can reach: it is in sqlSafe's SYSTEM_COLUMNS, and neither
+ * updateMe nor createUser/updateUser include it in their explicit column lists.
+ * It is granted only by ROOT_ADMIN_EMAILS at boot or by direct DB access.
+ *
+ * It replaces an earlier check that tested whether the caller's own name or
+ * email contained the substring "admin" — which any user could grant themselves
+ * with a one-field profile edit (MEL-SEC-001).
+ */
+function isRootAdminFlag(user) {
+  const raw = user?.is_root_admin;
+  return raw === 1 || raw === true || raw === '1';
 }
 
 /**
- * Privileged super admin: super_admin role AND "admin" in email/name.
- * Only these users can see/create/manage other super admins.
+ * Privileged super admin: super_admin role AND the root-admin flag.
+ * Only these users can see/create/manage other root super admins.
  */
 function isPrivilegedSuperAdmin(user) {
-  const roles = user?.roles || [];
-  const isSuperRole = roles.some((r) =>
-    typeof r === 'string' ? r === 'super_admin' : r?.slug === 'super_admin'
-  );
-  return isSuperRole && hasAdminTerm(user);
+  return userHasSuperRole(user) && isRootAdminFlag(user);
 }
 
 function userHasSuperRole(user) {
@@ -81,22 +85,25 @@ function userHasSuperRole(user) {
 }
 
 function isProtectedSuperAdmin(user) {
-  return userHasSuperRole(user) && hasAdminTerm(user);
+  return userHasSuperRole(user) && isRootAdminFlag(user);
 }
 
-/** SQL fragment: hide privileged (admin-term) super admins from non-privileged viewers. */
+/** SQL fragment: hide root super admins from non-privileged viewers. */
 const HIDE_PRIVILEGED_SUPERS_SQL = `NOT (
   EXISTS (
     SELECT 1 FROM user_roles ur_hide
     INNER JOIN roles r_hide ON r_hide.id = ur_hide.role_id
     WHERE ur_hide.user_id = u.id AND r_hide.slug = 'super_admin'
   )
-  AND (LOWER(u.email) LIKE '%admin%' OR LOWER(IFNULL(u.name, '')) LIKE '%admin%')
+  AND COALESCE(u.is_root_admin, 0) = 1
 )`;
+
+export { isPrivilegedSuperAdmin, isProtectedSuperAdmin, isRootAdminFlag };
 
 async function loadUserWithRoles(id) {
   const user = await queryOne(
-    `SELECT id, name, email, phone, status, avatar, created_at, last_login_at
+    `SELECT id, name, email, phone, status, avatar, created_at, last_login_at,
+            COALESCE(is_root_admin, 0) AS is_root_admin
      FROM users WHERE id = :id AND deleted_at IS NULL LIMIT 1`,
     { id }
   );
@@ -258,7 +265,8 @@ export async function listUsers(req, res) {
 
     const whereSql = where.join(' AND ');
     const rows = await query(
-      `SELECT u.id, u.name, u.email, u.phone, u.status, u.avatar, u.created_at, u.last_login_at
+      `SELECT u.id, u.name, u.email, u.phone, u.status, u.avatar, u.created_at, u.last_login_at,
+              COALESCE(u.is_root_admin, 0) AS is_root_admin
        FROM users u
        WHERE ${whereSql}
        ORDER BY u.name ASC
@@ -279,7 +287,7 @@ export async function listUsers(req, res) {
             INNER JOIN roles r_hide ON r_hide.id = ur_hide.role_id
             WHERE ur_hide.user_id = users.id AND r_hide.slug = 'super_admin'
           )
-          AND (LOWER(users.email) LIKE '%admin%' OR LOWER(IFNULL(users.name, '')) LIKE '%admin%')
+          AND COALESCE(users.is_root_admin, 0) = 1
         )`;
 
     const [totalAll, active, inactive, suspended] = await Promise.all([
@@ -314,8 +322,7 @@ export async function listUsers(req, res) {
       can_manage_super_admins: privileged,
     });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -330,8 +337,7 @@ export async function showUser(req, res) {
 
     return ok(res, user);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -355,7 +361,7 @@ export async function createUser(req, res) {
     if (superRoleId && roleIds.includes(superRoleId) && !isPrivilegedSuperAdmin(req.user)) {
       return fail(
         res,
-        'Only privileged Super Administrators (username containing "admin") can create Super Admin accounts',
+        'You do not have permission to create Super Admin accounts',
         403
       );
     }
@@ -400,8 +406,7 @@ export async function createUser(req, res) {
     });
     return ok(res, user, 201);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Create failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -421,7 +426,7 @@ export async function updateUser(req, res) {
     if (userHasSuperRole(existing) && !editingSelf && !privileged) {
       return fail(
         res,
-        'Only privileged Super Administrators (username containing "admin") can manage other Super Admin accounts',
+        'You do not have permission to manage other Super Admin accounts',
         403
       );
     }
@@ -457,7 +462,7 @@ export async function updateUser(req, res) {
       if (!(editingSelf && wasSuper)) {
         return fail(
           res,
-          'Only privileged Super Administrators (username containing "admin") can assign the Super Admin role',
+          'You do not have permission to assign the Super Admin role',
           403
         );
       }
@@ -479,14 +484,12 @@ export async function updateUser(req, res) {
       return fail(res, 'Cannot deactivate the last Super Administrator', 422);
     }
 
-    // Non-privileged cannot deactivate other super admins (covered above),
-    // and cannot change a protected account's credentials to drop "admin" term
-    // while remaining the only privileged gatekeeper — allow name/email edits
-    // only for privileged managers when targeting another super.
+    // Non-privileged admins cannot deactivate other super admins (covered
+    // above) and cannot edit another super admin's credentials at all.
     if (!privileged && !editingSelf && staysSuper) {
       return fail(
         res,
-        'Only privileged Super Administrators can manage other Super Admin accounts',
+        'You do not have permission to manage other Super Admin accounts',
         403
       );
     }
@@ -500,6 +503,9 @@ export async function updateUser(req, res) {
     const params = { id, name, email, phone: phone || null, status };
     if (password) {
       sets.push('password = :password');
+      // Kill the target's existing sessions too — an admin-driven reset should
+      // end access, not just change the next login (MEL-SEC-007).
+      sets.push('password_changed_at = NOW()');
       params.password = await hashPassword(String(password));
     }
 
@@ -534,8 +540,7 @@ export async function updateUser(req, res) {
     });
     return ok(res, user);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Update failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -560,7 +565,7 @@ export async function destroyUser(req, res) {
     if (userHasSuperRole(target) && !privileged) {
       return fail(
         res,
-        'Only privileged Super Administrators (username containing "admin") can deactivate other Super Admin accounts',
+        'You do not have permission to deactivate other Super Admin accounts',
         403
       );
     }
@@ -581,8 +586,7 @@ export async function destroyUser(req, res) {
     });
     return message(res, 'User deactivated');
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Deactivate failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -610,8 +614,7 @@ export async function listRoles(req, res) {
       meta: { total: Number(totalRow?.total || 0), page, perPage },
     });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -624,8 +627,7 @@ export async function showRole(req, res) {
     await attachRoleMeta([role]);
     return ok(res, role);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -657,8 +659,7 @@ export async function createRole(req, res) {
     });
     return ok(res, role, 201);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Create failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -715,8 +716,7 @@ export async function updateRole(req, res) {
     });
     return ok(res, updated);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Update failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -738,8 +738,7 @@ export async function destroyRole(req, res) {
     });
     return message(res, 'Deleted successfully');
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Delete failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -793,8 +792,7 @@ export async function listPermissions(req, res) {
       modules: [...new Set([...PERMISSION_MODULES, ...modules.map((m) => m.module)])],
     });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -806,8 +804,7 @@ export async function showPermission(req, res) {
     if (!row) return fail(res, 'Permission not found', 404);
     return ok(res, row);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 
@@ -844,8 +841,7 @@ export async function createPermission(req, res) {
     });
     return ok(res, row, 201);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Create failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -887,8 +883,7 @@ export async function updatePermission(req, res) {
     });
     return ok(res, row);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Update failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -916,8 +911,7 @@ export async function destroyPermission(req, res) {
     });
     return message(res, 'Deleted successfully');
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Delete failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -935,8 +929,7 @@ export async function permissionsGrouped(_req, res) {
     }
     return ok(res, { grouped, modules: Object.keys(grouped), flat: rows });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 }
 

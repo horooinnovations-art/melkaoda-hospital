@@ -27,6 +27,31 @@ async function ensureTable() {
   `);
 }
 
+/**
+ * Split a migration file into executable statements.
+ *
+ * The previous version was `sql.split(/;\s*\n/).filter(s => !s.startsWith('--'))`,
+ * which discarded any statement chunk that happened to begin with a comment —
+ * i.e. every migration in this project, since all of them open with a `--`
+ * header. Both 001 and 002 yielded zero statements and were still recorded in
+ * `schema_migrations` as applied, so the runner reported success while changing
+ * nothing (MEL-BUG-002).
+ *
+ * Now comments are stripped per line and the remaining SQL is split, so a
+ * documented migration runs exactly like an undocumented one.
+ */
+export function parseStatements(sql) {
+  const withoutComments = String(sql)
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('--'))
+    .join('\n');
+
+  return withoutComments
+    .split(';')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 async function main() {
   if (!fs.existsSync(migrationsDir)) {
     console.error(`[migrate] Missing directory: ${migrationsDir}`);
@@ -50,10 +75,14 @@ async function main() {
     }
 
     const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
-    const statements = sql
-      .split(/;\s*\n/)
-      .map((s) => s.trim())
-      .filter((s) => s && !s.startsWith('--'));
+    const statements = parseStatements(sql);
+
+    // A file that parses to nothing is a bug in the file or the parser. Do not
+    // mark it applied — that is what hid MEL-BUG-002.
+    if (!statements.length) {
+      console.error(`[migrate] ${file} contains no executable statements — refusing to mark it applied.`);
+      process.exit(1);
+    }
 
     const conn = await pool.getConnection();
     try {
@@ -63,7 +92,7 @@ async function main() {
       }
       await conn.execute(`INSERT INTO schema_migrations (name) VALUES (?)`, [file]);
       await conn.commit();
-      console.log(`[migrate] applied ${file}`);
+      console.log(`[migrate] applied ${file} (${statements.length} statement(s))`);
     } catch (err) {
       await conn.rollback();
       console.error(`[migrate] failed ${file}:`, err.message);
@@ -77,7 +106,10 @@ async function main() {
   await pool.end();
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Allow `node migrate.js` to run, but keep parseStatements importable for tests.
+if (process.argv[1] && process.argv[1].endsWith('migrate.js')) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

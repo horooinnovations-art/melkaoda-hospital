@@ -2,8 +2,67 @@ const API_PROXY_TARGET = (
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1"
 ).replace(/\/$/, "");
 
+const isDev = process.env.NODE_ENV === "development";
+
+/**
+ * Security headers for the HTML surface.
+ *
+ * The Express API is covered by helmet, but helmet only guards JSON responses —
+ * the documents, the admin panel and the session token in localStorage all live
+ * on this server, which previously sent no security headers at all
+ * (MEL-SEC-006).
+ *
+ * CSP notes: Next injects inline bootstrap scripts and styled-jsx style tags, so
+ * 'unsafe-inline' is required for style-src, and script-src needs
+ * 'unsafe-inline' too until every inline script carries a nonce. Framing is
+ * denied outright — nothing here is meant to be embedded, and /admin/login was
+ * clickjackable without it.
+ */
+const CSP = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  // Next's hydration bootstrap is inline; eval is needed by the dev overlay only.
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  // Cloudinary and the media host serve images; data:/blob: cover previews.
+  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.tile.openstreetmap.org http://127.0.0.1:5000 http://localhost:5000",
+  // Same-origin API via the rewrite below, plus the API host directly.
+  `connect-src 'self' ${API_PROXY_TARGET.replace(/\/api\/v1$/, "")}${isDev ? " ws: http://127.0.0.1:5000 http://localhost:5000" : ""}`,
+  "manifest-src 'self'",
+  "worker-src 'self' blob:",
+  "upgrade-insecure-requests",
+].join("; ");
+
+const SECURITY_HEADERS = [
+  { key: "Content-Security-Policy", value: CSP },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()",
+  },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  // HSTS only makes sense once TLS is terminated in front of this server.
+  ...(isDev
+    ? []
+    : [
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=31536000; includeSubDomains",
+        },
+      ]),
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Do not advertise the framework and version (MEL-SEC-006 / Gambo INFO-002).
+  poweredByHeader: false,
   // `npm run dev` uses turbopack and `npm run build` uses webpack; the two write
   // incompatible artifacts into the same directory and neither prunes the
   // other's, which is what makes `next start` 500 on every SSR route after a dev
@@ -21,12 +80,12 @@ const nextConfig = {
       { protocol: "http", hostname: "localhost" },
       { protocol: "http", hostname: "127.0.0.1" },
       { protocol: "https", hostname: "res.cloudinary.com" },
-      { protocol: "https", hostname: "deder-hospital-eb7x.onrender.com" },
-      { protocol: "https", hostname: "gambo-general-hospital.onrender.com" },
+      // This deployment's own API host. The Deder and Gambo hosts that used to
+      // be listed here belonged to sibling projects (MEL-CFG-002).
+      { protocol: "https", hostname: "melkaoda.onrender.com" },
     ],
   },
   async headers() {
-    const isDev = process.env.NODE_ENV === "development";
     return [
       {
         source: "/favicon.ico",
@@ -72,8 +131,14 @@ const nextConfig = {
           ]),
       {
         source: "/:path*",
+        headers: SECURITY_HEADERS,
+      },
+      // The admin panel is never cached and never indexed.
+      {
+        source: "/admin/:path*",
         headers: [
-          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "Cache-Control", value: "no-store, must-revalidate" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
         ],
       },
     ];

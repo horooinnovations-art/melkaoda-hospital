@@ -44,6 +44,7 @@ export const RESOURCE_PERMISSIONS = {
   departments: 'manage_departments',
   'department-categories': 'manage_departments',
   'partnership-categories': 'manage_pages',
+  partnerships: 'manage_pages',
   doctors: 'manage_doctors',
   specializations: 'manage_doctors',
   services: 'manage_services',

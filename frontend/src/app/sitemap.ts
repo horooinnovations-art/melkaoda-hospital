@@ -1,7 +1,12 @@
 import type { MetadataRoute } from 'next';
+import { getSiteUrl } from '@/lib/siteUrl';
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // Resolved at request time so a missing NEXT_PUBLIC_SITE_URL at build time no
+  // longer bakes localhost into every <loc> (MEL-CFG-001).
+  const baseUrl = getSiteUrl();
 
   const staticRoutes = [
     '',

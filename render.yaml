@@ -17,6 +17,14 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      # Render's edge plus the Next.js rewrite proxy = 2 hops. Must match reality:
+      # too high lets a client forge X-Forwarded-For (MEL-DEVOPS-001).
+      - key: TRUST_PROXY_HOPS
+        value: "2"
+      # Comma-separated operator addresses that hold users.is_root_admin — the
+      # tier that can manage other super admins (MEL-SEC-001).
+      - key: ROOT_ADMIN_EMAILS
+        sync: false
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
@@ -49,9 +57,10 @@ services:
         value: melkaoda-hospital
       - key: DB_SSL
         value: "true"
-      # Prefer a real PEM in MYSQL_ATTR_SSL_CA. Until then, explicit insecure TLS opt-in:
-      - key: DB_SSL_INSECURE
-        value: "true"
+      # DB_SSL_INSECURE is deliberately absent: it set rejectUnauthorized=false,
+      # leaving the Aiven connection encrypted but unauthenticated (MEL-SEC-005).
+      # MYSQL_ATTR_SSL_CA below must hold the Aiven CA certificate PEM, or db.js
+      # refuses to build a pool.
       - key: MEDIA_STORAGE_HOST
         sync: false
       - key: MYSQL_ATTR_SSL_CA
@@ -70,6 +79,14 @@ services:
         value: production
       - key: NEXT_PUBLIC_SITE_NAME
         value: Melka Oda General Hospital
+      # robots.ts and sitemap.ts fall back to http://localhost:3000 without this,
+      # which makes the live site unindexable (MEL-CFG-001). SITE_URL is read at
+      # request time so it can be corrected without a rebuild; the NEXT_PUBLIC_
+      # form is inlined at build time and is only needed by client code.
+      - key: SITE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
       # Must be the live API URL (baked into the client bundle at build time).
       - key: NEXT_PUBLIC_API_URL
         sync: false

@@ -154,6 +154,40 @@ async function ensureRbacPermissions() {
   }
 }
 
+/**
+ * Institutional partners for /partnerships and Admin → Partnerships. The admin
+ * UI shipped before the storage did, so the public page fell back to hardcoded
+ * sample partners (MEL-CONTENT-001).
+ */
+async function ensurePartnershipsTable() {
+  try {
+    await query(
+      `CREATE TABLE IF NOT EXISTS \`partnerships\` (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) DEFAULT NULL,
+        category VARCHAR(150) DEFAULT NULL,
+        partnership_type VARCHAR(150) DEFAULT NULL,
+        description TEXT NULL,
+        website VARCHAR(500) DEFAULT NULL,
+        contact_email VARCHAR(255) DEFAULT NULL,
+        contact_phone VARCHAR(60) DEFAULT NULL,
+        logo_id BIGINT UNSIGNED DEFAULT NULL,
+        \`order\` INT NOT NULL DEFAULT 0,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at DATETIME NULL,
+        updated_at DATETIME NULL,
+        deleted_at DATETIME NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uniq_partnerships_slug (slug),
+        KEY idx_partnerships_active_order (is_active, \`order\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+    );
+  } catch (err) {
+    console.warn(`[schema] partnerships table check skipped: ${err.message}`);
+  }
+}
+
 async function ensurePartnershipCategoriesTable() {
   try {
     await query(
@@ -301,8 +335,25 @@ export async function bootstrapSchema() {
     '`slug` VARCHAR(255) NULL DEFAULT NULL'
   );
 
+  // Root-admin marker: the real privilege boundary above super_admin. Replaces
+  // the old "name/email contains 'admin'" test, which was self-grantable
+  // (MEL-SEC-001). Never writable through the API — see sqlSafe SYSTEM_COLUMNS.
+  await ensureColumn(
+    'users',
+    'is_root_admin',
+    '`is_root_admin` TINYINT(1) NOT NULL DEFAULT 0'
+  );
+
+  // Password-change timestamp: invalidates JWTs issued before it (MEL-SEC-007).
+  await ensureColumn(
+    'users',
+    'password_changed_at',
+    '`password_changed_at` TIMESTAMP NULL DEFAULT NULL'
+  );
+
   // Ensure partnership category storage exists for admin select options.
   await ensurePartnershipCategoriesTable();
+  await ensurePartnershipsTable();
 
   // Downloads centre (public /downloads + Admin → Downloads).
   await ensureDownloadsTable();
@@ -316,8 +367,12 @@ export async function bootstrapSchema() {
   // Fix already-polluted address_line1 values in the DB.
   await cleanupDuplicatedAddress();
 
-  // Guarantee at least one sign-in capable admin after accidental soft-deletes.
+  // Create the very first admin on an empty database. Does not reactivate,
+  // restore or re-password existing accounts unless explicitly asked to.
   await ensureAdminAccount();
+
+  // Apply the ROOT_ADMIN_EMAILS designation to users.is_root_admin.
+  await ensureRootAdmins();
 
   // Deder-parity manage_* permissions + role assignments.
   await ensureRbacPermissions();
@@ -339,146 +394,189 @@ async function ensureSuperAdminRole(userId) {
   }
 }
 
+
 /**
- * Keep the bootstrap ADMIN_EMAIL account sign-inable with ADMIN_PASSWORD.
- * Previously ADMIN_PASSWORD was only used when creating a brand-new user, so
- * an existing active admin with a different DB hash stayed locked out.
+ * First-run bootstrap only.
+ *
+ * The previous implementation re-asserted the ADMIN_EMAIL account on every
+ * boot: it forced `deleted_at = NULL, status = 'active'`, re-hashed
+ * ADMIN_PASSWORD over whatever the operator had set (ADMIN_SYNC_PASSWORD
+ * defaulted to on), and — in one branch — ran an unfiltered UPDATE that
+ * reactivated *every* suspended admin plus the first soft-deleted one. That
+ * made administrator offboarding un-enforceable: a deploy or an idle-spindown
+ * restart silently undid it (MEL-SEC-002).
+ *
+ * Now: create an admin only when the database has none at all. Every
+ * restore/reset path is behind ADMIN_RESET_PASSWORD, which is a deliberate,
+ * one-shot break-glass switch and is off unless explicitly set.
  */
 async function ensureAdminAccount() {
+  const email = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || '';
+  const name = process.env.ADMIN_NAME || 'System Administrator';
+  const breakGlass =
+    process.env.ADMIN_RESET_PASSWORD === '1' || process.env.ADMIN_RESET_PASSWORD === 'true';
+
+  if (!email || !password) {
+    // validateEnv() already fails the boot in production; locally this is just
+    // "nothing to provision".
+    if (breakGlass) {
+      console.error('[schema] ADMIN_RESET_PASSWORD set but ADMIN_EMAIL/ADMIN_PASSWORD are missing.');
+    }
+    return;
+  }
+
   try {
-    const email = (process.env.ADMIN_EMAIL || 'admin@lokehospital.com').trim().toLowerCase();
-    const password = process.env.ADMIN_PASSWORD || 'Admin@12345';
-    const name = process.env.ADMIN_NAME || 'System Administrator';
-    const forceReset =
-      process.env.ADMIN_RESET_PASSWORD === '1' ||
-      process.env.ADMIN_RESET_PASSWORD === 'true';
-    // Default ON: keep ADMIN_EMAIL password aligned with ADMIN_PASSWORD.
-    // Set ADMIN_SYNC_PASSWORD=0 to leave the DB hash alone after first create.
-    const syncPassword = process.env.ADMIN_SYNC_PASSWORD !== '0';
+    const { hashPassword } = await import('../utils/password.js');
 
-    const isProd = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
-    const usingDefaultPassword = password === 'Admin@12345';
-    const usingDefaultEmail = email === 'admin@lokehospital.com';
-
-    if (isProd && usingDefaultPassword) {
-      throw new Error(
-        '[schema] Refusing default ADMIN_PASSWORD in production. Set a strong ADMIN_PASSWORD.'
-      );
-    }
-
-    if (!isProd && (usingDefaultEmail || usingDefaultPassword)) {
-      console.warn(
-        '[schema] Bootstrap admin uses a default email/password — set unique ADMIN_EMAIL/ADMIN_PASSWORD for shared deploys.'
-      );
-    }
-
-    const { hashPassword, verifyPassword } = await import('../utils/password.js');
-
-    let user = await queryOne(
-      `SELECT id, password, status, deleted_at FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1`,
-      { email }
-    );
-
-    if (!user) {
-      // No bootstrap user — only create when no other active admin exists,
-      // unless forceReset was requested.
-      const activeAdmins = await query(
-        `SELECT u.id FROM users u
-         INNER JOIN user_roles ur ON ur.user_id = u.id
-         INNER JOIN roles r ON r.id = ur.role_id
-         WHERE r.slug IN ('super_admin', 'admin')
-           AND u.deleted_at IS NULL
-           AND u.status = 'active'
-         LIMIT 1`
-      );
-
-      if (!forceReset && activeAdmins.length) {
-        // Another admin exists under a different email — reactivate path below
-        // still covers total lockout; do not create a second bootstrap user.
-      } else {
-        const hash = await hashPassword(password);
-        const result = await query(
-          `INSERT INTO users (name, email, password, status, created_at, updated_at)
-           VALUES (:name, :email, :password, 'active', NOW(), NOW())`,
-          { name, email, password: hash }
-        );
-        user = { id: result.insertId, password: hash, status: 'active', deleted_at: null };
-        console.log(`[schema] created bootstrap admin ${email}`);
-      }
-    }
-
-    if (user) {
-      const passwordOk = await verifyPassword(password, user.password);
-      const needsPassword = forceReset || (syncPassword && !passwordOk);
-      const needsRestore =
-        user.deleted_at != null || String(user.status || '').toLowerCase() !== 'active';
-
-      if (needsPassword || needsRestore) {
-        const hash = needsPassword ? await hashPassword(password) : undefined;
-        if (needsPassword) {
-          await query(
-            `UPDATE users
-             SET password = :password, deleted_at = NULL, status = 'active', updated_at = NOW()
-             WHERE id = :id`,
-            { id: user.id, password: hash }
-          );
-          console.log(
-            `[schema] synced login password for ${email}` +
-              (forceReset ? ' (ADMIN_RESET_PASSWORD)' : ' (ADMIN_PASSWORD env)')
-          );
-        } else {
-          await query(
-            `UPDATE users
-             SET deleted_at = NULL, status = 'active', updated_at = NOW()
-             WHERE id = :id`,
-            { id: user.id }
-          );
-          console.log(`[schema] reactivated bootstrap admin ${email}`);
-        }
-      }
-
-      await ensureSuperAdminRole(user.id);
-      if (forceReset) {
-        console.warn(
-          '[schema] ADMIN_RESET_PASSWORD completed — remove ADMIN_RESET_PASSWORD from the environment after login.'
-        );
-      }
-      return;
-    }
-
-    // Bootstrap email not present, but maybe other admins are inactive/deleted.
-    const reactivated = await query(
-      `UPDATE users u
+    const anyAdmin = await queryOne(
+      `SELECT u.id FROM users u
        INNER JOIN user_roles ur ON ur.user_id = u.id
        INNER JOIN roles r ON r.id = ur.role_id
-       SET u.status = 'active', u.updated_at = NOW()
        WHERE r.slug IN ('super_admin', 'admin')
          AND u.deleted_at IS NULL
-         AND u.status != 'active'`
-    );
-    if (reactivated?.affectedRows) {
-      console.log(`[schema] reactivated ${reactivated.affectedRows} inactive admin account(s)`);
-      return;
-    }
-
-    const softDeleted = await queryOne(
-      `SELECT u.id, u.email FROM users u
-       INNER JOIN user_roles ur ON ur.user_id = u.id
-       INNER JOIN roles r ON r.id = ur.role_id
-       WHERE r.slug IN ('super_admin', 'admin')
-         AND u.deleted_at IS NOT NULL
-       ORDER BY (r.slug = 'super_admin') DESC, u.id ASC
        LIMIT 1`
     );
 
-    if (softDeleted) {
-      await query(
-        `UPDATE users SET deleted_at = NULL, status = 'active', updated_at = NOW() WHERE id = :id`,
-        { id: softDeleted.id }
+    const existing = await queryOne(
+      `SELECT id, status, deleted_at FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1`,
+      { email }
+    );
+
+    // ── First run: no admin exists anywhere. Create one. ──────────────────
+    if (!anyAdmin && !existing) {
+      const hash = await hashPassword(password);
+      const result = await query(
+        `INSERT INTO users (name, email, password, status, password_changed_at, created_at, updated_at)
+         VALUES (:name, :email, :password, 'active', NOW(), NOW(), NOW())`,
+        { name, email, password: hash }
       );
-      console.log(`[schema] restored soft-deleted admin #${softDeleted.id} (${softDeleted.email})`);
+      await ensureSuperAdminRole(result.insertId);
+      console.log(`[schema] first-run: created bootstrap admin ${email}`);
+      return;
+    }
+
+    // ── Break-glass: operator explicitly asked to recover this account. ───
+    if (breakGlass) {
+      const hash = await hashPassword(password);
+      if (existing) {
+        await query(
+          `UPDATE users
+           SET password = :password, deleted_at = NULL, status = 'active',
+               password_changed_at = NOW(), updated_at = NOW()
+           WHERE id = :id`,
+          { id: existing.id, password: hash }
+        );
+        await ensureSuperAdminRole(existing.id);
+        console.warn(`[schema] ADMIN_RESET_PASSWORD: reset and reactivated ${email}`);
+      } else {
+        const result = await query(
+          `INSERT INTO users (name, email, password, status, password_changed_at, created_at, updated_at)
+           VALUES (:name, :email, :password, 'active', NOW(), NOW(), NOW())`,
+          { name, email, password: hash }
+        );
+        await ensureSuperAdminRole(result.insertId);
+        console.warn(`[schema] ADMIN_RESET_PASSWORD: created ${email}`);
+      }
+      console.warn(
+        '[schema] Remove ADMIN_RESET_PASSWORD from the environment and redeploy now that recovery is done.'
+      );
+      return;
+    }
+
+    // ── Steady state: touch nothing. ─────────────────────────────────────
+    // An operator who deactivated or deleted an admin meant it. If the
+    // bootstrap account is locked out, set ADMIN_RESET_PASSWORD=1 once.
+    if (existing && (existing.deleted_at || String(existing.status).toLowerCase() !== 'active')) {
+      console.warn(
+        `[schema] bootstrap admin ${email} is disabled or deleted and was left untouched. ` +
+          'Set ADMIN_RESET_PASSWORD=1 for one boot to recover it.'
+      );
     }
   } catch (err) {
-    console.warn(`[schema] ensureAdminAccount skipped: ${err.message}`);
+    console.error(`[schema] ensureAdminAccount failed: ${err.message}`);
+  }
+}
+
+/**
+ * Apply the root-admin designation from ROOT_ADMIN_EMAILS.
+ *
+ * This is the only supported way to grant `users.is_root_admin` — the column is
+ * in sqlSafe's SYSTEM_COLUMNS and appears in no controller's writable column
+ * list, so no request body can reach it. Membership is therefore an operator
+ * decision made in the environment, not something a user can edit into
+ * existence (the MEL-SEC-001 failure).
+ *
+ * Listed addresses are promoted; addresses that are no longer listed are
+ * demoted, so removing someone from the env var actually revokes the tier.
+ */
+async function ensureRootAdmins() {
+  try {
+    const listed = String(process.env.ROOT_ADMIN_EMAILS || '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (listed.length) {
+      const placeholders = listed.map((_, i) => `:e${i}`).join(',');
+      const params = Object.fromEntries(listed.map((e, i) => [`e${i}`, e]));
+
+      const promoted = await query(
+        `UPDATE users SET is_root_admin = 1, updated_at = NOW()
+         WHERE LOWER(email) IN (${placeholders})
+           AND deleted_at IS NULL
+           AND COALESCE(is_root_admin, 0) = 0`,
+        params
+      );
+      const demoted = await query(
+        `UPDATE users SET is_root_admin = 0, updated_at = NOW()
+         WHERE LOWER(email) NOT IN (${placeholders})
+           AND COALESCE(is_root_admin, 0) = 1`,
+        params
+      );
+      if (promoted?.affectedRows) console.log(`[schema] root admin granted to ${promoted.affectedRows} account(s)`);
+      if (demoted?.affectedRows) console.warn(`[schema] root admin revoked from ${demoted.affectedRows} account(s)`);
+
+      const missing = [];
+      for (const e of listed) {
+        const row = await queryOne(
+          `SELECT id FROM users WHERE LOWER(email) = :e AND deleted_at IS NULL LIMIT 1`,
+          { e }
+        );
+        if (!row) missing.push(e);
+      }
+      if (missing.length) {
+        console.warn(`[schema] ROOT_ADMIN_EMAILS lists unknown account(s): ${missing.join(', ')}`);
+      }
+    }
+
+    // Never leave the tier empty — with no root admin, nobody can manage super
+    // admins and the panel soft-locks. Promote the longest-standing active
+    // super admin and say so loudly.
+    const anyRoot = await queryOne(
+      `SELECT id FROM users WHERE COALESCE(is_root_admin, 0) = 1 AND deleted_at IS NULL LIMIT 1`
+    );
+    if (!anyRoot) {
+      const fallback = await queryOne(
+        `SELECT u.id, u.email FROM users u
+         INNER JOIN user_roles ur ON ur.user_id = u.id
+         INNER JOIN roles r ON r.id = ur.role_id
+         WHERE r.slug = 'super_admin' AND u.deleted_at IS NULL AND u.status = 'active'
+         ORDER BY u.id ASC LIMIT 1`
+      );
+      if (fallback) {
+        await query(`UPDATE users SET is_root_admin = 1, updated_at = NOW() WHERE id = :id`, {
+          id: fallback.id,
+        });
+        console.warn(
+          `[schema] No root admin was set — promoted ${fallback.email} so the tier is not empty. ` +
+            'Set ROOT_ADMIN_EMAILS explicitly to control this.'
+        );
+      } else {
+        console.warn('[schema] No active super admin exists to designate as root admin.');
+      }
+    }
+  } catch (err) {
+    console.error(`[schema] ensureRootAdmins failed: ${err.message}`);
   }
 }

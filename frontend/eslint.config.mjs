@@ -14,17 +14,19 @@ const eslintConfig = [
   {
     ignores: [
       "node_modules/**",
-      ".next/**",
-      // Isolated build dirs used to verify a build without disturbing a running
-      // dev server. Linting compiled output produced ~2800 no-require-imports
-      // errors from minified chunks and buried the real source warnings.
-      ".next-verify*/**",
-      ".nvtmp/**",
-      ".nvout/**",
-      ".nvwork/**",
+      // Every build directory, not an enumerated subset. `.next-v2/` was missing
+      // from this list, so `npm run lint` reported 2,940 errors from compiled
+      // chunks and generated route types while src/ had none — which made a lint
+      // gate worthless, because it could never go green.
+      ".next*/**",
+      ".nv*/**",
       "out/**",
       "build/**",
+      "dist/**",
+      "coverage/**",
       "next-env.d.ts",
+      "*.tsbuildinfo",
+      ".lint-summary.cjs",
     ],
   },
 ];

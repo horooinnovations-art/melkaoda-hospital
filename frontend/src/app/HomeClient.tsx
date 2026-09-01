@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
   Clock,
@@ -12,7 +11,7 @@ import {
   Sparkles,
   Stethoscope,
 } from "lucide-react";
-import { useGetHomeQuery } from "@/store/slices/apiSlice";
+import { useGetHomeQuery, useGetResourceListQuery } from "@/store/slices/apiSlice";
 import { SITE_NAME, DEFAULT_TAGLINE } from "@/lib/api";
 import type { HomeData, Partner } from "@/lib/types";
 import { getImageFromItem } from "@/lib/media";
@@ -22,7 +21,6 @@ import {
   isPublicItemActive,
   truncate,
 } from "@/lib/utils";
-import { getStoredPartners } from "@/lib/partnersData";
 import NovaHero from "@/components/nova/NovaHero";
 import NovaSectionHead from "@/components/nova/NovaSectionHead";
 import NovaReveal from "@/components/nova/NovaReveal";
@@ -107,9 +105,14 @@ export default function HomeClient({
   const data = query.data ?? initialData ?? undefined;
   const isLoading = !data && query.isLoading;
 
-  // Read after mount so the server and client render the same first paint.
-  const [partners, setPartners] = useState<Partner[]>([]);
-  useEffect(() => setPartners(getStoredPartners().slice(0, 6)), []);
+  // Partners come from the API. This used to read a hardcoded SAMPLE_PARTNERS
+  // array out of localStorage, so the front page advertised affiliations nobody
+  // had entered (MEL-CONTENT-001).
+  const { data: partnersData } = useGetResourceListQuery({
+    resource: "partnerships",
+    perPage: 6,
+  });
+  const partners = ((partnersData?.data ?? []) as Partner[]).slice(0, 6);
 
   const settings = data?.settings ?? {};
   const name =

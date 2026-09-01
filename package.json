@@ -1,9 +1,9 @@
 {
-  "name": "loke-general-hospital",
+  "name": "melkaoda-general-hospital",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Loke General Hospital — Next.js + Express + MySQL",
+  "description": "Melka Oda General Hospital \u2014 Next.js + Express + MySQL",
   "main": "backend/src/server.js",
   "scripts": {
     "start": "node backend/src/server.js",

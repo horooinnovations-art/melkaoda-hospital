@@ -25,7 +25,6 @@ import PageTransition from "@/components/motion/PageTransition";
 import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import type { Partner } from "@/lib/types";
-import { getStoredPartners } from "@/lib/partnersData";
 import { stripHtml } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/api";
 
@@ -46,16 +45,13 @@ export default function PartnerDetailPage({
     perPage: 24,
   });
 
-  const storedPartners = getStoredPartners();
+  // Only the API is consulted. The localStorage/SAMPLE_PARTNERS fallback that
+  // used to back this page published affiliations nobody entered
+  // (MEL-CONTENT-001).
   const apiItem = itemData as Partner | undefined;
-  const match = storedPartners.find(
-    (p) => p.slug === slug || String(p.id) === slug
-  );
-  const partner = apiItem?.name ? apiItem : match;
+  const partner = apiItem?.name ? apiItem : undefined;
 
-  const allPartners = (listData?.data as Partner[])?.length
-    ? (listData?.data as Partner[])
-    : storedPartners;
+  const allPartners: Partner[] = (listData?.data as Partner[]) ?? [];
 
   if (isLoading && !partner) {
     return (
@@ -95,9 +91,9 @@ export default function PartnerDetailPage({
     ];
 
   // Related partners in same category
-  const relatedPartners = allPartners.filter(
-    (p) => p.id !== partner.id && p.category === partner.category
-  ).slice(0, 3);
+  const relatedPartners = allPartners
+    .filter((p: Partner) => p.id !== partner.id && p.category === partner.category)
+    .slice(0, 3);
 
   return (
     <PageTransition>
@@ -284,7 +280,7 @@ export default function PartnerDetailPage({
                     </div>
 
                     <div className="grid gap-2">
-                      {relatedPartners.map((rel) => (
+                      {relatedPartners.map((rel: Partner) => (
                         <Link
                           key={rel.id}
                           href={"/partnerships/" + (rel.slug || rel.id)}

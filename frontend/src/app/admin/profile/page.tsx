@@ -27,7 +27,7 @@ import {
   useUpdateMeMutation,
   useUpdateMyPasswordMutation,
 } from "@/store/adminApi";
-import { setStoredUser } from "@/lib/auth";
+import { setStoredUser, setToken } from "@/lib/auth";
 import { resolveMediaUrl, shouldBypassImageOptimizer } from "@/lib/media";
 import { StatusBadge } from "@/components/admin/adminDisplay";
 
@@ -148,15 +148,18 @@ export default function AdminProfilePage() {
     }
 
     try {
-      await updatePassword({
+      const result = await updatePassword({
         current_password: currentPassword,
         password,
         password_confirmation: passwordConfirm,
       }).unwrap();
+      // The change invalidated every token issued before it, this tab's
+      // included. Swap in the replacement the API returned.
+      if (result?.token) setToken(result.token);
       setCurrentPassword("");
       setPassword("");
       setPasswordConfirm("");
-      toast.success("Password updated successfully");
+      toast.success("Password updated. Other devices have been signed out.");
     } catch (err) {
       toast.error(apiError(err, "Could not update password"));
     }

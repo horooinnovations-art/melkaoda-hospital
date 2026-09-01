@@ -90,33 +90,33 @@ export default function AdminNotifications() {
           <div
             ref={panelRef}
             style={panelStyle}
-            className="admin-portal overflow-hidden border-2 border-[#111] bg-white shadow-[6px_6px_0_rgba(17,17,17,0.15)]"
+            className="admin-portal overflow-hidden rounded-xl border border-[var(--ld-line-strong)] bg-[#0d1424] shadow-[0_24px_48px_-16px_rgba(0,0,0,0.85)] backdrop-blur-xl"
             role="dialog"
             aria-label="Notifications"
           >
-            <div className="flex items-center justify-between border-b-2 border-[#111] bg-[#fafafa] px-4 py-3">
+            <div className="flex items-center justify-between border-b border-[var(--ld-line)] bg-white/5 px-4 py-3">
               <div>
-                <p className="text-sm font-bold text-[#111]">Inbox alerts</p>
-                <p className="text-xs text-[#737373]">
+                <p className="text-sm font-bold text-[var(--ld-ink)]">Inbox alerts</p>
+                <p className="text-xs text-[var(--ld-faint)]">
                   {unread > 0
                     ? `${unread} unread contact message${unread === 1 ? "" : "s"}`
                     : "No unread messages"}
                 </p>
               </div>
-              <Inbox className="h-4 w-4 text-[#111]" />
+              <Inbox className="h-4 w-4 text-[var(--ld-accent)]" />
             </div>
 
-            <ul className="max-h-80 divide-y divide-[#e5e5e5] overflow-y-auto">
+            <ul className="max-h-80 divide-y divide-[var(--ld-line)] overflow-y-auto">
               {isFetching && items.length === 0 ? (
-                <li className="px-4 py-8 text-center text-sm text-[#737373]">Loading…</li>
+                <li className="px-4 py-8 text-center text-sm text-[var(--ld-faint)]">Loading…</li>
               ) : items.length === 0 ? (
-                <li className="px-4 py-8 text-center text-sm text-[#737373]">Inbox is empty</li>
+                <li className="px-4 py-8 text-center text-sm text-[var(--ld-faint)]">Inbox is empty</li>
               ) : (
                 items.map((item) => (
                   <li key={item.id}>
                     <button
                       type="button"
-                      className="flex w-full gap-3 px-4 py-3 text-left transition hover:bg-[#f5f5f5]"
+                      className="flex w-full gap-3 px-4 py-3 text-left transition hover:bg-white/5"
                       onClick={() => {
                         setOpen(false);
                         router.push("/admin/contact-submissions");
@@ -124,25 +124,25 @@ export default function AdminNotifications() {
                     >
                       <span
                         className={cn(
-                          "mt-1 h-2 w-2 shrink-0",
-                          item.status === "new" ? "bg-[#111]" : "bg-[#d4d4d4]"
+                          "mt-1 h-2 w-2 shrink-0 rounded-full",
+                          item.status === "new" ? "bg-[var(--ld-accent)]" : "bg-white/20"
                         )}
                       />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-bold text-[#111]">
+                          <span className="truncate text-sm font-bold text-[var(--ld-ink)]">
                             {item.name}
                           </span>
                           {item.status === "new" && (
-                            <span className="shrink-0 border border-[#111] bg-[#111] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                            <span className="shrink-0 rounded border border-[var(--ld-accent)]/30 bg-[var(--ld-accent-soft)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--ld-accent)]">
                               New
                             </span>
                           )}
                         </span>
-                        <span className="mt-0.5 block truncate text-xs text-[#525252]">
+                        <span className="mt-0.5 block truncate text-xs text-[var(--ld-muted)]">
                           {item.subject}
                         </span>
-                        <span className="mt-1 block text-[11px] text-[#737373]">
+                        <span className="mt-1 block text-[11px] text-[var(--ld-faint)]">
                           {formatDate(item.created_at, {
                             month: "short",
                             day: "numeric",
@@ -157,11 +157,11 @@ export default function AdminNotifications() {
               )}
             </ul>
 
-            <div className="border-t-2 border-[#111] p-2">
+            <div className="border-t border-[var(--ld-line)] p-2">
               <Link
                 href="/admin/contact-submissions"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center px-3 py-2.5 text-sm font-bold text-[#111] underline underline-offset-2"
+                className="flex items-center justify-center px-3 py-2 text-xs font-bold uppercase tracking-wide text-[var(--ld-accent)] hover:underline"
               >
                 Open contact inbox
               </Link>
@@ -186,7 +186,7 @@ export default function AdminNotifications() {
       >
         <Bell className="h-4 w-4" />
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center bg-white px-1 font-mono text-[10px] font-bold leading-none text-[#111]">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--ld-accent)] px-1 font-mono text-[10px] font-bold leading-none text-[#080d18] shadow-sm">
             {unread > 99 ? "99+" : unread}
           </span>
         )}

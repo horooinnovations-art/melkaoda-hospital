@@ -1,5 +1,5 @@
 import { query, queryOne } from '../config/db.js';
-import { ok, fail, created, message, slugify, toBool, paginate, parseJsonField } from '../utils/helpers.js';
+import { ok, fail, created, message, slugify, toBool, paginate, parseJsonField, serverError } from '../utils/helpers.js';
 import { attachPhoto, attachPhotos, saveMedia } from '../services/media.js';
 import { rebrandContent, slugLookupCandidates } from '../utils/settings.js';
 import { logAudit } from '../services/audit.js';
@@ -96,8 +96,7 @@ export function createCrud(config) {
       const payload = isPublic ? rebrandContent(rows) : rows;
       return ok(res, { data: payload, meta: { total: totalRow.total, page, perPage } });
     } catch (err) {
-      console.error(err);
-      return fail(res, err.message, 500);
+      return serverError(res, err);
     }
   }
 
@@ -128,8 +127,7 @@ export function createCrud(config) {
       if (afterFetch) await afterFetch([row], req);
       return ok(res, isPublic ? rebrandContent(row) : row);
     } catch (err) {
-      console.error(err);
-      return fail(res, err.message, 500);
+      return serverError(res, err);
     }
   }
 
@@ -188,8 +186,7 @@ export function createCrud(config) {
       });
       return created(res, row);
     } catch (err) {
-      console.error(err);
-      return fail(res, err.message, 500);
+      return serverError(res, err);
     }
   }
 
@@ -243,8 +240,7 @@ export function createCrud(config) {
       });
       return ok(res, row);
     } catch (err) {
-      console.error(err);
-      return fail(res, err.message, 500);
+      return serverError(res, err);
     }
   }
 
@@ -268,8 +264,7 @@ export function createCrud(config) {
       });
       return message(res, 'Deleted successfully');
     } catch (err) {
-      console.error(err);
-      return fail(res, err.message, 500);
+      return serverError(res, err);
     }
   }
 

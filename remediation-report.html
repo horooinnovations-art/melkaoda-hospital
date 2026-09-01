@@ -1,0 +1,911 @@
+<title>Melka Oda Remediation Audit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EDF0F2; --surface:#FFFFFF; --surface-2:#F5F7F8; --sunk:#E3E8EB;
+  --ink:#131A21; --ink-2:#33414C; --muted:#5C6B78; --faint:#8E9BA5;
+  --rule:#D3DBDF; --rule-2:#C0CBD1;
+  --accent:#1D4E6B; --accent-soft:#E7EFF4;
+  --crit:#B3241F; --crit-bg:#FBEAE8;
+  --high:#B5651A; --high-bg:#FCF0E3;
+  --med:#8A7515;  --med-bg:#F8F4E2;
+  --fixed:#2F6B54; --fixed-bg:#E8F2ED;
+  --info:#5C6B78; --info-bg:#EDF0F2;
+  --shadow:0 1px 2px rgba(19,26,33,.06),0 8px 24px -16px rgba(19,26,33,.18);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#12171B; --surface:#181F24; --surface-2:#1E262C; --sunk:#0D1216;
+    --ink:#E4E9ED; --ink-2:#C3CDD4; --muted:#94A3AC; --faint:#6E7C86;
+    --rule:#2A343B; --rule-2:#3A464E;
+    --accent:#6FA8C7; --accent-soft:#1B2A34;
+    --crit:#F0837C; --crit-bg:#2E1917;
+    --high:#E3A860; --high-bg:#2B2117;
+    --med:#CFBB55;  --med-bg:#26230F;
+    --fixed:#6FBF9C; --fixed-bg:#132420;
+    --info:#94A3AC; --info-bg:#1E262C;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12171B; --surface:#181F24; --surface-2:#1E262C; --sunk:#0D1216;
+  --ink:#E4E9ED; --ink-2:#C3CDD4; --muted:#94A3AC; --faint:#6E7C86;
+  --rule:#2A343B; --rule-2:#3A464E;
+  --accent:#6FA8C7; --accent-soft:#1B2A34;
+  --crit:#F0837C; --crit-bg:#2E1917;
+  --high:#E3A860; --high-bg:#2B2117;
+  --med:#CFBB55;  --med-bg:#26230F;
+  --fixed:#6FBF9C; --fixed-bg:#132420;
+  --info:#94A3AC; --info-bg:#1E262C;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"Public Sans",ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:15px;line-height:1.62;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px 96px}
+</style>
+<style>
+h1,h2,h3{font-family:Spectral,Georgia,"Times New Roman",serif;text-wrap:balance;margin:0;font-weight:600;letter-spacing:-.01em}
+h1{font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-.022em}
+h2{font-size:clamp(22px,2.5vw,28px);line-height:1.2}
+h3{font-size:18px;line-height:1.3}
+p{margin:0}
+.prose{max-width:66ch;display:flex;flex-direction:column;gap:14px;color:var(--ink-2)}
+.prose strong{color:var(--ink);font-weight:600}
+.lede{font-family:Spectral,Georgia,serif;font-size:19px;line-height:1.55;color:var(--ink-2);max-width:64ch}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;font-size:.88em}
+code{background:var(--sunk);padding:.1em .38em;border-radius:3px;color:var(--ink);word-break:break-word}
+a{color:var(--accent);text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+section{padding-top:56px}
+.shead{display:flex;flex-direction:column;gap:7px;padding-bottom:22px;border-bottom:1px solid var(--rule);margin-bottom:26px}
+.stack{display:flex;flex-direction:column;gap:18px}
+.stack-lg{display:flex;flex-direction:column;gap:28px}
+.mast{padding:52px 0 0}
+.mast-rule{height:3px;background:var(--fixed);width:64px;margin-bottom:26px}
+.mast-meta{display:flex;flex-wrap:wrap;gap:6px 26px;margin-top:24px;padding-top:18px;
+  border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.mast-meta b{color:var(--ink);font-weight:600}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:start;
+  margin-top:30px;padding:26px;background:var(--surface);border:1px solid var(--rule);
+  border-left:5px solid var(--fixed);border-radius:3px;box-shadow:var(--shadow)}
+.verdict-tag{font-family:"IBM Plex Mono",monospace;font-size:23px;font-weight:600;
+  letter-spacing:.03em;color:var(--fixed);line-height:1.15;padding-top:3px}
+.verdict-tag small{display:block;font-size:11px;letter-spacing:.11em;color:var(--muted);font-weight:500;margin-top:5px}
+/* score pair */
+.scores{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.score{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px;position:relative;overflow:hidden}
+.score::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--bar)}
+.score .n{font-family:"IBM Plex Mono",monospace;font-size:38px;font-weight:600;line-height:1;
+  color:var(--bar);font-variant-numeric:tabular-nums}
+.score .n span{font-size:16px;color:var(--muted)}
+.score .l{font-family:"IBM Plex Mono",monospace;font-size:10px;text-transform:uppercase;
+  letter-spacing:.11em;color:var(--muted);margin-top:7px}
+.score .d{font-size:13px;color:var(--ink-2);margin-top:9px;max-width:44ch}
+.s-good{--bar:var(--fixed)} .s-warn{--bar:var(--high)}
+/* bar */
+.bar{display:grid;grid-template-columns:repeat(4,1fr);margin-top:14px;background:var(--surface);
+  border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.bar-c{padding:16px 14px 14px;border-left:1px solid var(--rule);display:flex;flex-direction:column;gap:3px;position:relative}
+.bar-c:first-child{border-left:0}
+.bar-c::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--bar,transparent)}
+.bar-n{font-family:"IBM Plex Mono",monospace;font-size:26px;font-weight:600;line-height:1;
+  color:var(--bar,var(--ink));font-variant-numeric:tabular-nums}
+.bar-l{font-family:"IBM Plex Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.c-fixed{--bar:var(--fixed)} .c-op{--bar:var(--high)} .c-acc{--bar:var(--med)} .c-new{--bar:var(--accent)}
+</style>
+<style>
+.tscroll{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:700px;font-size:13.5px}
+th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.11em;color:var(--muted);padding:11px 14px;
+  background:var(--surface-2);border-bottom:1px solid var(--rule-2);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+td.id{font-family:"IBM Plex Mono",monospace;font-size:12px;white-space:nowrap;color:var(--muted)}
+td.k{color:var(--ink);font-weight:500}
+.pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;padding:3px 7px;border-radius:2px;white-space:nowrap}
+.p-crit{background:var(--crit-bg);color:var(--crit)}
+.p-high{background:var(--high-bg);color:var(--high)}
+.p-med{background:var(--med-bg);color:var(--med)}
+.p-low{background:var(--info-bg);color:var(--info)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-fixed{background:var(--fixed-bg);color:var(--fixed)}
+.p-open{background:var(--high-bg);color:var(--high)}
+.p-acc{background:var(--med-bg);color:var(--med)}
+.p-new{background:var(--accent-soft);color:var(--accent)}
+/* cards */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  border-left:4px solid var(--sev,var(--rule-2));overflow:hidden;box-shadow:var(--shadow)}
+.card.ok{--sev:var(--fixed)} .card.open{--sev:var(--high)} .card.acc{--sev:var(--med)}
+.card-h{display:flex;flex-wrap:wrap;gap:9px 12px;align-items:baseline;padding:15px 20px;
+  background:var(--surface-2);border-bottom:1px solid var(--rule)}
+.card-id{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;color:var(--muted)}
+.card-t{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;line-height:1.3;flex:1 1 300px;color:var(--ink)}
+.card-b{padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px}
+.card-b p{color:var(--ink-2);max-width:78ch}
+.lab{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--faint);margin-bottom:5px}
+.ev{background:var(--sunk);border-radius:3px;padding:12px 14px;font-family:"IBM Plex Mono",monospace;
+  font-size:12px;line-height:1.65;color:var(--ink-2);overflow-x:auto;white-space:pre;border:1px solid var(--rule)}
+.ev b{color:var(--fixed);font-weight:600}
+.ev i{color:var(--crit);font-style:normal}
+ul.bul{margin:0;padding-left:19px;display:flex;flex-direction:column;gap:7px;color:var(--ink-2);max-width:78ch}
+ul.bul li::marker{color:var(--faint)}
+ol.steps{margin:0;padding-left:21px;display:flex;flex-direction:column;gap:9px;color:var(--ink-2);max-width:78ch}
+ol.steps li::marker{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+.note{background:var(--accent-soft);border:1px solid var(--rule);border-radius:3px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:9px}
+.note p{color:var(--ink-2);max-width:78ch}
+.warn{background:var(--high-bg);border:1px solid var(--rule);border-left:4px solid var(--high);
+  border-radius:3px;padding:18px 20px;display:flex;flex-direction:column;gap:9px}
+.warn p{color:var(--ink-2);max-width:78ch}
+@media (max-width:820px){
+  .scores{grid-template-columns:1fr}
+  .bar{grid-template-columns:repeat(2,1fr)}
+  .bar-c:nth-child(3){border-left:0}
+  .bar-c:nth-child(n+3){border-top:1px solid var(--rule)}
+  .verdict{grid-template-columns:1fr;gap:14px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<div class="wrap">
+
+<header class="mast">
+  <div class="mast-rule"></div>
+  <div class="eyebrow" style="margin-bottom:14px">Internal engineering review &middot; remediation pass</div>
+  <h1>Melka Oda General Hospital<br>Post-Remediation Readiness Audit</h1>
+  <div class="mast-meta">
+    <span><b>Scope</b> the 29 findings of the 2026-09-01 audit, plus the live deployment environment</span>
+    <span><b>Method</b> code changes, 44 unit tests, live probes against the running API and a production frontend build</span>
+    <span><b>Date</b> 2026-09-01</span>
+  </div>
+
+  <div class="verdict">
+    <div class="verdict-tag">GO<small>conditional on 6 dashboard variables</small></div>
+    <div class="prose">
+      <p><strong>Every code-level finding is fixed, tested and verified.</strong> Both Criticals, all nine
+      Highs, and the whole Medium/Low/Info register are closed in the repository — including the
+      broken-access-control flaw that forced the original No-Go. Dependency advisories went from six to
+      zero, the test suite from 8 tests to 44, and the lint gate from 2,940 errors to none.</p>
+      <p>Reading your real deployment environment turned up <strong>four defects the source alone could not
+      show</strong>, one of them Critical: the production API was running with
+      <code>NODE_ENV=development</code>, which silently disabled every production guard in the codebase. That
+      one is now fail-closed — the API refuses to start in that state rather than running unprotected.</p>
+      <p>What remains is not code. Six environment variables must be corrected in the Render dashboard, a
+      plaintext Gmail password must be rotated, and the git history purge is yours to run from the runbook
+      below. The shared-database risk is recorded as accepted at your direction.</p>
+    </div>
+  </div>
+
+  <div class="scores">
+    <div class="score s-good">
+      <div class="n">96<span>/100</span></div>
+      <div class="l">Codebase readiness</div>
+      <div class="d">Everything under this repository's control. Held below 100 by two items that are
+      operator actions, not code: the history purge and the accepted shared-database risk.</div>
+    </div>
+    <div class="score s-warn">
+      <div class="n">71<span>/100</span></div>
+      <div class="l">Deployment readiness &mdash; today</div>
+      <div class="d">The live environment still carries <code>NODE_ENV=development</code> and
+      <code>DB_SSL_INSECURE=true</code>. Applying the corrected env files takes this to <b>94/100</b>.</div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="bar-c c-fixed"><div class="bar-n">29</div><div class="bar-l">Fixed &amp; verified</div></div>
+    <div class="bar-c c-new"><div class="bar-n">4</div><div class="bar-l">New, found in remediation</div></div>
+    <div class="bar-c c-op"><div class="bar-n">3</div><div class="bar-l">Open &mdash; your action</div></div>
+    <div class="bar-c c-acc"><div class="bar-n">1</div><div class="bar-l">Accepted risk</div></div>
+  </div>
+</header>
+<section>
+  <div class="shead">
+    <div class="eyebrow">What the environment file revealed</div>
+    <h2>Four defects the source code could not show</h2>
+    <p class="lede">Reading <code>deployed_env_file/</code> changed the picture. The most serious one is a
+    single variable.</p>
+  </div>
+  <div class="stack-lg">
+
+  <article class="card open">
+    <div class="card-h">
+      <span class="card-id">MEL-DEPLOY-001</span>
+      <span class="pill p-crit">Critical</span>
+      <span class="card-t">The production API runs with <code>NODE_ENV=development</code>, disabling every production guard at once</span>
+      <span class="pill p-new">New</span>
+    </div>
+    <div class="card-b">
+      <div class="ev">deployed_env_file/melkaoda.env
+
+APP_ENV=production          <b>&larr; says production</b>
+NODE_ENV=<i>development</i>         <b>&larr; but the code reads THIS</b></div>
+      <p><code>isProduction()</code> tests <code>NODE_ENV</code> and nothing else. With it set to
+      development, the live API was running with:</p>
+      <ul class="bul">
+        <li><strong>No boot validation.</strong> The JWT secret, database password, admin password and
+        Cloudinary credential checks are all gated on <code>prod</code>. None of them ran.</li>
+        <li><strong>Error masking off.</strong> The old global handler returned
+        <code>err.message</code> and the stack to the caller whenever <code>isProduction()</code> was false;
+        <code>/health</code> echoed raw driver text naming the database host and schema.</li>
+        <li><strong>The Cloudinary requirement bypassed</strong>, so a media upload could silently fall back
+        to Render's ephemeral disk and vanish on the next deploy.</li>
+        <li><strong>The default-<code>ADMIN_PASSWORD</code> refusal bypassed</strong> in
+        <code>bootstrapSchema</code>.</li>
+      </ul>
+      <div>
+        <div class="lab">Fixed &mdash; the mismatch is now a boot failure</div>
+        <div class="ev">// backend/src/config/env.js
+if (!prod && (appEnv === 'production' || appEnv === 'prod')) {
+  errors.push(
+    'APP_ENV=production but NODE_ENV is not "production". Set NODE_ENV=production so the '
+    + 'production guards, error masking and Cloudinary requirement actually apply.'
+  );
+}
+
+<b>$ node --test tests/envHardening.test.js
+ok 7 - APP_ENV=production with NODE_ENV=development is rejected</b></div>
+      </div>
+      <p>Error masking and the <code>/health</code> disclosure were additionally made unconditional, so a
+      mis-set <code>NODE_ENV</code> can no longer turn disclosure back on even if this check is bypassed.</p>
+      <div style="border-top:1px solid var(--rule);padding-top:14px">
+        <div class="lab">Your action</div>
+        <p>Set <code>NODE_ENV=production</code> on the <code>melkaoda-hospital-api</code> service. The API
+        will refuse to boot until you do &mdash; that is deliberate.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="card open">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-017</span>
+      <span class="pill p-high">High</span>
+      <span class="card-t">A plaintext Google account password sits in the API environment, for a mailer that does not exist</span>
+      <span class="pill p-new">New</span>
+    </div>
+    <div class="card-b">
+      <p>The environment carries a full <code>MAIL_*</code> block including
+      <code>MAIL_PASSWORD</code> &mdash; a real Google account password, not an app-specific password, for a
+      named Gmail address. Nothing reads it:</p>
+      <div class="ev">$ grep -rn "nodemailer|MAIL_HOST|MAIL_PASSWORD|sendMail|smtp" backend/src/
+<b>(no matches — this Express API has no mailer at all)</b></div>
+      <p>So the credential is exposed for zero functional benefit. Anyone with Render dashboard access, or any
+      log or error report that dumps the environment, gets a working Google login.</p>
+      <div style="border-top:1px solid var(--rule);padding-top:14px">
+        <div class="lab">Your action</div>
+        <ol class="steps">
+          <li>Change that Google account's password now, and enable 2-Step Verification.</li>
+          <li>If the same password is used anywhere else, change it there too.</li>
+          <li>Delete all eight <code>MAIL_*</code> variables from the Render environment.</li>
+        </ol>
+        <p style="margin-top:9px">The same block also carries <code>APP_KEY</code>,
+        <code>SESSION_*</code>, <code>CACHE_STORE</code>, <code>QUEUE_CONNECTION</code> and
+        <code>MIGRATE_FRESH</code> &mdash; Laravel settings from the original CMS that this Express app also
+        never reads. The corrected env file lists all of them for deletion.</p>
+      </div>
+    </div>
+  </article>
+  <article class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-BUG-002</span>
+      <span class="pill p-high">High</span>
+      <span class="card-t">The migration runner silently discarded every migration, then recorded them as applied</span>
+      <span class="pill p-fixed">Fixed</span>
+    </div>
+    <div class="card-b">
+      <p>Found while adding a migration for the new columns. The runner split each file on
+      <code>;</code> then dropped any chunk beginning with <code>--</code>. Since every migration in this
+      project opens with a comment header, the first chunk always started with a comment &mdash; so it was
+      discarded, and the file was still inserted into <code>schema_migrations</code> as done.</p>
+      <div class="ev">$ node -e "const sql=fs.readFileSync('database/migrations/002_doctor_department_category.sql','utf8');
+             console.log(sql.split(/;\s*\n/).map(s=&gt;s.trim()).filter(s=&gt;s &amp;&amp; !s.startsWith('--')))"
+
+<i>002 statements the old runner would execute: []</i>
+<i>001 statements: 0</i>
+
+<b>after the fix:
+001_leadership_history.sql                       1 statement(s)
+002_doctor_department_category.sql               1 statement(s)
+003_security_columns_and_partnerships.sql        3 statement(s)</b></div>
+      <p>Both existing migrations had therefore never run, while reporting success. The runner now strips
+      comments per line instead of dropping statements, and <strong>refuses to mark a file applied if it
+      parses to nothing</strong> &mdash; which is what hid the bug. Three regression tests cover it.</p>
+    </div>
+  </article>
+
+  <article class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-CFG-005</span>
+      <span class="pill p-med">Medium</span>
+      <span class="card-t">The lint gate could never go green, so it gated nothing</span>
+      <span class="pill p-fixed">Fixed</span>
+    </div>
+    <div class="card-b">
+      <p><code>eslint.config.mjs</code> ignored <code>.next/</code> and a hand-listed set of build
+      directories, but not <code>.next-v2/</code>. Every run linted thousands of compiled chunks and generated
+      route types.</p>
+      <div class="ev">$ npx eslint          <i>before</i>
+<i>2940 errors, 11017 warnings</i>
+  errors by directory:
+    <i>1972  .next-v2/types</i>
+    <i> 942  .next-v2/server</i>
+    <i>  26  .next-v2/static</i>
+       0  src/          <b>&larr; the real source had none all along</b>
+
+$ npx eslint          <b>after — ignores now ".next*/**" and ".nv*/**"</b>
+<b>0 errors, 14 warnings</b></div>
+      <p>The frontend's <code>npm test</code> was also just an alias for <code>npm run lint</code>. It now
+      runs lint <em>and</em> <code>tsc --noEmit</code>, and both pass.</p>
+    </div>
+  </article>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <div class="eyebrow">The two Criticals</div>
+    <h2>How the access-control failures were closed</h2>
+  </div>
+  <div class="stack-lg">
+
+  <article class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-001</span>
+      <span class="pill p-crit">Critical</span>
+      <span class="card-t">Self-grantable super-admin tier &rarr; a non-user-editable database flag</span>
+      <span class="pill p-fixed">Fixed &middot; 5 regression tests</span>
+    </div>
+    <div class="card-b">
+      <div class="ev"><i>- function hasAdminTerm(user) {</i>
+<i>-   const email = String(user?.email || '').toLowerCase();</i>
+<i>-   const name  = String(user?.name  || '').toLowerCase();</i>
+<i>-   return email.includes('admin') || name.includes('admin');</i>
+<i>- }</i>
+
+<b>+ function isRootAdminFlag(user) {</b>
+<b>+   const raw = user?.is_root_admin;</b>
+<b>+   return raw === 1 || raw === true || raw === '1';</b>
+<b>+ }</b></div>
+      <p>The tier is now <code>users.is_root_admin</code>, a real column. Four things keep it out of reach of
+      a request:</p>
+      <ul class="bul">
+        <li>It is in <code>sqlSafe.js</code>'s <code>SYSTEM_COLUMNS</code>, so
+        <code>getWritableColumns()</code> subtracts it from every write path in the application.</li>
+        <li><code>updateMe</code>, <code>createUser</code> and <code>updateUser</code> all build explicit
+        column lists that do not include it.</li>
+        <li>It is granted only by <code>ROOT_ADMIN_EMAILS</code> at boot, or by direct SQL. Removing an
+        address from that variable revokes the tier on the next deploy.</li>
+        <li>The SQL that hides root supers from lesser admins now keys on
+        <code>COALESCE(u.is_root_admin, 0) = 1</code> instead of <code>LIKE '%admin%'</code>.</li>
+      </ul>
+      <p>The four 403 messages that used to name the bypass &mdash; <em>&ldquo;Only privileged Super
+      Administrators (username containing &lsquo;admin&rsquo;)&hellip;&rdquo;</em> &mdash; now say only that
+      permission is absent.</p>
+      <div>
+        <div class="lab">The regression test the original audit asked for</div>
+        <div class="ev">$ node --test tests/rbacPrivilege.test.js
+<b>ok 1 - the old "admin" substring in name or email grants nothing
+ok 2 - editing one's own name or email cannot change the verdict
+ok 3 - the tier requires both the super_admin role and the root flag
+ok 4 - the root flag is read from the DB column in every shape MySQL returns it
+ok 5 - role slugs are accepted as strings or objects, but only exact matches
+# pass 5  # fail 0</b></div>
+      </div>
+      <p>Test 2 sweeps seven strings a <code>PUT /admin/me</code> body could carry &mdash;
+      <code>Admin</code>, <code>ADMIN</code>, <code>sysadmin</code>, <code>Chief Administrator</code>, and one
+      with an embedded zero-width space &mdash; and asserts the verdict is unchanged for every one.</p>
+    </div>
+  </article>
+  <article class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-002</span>
+      <span class="pill p-crit">Critical</span>
+      <span class="card-t">Boot-time admin resurrection &rarr; first-run provisioning only</span>
+      <span class="pill p-fixed">Fixed</span>
+    </div>
+    <div class="card-b">
+      <p><code>ensureAdminAccount()</code> ran on every API start and reversed administrator offboarding three
+      ways. All three are gone:</p>
+      <div class="ev"><i>- const syncPassword = process.env.ADMIN_SYNC_PASSWORD !== '0';   // default ON</i>
+<i>- // ...forced deleted_at = NULL, status = 'active' on every boot</i>
+<i>- UPDATE users u ... SET u.status = 'active'</i>
+<i>-   WHERE r.slug IN ('super_admin','admin') AND u.status != 'active'   &larr; no id filter</i>
+<i>- UPDATE users SET deleted_at = NULL WHERE id = :id                    &larr; first soft-deleted admin</i>
+
+<b>+ // First run only: create an admin when the database has none at all.</b>
+<b>+ if (!anyAdmin &amp;&amp; !existing) { ...INSERT... ; return; }</b>
+<b>+ // Every restore/reset path is behind ADMIN_RESET_PASSWORD, off by default.</b>
+<b>+ if (breakGlass) { ...reset and reactivate, then warn to remove the flag... }</b>
+<b>+ // Steady state: touch nothing. An operator who deactivated an admin meant it.</b></div>
+      <p>A deactivated or deleted administrator now stays that way across deploys and restarts. If the
+      bootstrap account locks itself out, <code>ADMIN_RESET_PASSWORD=1</code> for one boot recovers it and logs
+      a reminder to remove the flag. Failures log at <code>error</code>, not <code>warn</code>.</p>
+      <div class="note">
+        <div class="lab">Companion fix &mdash; MEL-SEC-004</div>
+        <p>The other half of this problem was in <code>login()</code>: it queried soft-deleted rows on purpose
+        and cleared <code>deleted_at</code> on a correct password, so deleting a user revoked access only until
+        they next signed in. The query now carries <code>AND deleted_at IS NULL</code> and the restore block is
+        deleted.</p>
+      </div>
+    </div>
+  </article>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <div class="eyebrow">Live verification</div>
+    <h2>Probed against the running system, not just the diff</h2>
+    <p class="lede">The original audit confirmed three findings live. Every one of those probes was re-run,
+    plus new ones for the fixes that only show up over HTTP.</p>
+  </div>
+  <div class="stack">
+
+  <div class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-003</span>
+      <span class="card-t">Raw database errors on ~190 endpoints</span>
+      <span class="pill p-fixed">Fixed &middot; confirmed live</span>
+    </div>
+    <div class="card-b">
+      <div class="ev">$ curl "http://127.0.0.1:5000/api/v1/public/faqs?department_id=1"      <i>the original probe</i>
+<i>before:</i> {"success":false,"message":"<i>Unknown column 'department_id' in 'where clause'</i>"}
+<b>after:  {"success":false,"message":"Something went wrong on our side. Please try again.","ref":"7d343k9n"}</b>
+
+$ curl ".../public/doctors?status='"
+<b>        {"success":false,"message":"Something went wrong on our side. Please try again.","ref":"cihv9qmi"}</b>
+
+$ grep -rn "fail(res, err.message" backend/src/
+<b>        (none — 33 call sites now route through serverError())</b></div>
+      <p>The real exception still reaches the log, tagged with the same <code>ref</code> the caller received,
+      so a user report is traceable to a log line. Three tests assert the response body never contains the
+      column name, the SQL fragment, or the driver text, and that each call gets a distinct id.</p>
+    </div>
+  </div>
+
+  <div class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-006</span>
+      <span class="card-t">No security headers on the public site or admin panel</span>
+      <span class="pill p-fixed">Fixed &middot; confirmed live</span>
+    </div>
+    <div class="card-b">
+      <div class="ev">$ curl -D - http://127.0.0.1:3100/          <i>production build, next start</i>
+<b>Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none';
+                         frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline';
+                         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ...
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(), usb=()
+Cross-Origin-Opener-Policy: same-origin
+Strict-Transport-Security: max-age=31536000; includeSubDomains</b>
+X-Powered-By: <b>ABSENT</b>                                <i>(was: Next.js — Gambo INFO-002)</i>
+
+$ curl -D - http://127.0.0.1:3100/admin/login
+<b>Cache-Control: no-store, must-revalidate
+X-Robots-Tag: noindex, nofollow</b></div>
+      <p><code>frame-ancestors 'none'</code> plus <code>X-Frame-Options: DENY</code> closes the clickjacking
+      exposure on <code>/admin/login</code>. CSP still needs <code>'unsafe-inline'</code> for scripts because
+      Next's hydration bootstrap is inline; moving to nonces is the next step, not a blocker.</p>
+    </div>
+  </div>
+  <div class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-CFG-001</span>
+      <span class="card-t">robots.txt and sitemap.xml advertised <code>localhost</code></span>
+      <span class="pill p-fixed">Fixed &middot; confirmed live</span>
+    </div>
+    <div class="card-b">
+      <p>Worth noting how this one nearly stayed broken. Setting <code>NEXT_PUBLIC_SITE_URL</code> and
+      restarting did <em>not</em> fix it &mdash; <code>NEXT_PUBLIC_*</code> values are inlined at build time, so
+      the localhost fallback was already baked into the bundle:</p>
+      <div class="ev">$ NEXT_PUBLIC_SITE_URL=https://melkaoda-web.onrender.com next start   <i># runtime only</i>
+$ curl /robots.txt
+<i>Sitemap: http://localhost:3000/sitemap.xml</i>          <i>&larr; still wrong</i></div>
+      <p>Both generators run server-side, so they now resolve through a small helper that prefers a runtime
+      variable, and refuse to publish a pointer they cannot trust:</p>
+      <div class="ev">// frontend/src/lib/siteUrl.ts
+process.env.SITE_URL              <b>&larr; server-only, runtime, no rebuild needed</b>
+  || process.env.NEXT_PUBLIC_SITE_URL
+  || process.env.RENDER_EXTERNAL_URL       <b>&larr; Render injects this automatically</b>
+  || "http://localhost:3000"
+
+$ SITE_URL=https://melkaoda-web.onrender.com next start     <b># runtime only, same build</b>
+<b>Host: https://melkaoda-web.onrender.com
+Sitemap: https://melkaoda-web.onrender.com/sitemap.xml
+&lt;loc&gt;https://melkaoda-web.onrender.com&lt;/loc&gt;
+&lt;loc&gt;https://melkaoda-web.onrender.com/about&lt;/loc&gt;</b>
+
+$ next start          <b># nothing configured at all</b>
+User-Agent: *
+Disallow: /admin/
+<b>(no Sitemap line — it will not hand crawlers a localhost URL)</b></div>
+    </div>
+  </div>
+
+  <div class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-012 &middot; 013</span>
+      <span class="card-t">Login enumeration by timing and by distinct error text</span>
+      <span class="pill p-fixed">Fixed &middot; confirmed live</span>
+    </div>
+    <div class="card-b">
+      <div class="ev">$ curl -X POST .../admin/login -d '{"email":"...","password":"wrong"}'
+
+nonexistent-9f3a@example.invalid    <b>HTTP 401  0.92s  {"message":"Invalid email or password"}</b>
+admin@gambohospital.com             <b>HTTP 401  0.95s  {"message":"Invalid email or password"}</b>
+nonexistent-7bc2@example.invalid    <b>HTTP 401  0.92s  {"message":"Invalid email or password"}</b>
+                                          <b>&uarr; identical status, message and timing</b></div>
+      <p>The unknown-email path used to return before any bcrypt call, making it measurably faster. It now
+      compares against a fixed decoy hash so the cost is paid either way. That was checked empirically rather
+      than assumed &mdash; the decoy is a genuine cost-12 hash and the two paths measured 441&nbsp;ms and
+      411&nbsp;ms, a ratio of 1.07.</p>
+      <p>The separate 401 for an unusable password hash is also gone. It used to identify the account as real
+      <em>and</em> hand an unauthenticated caller the recovery procedure:
+      <em>&ldquo;set ADMIN_RESET_PASSWORD=1 with ADMIN_EMAIL/ADMIN_PASSWORD and restart the API.&rdquo;</em>
+      That text is now a server-side warning only.</p>
+    </div>
+  </div>
+
+  <div class="card ok">
+    <div class="card-h">
+      <span class="card-id">MEL-SEC-008 &middot; 009 &middot; INFO-001 &middot; BUG-001 &middot; SEC-015</span>
+      <span class="card-t">CORS, the unused credentials flag, the HTML 404, and method override</span>
+      <span class="pill p-fixed">Fixed &middot; confirmed live</span>
+    </div>
+    <div class="card-b">
+      <div class="ev">$ curl -H "Origin: https://evil.example.com" .../public/settings
+<b>evil origin -&gt; DENIED (no Access-Control-Allow-Origin)</b>
+$ curl -H "Origin: http://localhost:3000" .../public/settings
+<b>Access-Control-Allow-Origin: http://localhost:3000</b>          <i>(dev only — denied when NODE_ENV=production)</i>
+<b>Access-Control-Allow-Credentials: ABSENT</b>
+
+$ curl .../api/v1/public/nonexistent-endpoint
+<i>before:</i> &lt;!DOCTYPE html&gt;&lt;html&gt;...&lt;pre&gt;Cannot GET /api/v1/public/nonexistent-endpoint&lt;/pre&gt;
+<b>after:  {"success":false,"message":"No such endpoint: GET /api/v1/public/nonexistent-endpoint"}  HTTP 404</b>
+
+$ curl ".../admin/faqs/1?_method=DELETE"
+<b>HTTP 401 — the query-string form of the override is no longer read at all</b></div>
+      <p>The resolver's final <code>if (configured.length === 0) return allow</code> is gone, and boot
+      validation now treats a missing <code>FRONTEND_URL</code> in production as a hard error rather than a
+      warning &mdash; so CORS cannot be left accidentally open. It was extracted into
+      <code>config/cors.js</code> so it could be unit-tested; four tests cover the suffix attack, scheme
+      mismatch, comma-separated lists, and the localhost-in-production case.</p>
+    </div>
+  </div>
+  </div>
+</section>
+<section>
+  <div class="shead">
+    <div class="eyebrow">Full register</div>
+    <h2>Every finding, and where it stands</h2>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>ID</th><th>Sev</th><th>Finding</th><th>What changed</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="id">MEL-SEC-001</td><td><span class="pill p-crit">Crit</span></td><td class="k">Self-editable name/email granted the privileged super-admin tier</td><td>Replaced by <code>users.is_root_admin</code>, in SYSTEM_COLUMNS, granted only via <code>ROOT_ADMIN_EMAILS</code>. 5 regression tests.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-002</td><td><span class="pill p-crit">Crit</span></td><td class="k">Boot-time routine reactivated and re-passworded administrators every restart</td><td>First-run-only provisioning; all restore paths behind <code>ADMIN_RESET_PASSWORD</code>, off by default.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-DEPLOY-001</td><td><span class="pill p-crit">Crit</span></td><td class="k">Production API ran with <code>NODE_ENV=development</code>, disabling every guard</td><td>Boot now fails on an APP_ENV/NODE_ENV mismatch; error masking and <code>/health</code> made unconditional.</td><td><span class="pill p-open">Env action</span></td></tr>
+        <tr><td class="id">MEL-SEC-003</td><td><span class="pill p-high">High</span></td><td class="k">Raw DB errors returned to unauthenticated callers on ~190 endpoints</td><td>33 sites moved to <code>serverError()</code>: fixed text + correlation id, real error to the log. 3 tests.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-004</td><td><span class="pill p-high">High</span></td><td class="k">Soft-deleted accounts reactivated themselves on login</td><td><code>AND deleted_at IS NULL</code> in the login query; restore block removed.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-DEVOPS-001</td><td><span class="pill p-high">High</span></td><td class="k">No <code>trust proxy</code>: one global rate-limit bucket, every audit IP wrong</td><td><code>TRUST_PROXY_HOPS</code> (default 2 in production) with an explicit <code>trust proxy</code> setting.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-005</td><td><span class="pill p-high">High</span></td><td class="k">Database TLS with certificate verification disabled in production</td><td><code>DB_SSL_INSECURE</code> removed from <code>render.yaml</code>; production boot now rejects it outright.</td><td><span class="pill p-open">Env action</span></td></tr>
+        <tr><td class="id">MEL-DEP-001</td><td><span class="pill p-high">High</span></td><td class="k">Six high-severity advisories, incl. runtime sharp/libvips CVEs</td><td><code>next</code> 15.5.22&rarr;15.5.25 plus a pinned <code>postcss</code> override. <b>0 vulnerabilities</b>, both packages.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-006</td><td><span class="pill p-high">High</span></td><td class="k">No security headers on the HTML surface; X-Powered-By advertised</td><td>CSP, HSTS, frame denial, nosniff, Referrer- and Permissions-Policy, COOP; <code>poweredByHeader: false</code>; admin no-store + noindex.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-CFG-001</td><td><span class="pill p-high">High</span></td><td class="k">robots.txt and sitemap.xml published <code>localhost</code> URLs</td><td>Runtime <code>SITE_URL</code> resolution with a Render fallback; refuses to publish an unconfigured pointer.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-017</td><td><span class="pill p-high">High</span></td><td class="k">Plaintext Google account password in the API environment, for a mailer that does not exist</td><td>All <code>MAIL_*</code> listed for deletion in the corrected env file. Rotation is yours.</td><td><span class="pill p-open">Rotate</span></td></tr>
+        <tr><td class="id">MEL-DATA-001</td><td><span class="pill p-high">High</span></td><td class="k">Two 5.2 MB DB dumps in git history: 25 bcrypt hashes, 39 emails, contact-form PII</td><td>Untracked and gitignored; <code>*.sql</code> and <code>deployed_env_file/</code> now blocked. History purge runbook below.</td><td><span class="pill p-open">Runbook</span></td></tr>
+        <tr><td class="id">MEL-BUG-002</td><td><span class="pill p-high">High</span></td><td class="k">Migration runner discarded every commented migration, then marked it applied</td><td>Comments stripped per line; a file parsing to zero statements is now a hard failure. 3 tests.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-ENV-001</td><td><span class="pill p-high">High</span></td><td class="k">Boot-time DDL against a remote shared database; only 2 of ~20 tables under migration</td><td><code>SCHEMA_BOOTSTRAP=0</code> gate added; migration <code>003</code> now defines the security columns and the partnerships table.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-ENV-001b</td><td><span class="pill p-high">High</span></td><td class="k">One <code>users</code> table shared with the Gambo, Loke and Deder deployments</td><td>Noted at your direction. See the closing section.</td><td><span class="pill p-acc">Accepted</span></td></tr>
+        <tr><td class="id">MEL-SEC-007</td><td><span class="pill p-med">Med</span></td><td class="k">A password change left every 7-day token in the wild still valid</td><td><code>password_changed_at</code> vs token <code>iat</code>, checked on every request; admin-driven resets end the target's sessions too. 8 tests.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-008</td><td><span class="pill p-med">Med</span></td><td class="k">CORS fell open to every origin when <code>FRONTEND_URL</code> was unset</td><td>Allow-all branch removed; a missing value is now a production boot error.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-009</td><td><span class="pill p-med">Med</span></td><td class="k">localhost origins accepted in production</td><td>Gated on <code>!isProduction()</code>.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-010</td><td><span class="pill p-med">Med</span></td><td class="k">No rate limit on the profile or password-change routes</td><td><code>accountLimiter</code>: 10 requests / 15 min, after authentication so noise cannot exhaust a real admin's budget.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-011</td><td><span class="pill p-med">Med</span></td><td class="k"><code>JWT_SECRET=x</code> passed production validation</td><td>32-character floor plus a character-variety check; weak secrets are a production boot error. 5 tests.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-CONTENT-001</td><td><span class="pill p-med">Med</span></td><td class="k">Public site published fabricated hospital affiliations, naming a real university</td><td>Built the missing <code>partnerships</code> resource end to end; deleted the fixture file and all three fallbacks.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-BUG-001</td><td><span class="pill p-med">Med</span></td><td class="k">Unmatched API paths returned Express's HTML error page</td><td>JSON 404 handler mounted on <code>/api</code>.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-CFG-002</td><td><span class="pill p-med">Med</span></td><td class="k">Gambo / Loke / Deder identity leftovers throughout</td><td>Default-admin guard unified across all four inherited addresses; image hosts, Cloudinary folder, package names and localStorage keys rebranded with forward migration.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-CFG-003</td><td><span class="pill p-med">Med</span></td><td class="k"><code>npm run seed</code> pointed at a file that does not exist</td><td>Dead script removed; <code>typecheck</code> added.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-CFG-005</td><td><span class="pill p-med">Med</span></td><td class="k">Lint reported 2,940 errors from build output, so it gated nothing</td><td>Ignores widened to <code>.next*/**</code> and <code>.nv*/**</code>; frontend <code>test</code> now runs lint + typecheck. <b>0 errors</b>.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-012</td><td><span class="pill p-low">Low</span></td><td class="k">Login timing distinguished real accounts from absent ones</td><td>Fixed decoy hash keeps the bcrypt cost constant. Verified at 0.92s vs 0.95s.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-013</td><td><span class="pill p-low">Low</span></td><td class="k">Unusable-hash accounts got a distinct 401 that also leaked the recovery procedure</td><td>Single generic message; operational detail moved to a server log.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-014</td><td><span class="pill p-low">Low</span></td><td class="k">403 responses named the exact privilege bypass</td><td>All four rewritten to state only that permission is absent.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-015</td><td><span class="pill p-low">Low</span></td><td class="k">Any verb could be rewritten via <code>_method</code>, including from a URL</td><td>POST only, three allowlisted target verbs, query-string form dropped.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-SEC-016</td><td><span class="pill p-low">Low</span></td><td class="k">CMS links allowed <code>target</code> without <code>rel=noopener</code></td><td>DOMPurify <code>afterSanitizeAttributes</code> hook forces <code>rel="noopener noreferrer"</code>.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-CFG-004</td><td><span class="pill p-low">Low</span></td><td class="k">Build artifacts not gitignored</td><td>Plus <code>*.sql</code>, <code>*.env</code> and <code>deployed_env_file/</code> &mdash; the dumps and the live secrets can no longer be committed by accident.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-TEST-001</td><td><span class="pill p-info">Info</span></td><td class="k">8 unit tests; nothing covering authorization</td><td><b>44 tests</b> across 7 files, including dedicated suites for the two Criticals and every new guard.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-INFO-001</td><td><span class="pill p-info">Info</span></td><td class="k">Unused cookie-credentials CORS flag</td><td><code>credentials: false</code> — auth is a Bearer token. Verified absent from responses.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+        <tr><td class="id">MEL-INFO-002</td><td><span class="pill p-info">Info</span></td><td class="k">10.5 MB of DB dumps and Lighthouse reports tracked at the repo root</td><td>Untracked and ignored.</td><td><span class="pill p-fixed">Fixed</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section>
+  <div class="shead">
+    <div class="eyebrow">Your turn &mdash; three tasks</div>
+    <h2>What only you can do</h2>
+    <p class="lede">Nothing below is code. Two are dashboard edits, one is a credential rotation, one is a git
+    operation on your remote.</p>
+  </div>
+  <div class="stack-lg">
+
+  <div class="card open">
+    <div class="card-h">
+      <span class="card-id">Task 1</span>
+      <span class="card-t">Apply the corrected environment, then redeploy</span>
+      <span class="pill p-crit">Do this first</span>
+    </div>
+    <div class="card-b">
+      <p>Two annotated files are written next to your originals. Each line says what it was, why it was wrong,
+      and which finding it closes.</p>
+      <div class="ev"><b>deployed_env_file/melkaoda.env.CORRECTED</b>          &rarr; melkaoda-hospital-api
+<b>deployed_env_file/melkaoda-web.env.CORRECTED</b>      &rarr; melkaoda-hospital-web</div>
+      <div>
+        <div class="lab">API service &mdash; the six that matter</div>
+        <div class="ev"><b>CHANGE</b>  NODE_ENV=production                    <i>was: development</i>
+<b>CHANGE</b>  ADMIN_EMAIL=&lt;your operator address&gt;    <i>was: admin@gambohospital.com</i>
+<b>CHANGE</b>  ADMIN_PASSWORD=&lt;12+ characters&gt;
+<b>ADD</b>     ROOT_ADMIN_EMAILS=&lt;your operator address&gt;
+<b>ADD</b>     TRUST_PROXY_HOPS=2
+<b>ADD</b>     MYSQL_ATTR_SSL_CA=&lt;Aiven CA certificate PEM&gt;
+<b>DELETE</b>  DB_SSL_INSECURE
+<b>DELETE</b>  MAIL_* (8 vars), APP_KEY, SESSION_*, CACHE_STORE, QUEUE_CONNECTION, MIGRATE_FRESH</div>
+      </div>
+      <div>
+        <div class="lab">Web service</div>
+        <div class="ev"><b>ADD</b>     SITE_URL=https://melkaoda-web.onrender.com
+<b>ADD</b>     NEXT_PUBLIC_SITE_URL=https://melkaoda-web.onrender.com</div>
+      </div>
+      <div class="warn">
+        <div class="lab">Expect a boot failure if any of these is wrong</div>
+        <p>That is the point. The API now refuses to start on a weak <code>JWT_SECRET</code>, a default
+        <code>ADMIN_EMAIL</code>, a missing <code>FRONTEND_URL</code>, <code>DB_SSL_INSECURE</code> in
+        production, or an <code>APP_ENV</code>/<code>NODE_ENV</code> mismatch. Read the
+        <code>[env]</code> lines in the Render log — each one names the variable and what it wants.</p>
+        <p>One specific thing to check: <code>ROOT_ADMIN_EMAILS</code> revokes the root tier from every address
+        not listed. Four accounts in the shared database currently hold it, including
+        <code>admin@gambohospital.com</code> and <code>admin@lokehospital.com</code>. Make sure your own
+        operator address is in the list before you deploy, or nobody will be able to manage super admins.</p>
+      </div>
+      <p>After the deploy, run <code>npm run migrate</code> once against the database, then set
+      <code>SCHEMA_BOOTSTRAP=0</code> so deploys stop issuing DDL against live data.</p>
+    </div>
+  </div>
+
+  <div class="card open">
+    <div class="card-h">
+      <span class="card-id">Task 2</span>
+      <span class="card-t">Rotate the Google account password</span>
+      <span class="pill p-high">Today</span>
+    </div>
+    <div class="card-b">
+      <p>The <code>MAIL_PASSWORD</code> in your API environment is a working Google account password in
+      cleartext, for an address I will not repeat here. Change it, enable 2-Step Verification, and change it
+      anywhere else it is reused. Then delete the <code>MAIL_*</code> block &mdash; this API has no mailer, so
+      nothing breaks.</p>
+    </div>
+  </div>
+
+  <div class="card open">
+    <div class="card-h">
+      <span class="card-id">Task 3</span>
+      <span class="card-t">Purge the database dumps from git history</span>
+      <span class="pill p-high">Before adding any collaborator</span>
+    </div>
+    <div class="card-b">
+      <p>The files are untracked now and cannot be re-committed, but they remain in every commit that ever
+      contained them on <code>origin/main</code>. The repository being private is the only thing keeping this
+      out of the Critical band.</p>
+      <div class="warn">
+        <p><strong>This rewrites every commit SHA.</strong> Anyone else with a clone must re-clone afterwards,
+        and open branches or PRs will need rebasing. Do it when nobody else is mid-change.</p>
+      </div>
+      <div>
+        <div class="lab">Runbook</div>
+        <div class="ev"><i># 0. Install the tool (once)</i>
+pip install git-filter-repo
+
+<i># 1. Work on a fresh mirror, never on your working clone</i>
+cd /tmp
+git clone --mirror https://github.com/Hakimii12/melkaoda.git
+cd melkaoda.git
+
+<i># 2. Strip both dumps from every commit</i>
+git filter-repo --invert-paths \
+  --path melkaoda-backup.sql \
+  --path loke-backup.sql
+
+<i># 3. Confirm they are gone from history</i>
+git log --all --oneline -- melkaoda-backup.sql loke-backup.sql     <b># must print nothing</b>
+
+<i># 4. Overwrite the remote</i>
+git push --force --all
+git push --force --tags
+
+<i># 5. Every machine with a clone: re-clone. Do not pull.</i>
+cd ~/Desktop &amp;&amp; mv melkaoda melkaoda.old
+git clone https://github.com/Hakimii12/melkaoda.git
+<b># then copy backend/.env and frontend/.env.local back from melkaoda.old</b></div>
+      </div>
+      <div>
+        <div class="lab">Then, because the hashes were exposed</div>
+        <ol class="steps">
+          <li>Treat all 25 bcrypt hashes in those dumps as disclosed. Force a password reset for every account
+          &mdash; <code>password_changed_at</code> now makes a reset actually end existing sessions, so this is
+          effective in a way it would not have been last week.</li>
+          <li>Keep future dumps in object storage. <code>*.sql</code> is gitignored now, with exceptions only
+          for <code>database/migrations/</code>.</li>
+          <li>Consider whether the <code>contact_submissions</code> and <code>event_registrations</code> rows
+          in those dumps create a notification obligation for you. That is a judgement about your local
+          requirements, not something I can decide.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+<section>
+  <div class="shead">
+    <div class="eyebrow">Accepted risk</div>
+    <h2>The shared database</h2>
+  </div>
+  <div class="card acc">
+    <div class="card-h">
+      <span class="card-id">MEL-ENV-001b</span>
+      <span class="pill p-high">High</span>
+      <span class="card-t">One <code>users</code> table serves four hospital deployments</span>
+      <span class="pill p-acc">Accepted at your direction</span>
+    </div>
+    <div class="card-b">
+      <p>You asked me to note this rather than plan or code around it, so it is recorded here as an accepted
+      risk and excluded from the remediation work. It is not excluded from the score.</p>
+      <p>I found it by accident: after my changes, four accounts already held <code>is_root_admin = 1</code>,
+      which my own code could not have produced. The column already existed &mdash; the Gambo project applied
+      the same fix, and it shares this schema.</p>
+      <div class="ev">$ SELECT id, email, status, is_root_admin, roles FROM users WHERE deleted_at IS NULL
+
+  #  1  ad***@ggh.com               active  root=1  super_admin
+  #  2  ad***@ggh.com               active  root=0  admin
+  #  3  mu***@gmail.com             active  root=0  admin
+  #  5  ad***@dedrhospital.com      active  root=1  admin,super_admin
+  #  6  ad***@gambohospital.com     active  root=1  admin,super_admin
+  #  7  ed***@lokehospital.com      active  root=0  editor
+  #  8  ab***@gmail.com             active  root=0  super_admin
+  #  9  ha***@gmail.com             active  root=0  super_admin
+  # 10  ad***@lokehospital.com      active  root=1  super_admin
+  # 11  ab***@gmail.com             active  root=0  doctor
+
+schema: defaultdb      tables: 52      domains: ggh.com, gambohospital.com,
+                                                lokehospital.com, dedrhospital.com, gmail.com</div>
+      <p>What this means in practice: <strong>an administrator of the Gambo, Loke or Deder site can sign in to
+      the Melka Oda admin panel</strong> with their existing credentials, and five of these accounts hold
+      <code>super_admin</code>. Four hold the root tier, so they can also manage each other. Authentication and
+      authorization here are correct — they are simply operating over a user list that is not only yours.</p>
+      <p>The MEL-SEC-001 fix is sound, but note the consequence: because the tier is a column in a shared
+      table, its membership was set by another project's remediation. Setting
+      <code>ROOT_ADMIN_EMAILS</code> on this service resolves that for this deployment, and will revoke the
+      flag from the sibling accounts on the next boot &mdash; which may surprise whoever maintains those sites.
+      Worth a message to them before you deploy.</p>
+      <div>
+        <div class="lab">If you decide to split it later</div>
+        <ol class="steps">
+          <li>Create a database for this deployment alone.</li>
+          <li><code>mysqldump defaultdb</code>, restore into it, then delete the user rows that belong to the
+          sibling hospitals.</li>
+          <li>Point <code>DB_DATABASE</code> at it, run <code>npm run migrate</code>, and keep
+          <code>SCHEMA_BOOTSTRAP=0</code>.</li>
+          <li>Give local development its own database as well &mdash; <code>backend/.env</code> currently points
+          at the same remote instance the live site reads from.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <div class="eyebrow">Evidence</div>
+    <h2>Gates, before and after</h2>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Gate</th><th>Before</th><th>After</th><th>How to re-run it</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Backend tests</td><td>8 pass</td><td class="k"><b>44 pass, 0 fail</b></td><td class="id">cd backend &amp;&amp; npm test</td></tr>
+        <tr><td class="k">Backend advisories</td><td>0</td><td class="k"><b>0</b></td><td class="id">cd backend &amp;&amp; npm audit</td></tr>
+        <tr><td class="k">Frontend advisories</td><td>6 high</td><td class="k"><b>0</b></td><td class="id">cd frontend &amp;&amp; npm audit</td></tr>
+        <tr><td class="k">Frontend lint</td><td>2,940 errors</td><td class="k"><b>0 errors, 14 warnings</b></td><td class="id">cd frontend &amp;&amp; npx eslint</td></tr>
+        <tr><td class="k">TypeScript</td><td>not in any script</td><td class="k"><b>clean</b></td><td class="id">cd frontend &amp;&amp; npm run typecheck</td></tr>
+        <tr><td class="k">Production build</td><td>clean</td><td class="k"><b>clean, 40 routes</b></td><td class="id">NEXT_DIST_DIR=.next-audit npx next build</td></tr>
+        <tr><td class="k">Raw DB errors in responses</td><td>34 sites</td><td class="k"><b>0</b></td><td class="id">grep -rn "fail(res, err.message" backend/src/</td></tr>
+        <tr><td class="k">Migrations that actually execute</td><td>0 of 2</td><td class="k"><b>3 of 3</b></td><td class="id">cd backend &amp;&amp; npm run migrate</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:14px;font-size:13px;color:var(--muted);max-width:78ch">The build uses a separate
+  <code>distDir</code> so it never disturbs a running dev server's <code>.next</code> — mixing turbopack and
+  webpack artifacts in one directory is what makes <code>next start</code> return 500 on every SSR route.</p>
+</section>
+<section>
+  <div class="shead">
+    <div class="eyebrow">Method and limits</div>
+    <h2>How the score was reached, and what it does not cover</h2>
+  </div>
+  <div class="stack">
+    <div class="note">
+      <div class="lab">Why 96 and not 100</div>
+      <p>Every finding whose fix lives in this repository is closed, tested and verified — that is the 96. The
+      four points held back are the two items code cannot reach: the git history purge, which is a git
+      operation on your remote, and the shared-database risk you asked me to record rather than solve. Neither
+      is a code defect and neither can be closed from here, so neither is counted as done.</p>
+    </div>
+    <div class="note">
+      <div class="lab">Why deployment readiness is 71 today</div>
+      <p>Because <code>NODE_ENV=development</code> on a production API is itself a Critical, and
+      <code>DB_SSL_INSECURE=true</code> is a High, and both are still live. The improvement is that the code is
+      now fail-closed on both: after the corrected env is applied the API either boots correctly or refuses to
+      boot at all. Applying the two corrected files and rotating the Google password takes this to 94.</p>
+      <p>It stops at 94, not 96+, for one reason: the shared <code>users</code> table means five super admins
+      from three other hospitals can sign into this panel. That is a live authorization exposure, and marking it
+      accepted does not make it absent.</p>
+    </div>
+    <div class="note">
+      <div class="lab">Verified</div>
+      <p>44 unit tests, run. Live HTTP probes against the API on <code>:5000</code> for error masking, CORS,
+      the JSON 404, the method override, and login timing and messages. A production frontend build served with
+      <code>next start</code> on three ports to check headers, and to check
+      <code>robots.txt</code>/<code>sitemap.xml</code> in three states: configured at runtime, configured only
+      at build time, and unconfigured. <code>npm audit</code>, <code>eslint</code>, <code>tsc</code> and
+      <code>next build</code> on both packages. Read-only SQL against the live database to confirm what
+      <code>bootstrapSchema()</code> applied and to establish the tenancy finding.</p>
+    </div>
+    <div class="warn">
+      <div class="lab">Not verified</div>
+      <ul class="bul">
+        <li><strong>Nothing was exploited, before or after.</strong> Both Criticals are confirmed closed by
+        reading the code paths and by unit tests over the exact property that failed — not by attempting the
+        escalation against a real account, which would write to live user records.</li>
+        <li><strong>The boot-time schema changes already ran against your live database.</strong> The dev server
+        runs under <code>node --watch</code> and reloaded as I edited, so
+        <code>bootstrapSchema()</code> executed against the Aiven instance: it added
+        <code>users.is_root_admin</code> — which already existed — and
+        <code>users.password_changed_at</code>, and created an empty <code>partnerships</code> table. All three
+        are additive and idempotent, and I confirmed them read-only afterwards. No password was reset and no
+        account status changed, because the resurrection code was already replaced by then.</li>
+        <li><strong>No production instance was tested.</strong> Every deployment finding comes from
+        <code>render.yaml</code>, your env files, and the code that reads them. Re-check the live host after the
+        redeploy.</li>
+        <li><strong>Whether the Next.js rewrite proxy forwards <code>X-Forwarded-For</code></strong> is still
+        unconfirmed. <code>TRUST_PROXY_HOPS=2</code> assumes it does. If per-IP rate limiting still behaves as
+        one global bucket after deploying, that assumption is wrong and the limiting has to move to the edge.</li>
+        <li><strong>CSP is not nonce-based.</strong> <code>script-src</code> still allows
+        <code>'unsafe-inline'</code> because Next's hydration bootstrap is inline. This is a meaningful step
+        short of a strict CSP.</li>
+        <li><strong>news-categories and gallery-categories still write to localStorage</strong> when their API
+        call fails, and report success when they do. Found while fixing the partnerships case; not in the
+        original register, and left alone rather than quietly widening scope. Admin-facing only, no fabricated
+        public claims — but worth a follow-up.</li>
+        <li><strong>The Gambo audit's six Medium findings</strong> were never visible in the screenshots, so
+        they were not compared and are not counted here.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer style="margin-top:64px;padding-top:22px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:8px 22px;font-size:12.5px;color:var(--faint)">
+  <span class="mono">Melka Oda General Hospital &middot; post-remediation readiness audit</span>
+  <span class="mono">2026-09-01</span>
+  <span class="mono">29 fixed &middot; 4 new &middot; 3 open &middot; 1 accepted</span>
+  <span class="mono">codebase 96/100 &middot; deployment 71 &rarr; 94</span>
+</footer>
+
+</div>
+

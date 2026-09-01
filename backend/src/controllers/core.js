@@ -8,7 +8,7 @@ import {
   formatAuthUser,
   getUserPermissions,
 } from '../middleware/auth.js';
-import { ok, fail, created, message, slugify, toBool, paginate, parseJsonField } from '../utils/helpers.js';
+import { ok, fail, created, message, slugify, toBool, paginate, parseJsonField, serverError } from '../utils/helpers.js';
 import {
   normalizeSettings,
   denormalizeSettingKey,
@@ -23,6 +23,15 @@ import {
   verifyPassword,
 } from '../utils/password.js';
 
+/**
+ * A bcrypt hash of a value nobody can supply. Compared against when the email
+ * is unknown or the stored hash is unusable, so every failing login path costs
+ * roughly one bcrypt round and response timing stops distinguishing "no such
+ * account" from "wrong password" (MEL-SEC-012).
+ */
+const DUMMY_HASH = '$2a$12$C6UzMDM.H6dfI/f/IKcEe.iBmwLPmnvbYqBOCbUOOMKUyBBBUC/vu';
+const GENERIC_LOGIN_FAILURE = 'Invalid email or password';
+
 export async function login(req, res) {
   try {
     const email = String(req.body?.email || '')
@@ -32,34 +41,33 @@ export async function login(req, res) {
     const password = String(req.body?.password ?? '');
     if (!email || !password) return fail(res, 'Email and password are required', 422);
 
-    // Include soft-deleted rows so an accidentally deleted admin can still
-    // sign in — we restore the account on a successful password match.
+    // Soft-deleted rows are excluded. The old query included them and restored
+    // the account on a successful password match, so deleting a user only
+    // revoked access until they next signed in (MEL-SEC-004).
     const user = await queryOne(
-      `SELECT * FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1`,
+      `SELECT * FROM users WHERE LOWER(email) = LOWER(:email) AND deleted_at IS NULL LIMIT 1`,
       { email }
     );
-    if (!user) {
-      await logLogin(req, null, false);
-      return fail(res, 'Invalid credentials', 401);
-    }
 
-    const storedHash = normalizePasswordHash(user.password);
-    if (!storedHash || !looksLikeBcryptHash(storedHash)) {
-      await logLogin(req, user, false);
-      console.warn(
-        `[auth] user #${user.id} has unusable password hash (prefix=${String(user.password || '').slice(0, 4)}… len=${String(user.password || '').length})`
-      );
-      return fail(
-        res,
-        'This account password cannot be verified. Ask a super admin to reset it, or set ADMIN_RESET_PASSWORD=1 with ADMIN_EMAIL/ADMIN_PASSWORD and restart the API.',
-        401
-      );
-    }
+    const storedHash = user ? normalizePasswordHash(user.password) : null;
+    const usableHash = Boolean(storedHash) && looksLikeBcryptHash(storedHash);
 
-    const valid = await verifyPassword(password, storedHash);
-    if (!valid) {
-      await logLogin(req, user, false);
-      return fail(res, 'Invalid credentials', 401);
+    // Always spend the bcrypt round, then decide.
+    const passwordMatches = await verifyPassword(password, usableHash ? storedHash : DUMMY_HASH);
+
+    if (!user || !usableHash || !passwordMatches) {
+      await logLogin(req, user || null, false);
+      if (user && !usableHash) {
+        // Operator-facing only. The caller gets the same generic message as
+        // every other failure, so an unusable hash no longer marks the account
+        // as real, and the recovery procedure is not handed to strangers
+        // (MEL-SEC-013).
+        console.warn(
+          `[auth] user #${user.id} has an unusable password hash ` +
+            `(len=${String(user.password || '').length}). Reset it from the admin panel.`
+        );
+      }
+      return fail(res, GENERIC_LOGIN_FAILURE, 401);
     }
 
     // Re-hash legacy Laravel $2y$ (or other normalized) hashes onto bcryptjs $2a$
@@ -74,16 +82,6 @@ export async function login(req, res) {
       } catch (rehashErr) {
         console.warn(`[auth] password rehash skipped for #${user.id}: ${rehashErr.message}`);
       }
-    }
-
-    if (user.deleted_at) {
-      await query(
-        `UPDATE users SET deleted_at = NULL, status = 'active', updated_at = NOW() WHERE id = :id`,
-        { id: user.id }
-      );
-      user.deleted_at = null;
-      user.status = 'active';
-      console.log(`[auth] restored soft-deleted user #${user.id} (${user.email}) on login`);
     }
 
     if (user.status !== 'active') {
@@ -199,8 +197,7 @@ export async function updateMe(req, res) {
       })
     );
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Profile update failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -225,10 +222,21 @@ export async function updatePassword(req, res) {
     if (!valid) return fail(res, 'The current password is incorrect', 422);
 
     const hash = await hashPassword(password);
-    await query(`UPDATE users SET password = :password, updated_at = NOW() WHERE id = :id`, {
-      id: req.user.id,
-      password: hash,
-    });
+    // password_changed_at invalidates every JWT issued before now, so the reset
+    // actually ends other sessions instead of leaving 7-day tokens alive
+    // (MEL-SEC-007). authenticate() enforces it on each request.
+    await query(
+      `UPDATE users SET password = :password, password_changed_at = NOW(), updated_at = NOW()
+       WHERE id = :id`,
+      {
+        id: req.user.id,
+        password: hash,
+      }
+    );
+
+    // Mint a replacement token so the caller is not signed out by their own
+    // password change.
+    const freshToken = signToken({ id: req.user.id, email: req.user.email });
 
     await logAudit(req, 'update', {
       modelType: 'users',
@@ -237,10 +245,13 @@ export async function updatePassword(req, res) {
       newValues: { password: '[changed]' },
     });
 
-    return message(res, 'Password updated successfully');
+    return ok(res, {
+      message: 'Password updated successfully',
+      // Other sessions are now invalid; this is the caller's replacement token.
+      token: freshToken,
+    });
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Password update failed', 500);
+    return serverError(res, err);
   }
 }
 
@@ -424,8 +435,7 @@ export async function updateSettings(req, res) {
     });
     return ok(res, normalizeSettings(settings));
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message || 'Settings update failed', 500);
+    return serverError(res, err);
   }
 }
 

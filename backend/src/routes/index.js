@@ -22,16 +22,30 @@ import * as R from '../controllers/resources.js';
 import * as RBAC from '../controllers/rbac.js';
 import { RESOURCE_PERMISSIONS } from '../config/permissions.js';
 import { saveMedia } from '../services/media.js';
-import { ok, fail, message } from '../utils/helpers.js';
+import { ok, fail, message, serverError } from '../utils/helpers.js';
 import { normalizeSettings, rebrandContent } from '../utils/settings.js';
 import { normalizeMediaUrl, nestMedia, isFastCdnUrl } from '../utils/mediaUrl.js';
 import { query, queryOne } from '../config/db.js';
 
 const router = Router();
-const authLimiter = rateLimit({ windowMs: 60_000, max: 8 });
-const formLimiter = rateLimit({ windowMs: 60_000, max: 10 });
+
+/**
+ * These key on req.ip, which is only the real client once `trust proxy` is set
+ * in server.js (MEL-DEVOPS-001).
+ */
+const limiter = (max, windowMs = 60_000) =>
+  rateLimit({ windowMs, max, standardHeaders: true, legacyHeaders: false });
+
+const authLimiter = limiter(8);
+const formLimiter = limiter(10);
 /** Download-counter pings: a visitor may legitimately take several files. */
-const trackLimiter = rateLimit({ windowMs: 60_000, max: 60 });
+const trackLimiter = limiter(60);
+/**
+ * Credential and identity changes on one's own account. Previously unlimited,
+ * which allowed unbounded current-password guessing and unbounded retries of the
+ * profile edit that used to grant the privileged tier (MEL-SEC-010).
+ */
+const accountLimiter = limiter(10, 15 * 60_000);
 
 /** Roles allowed into the admin panel (Deder RoleMiddleware). */
 const PANEL_ROLES = ['admin', 'super_admin', 'editor', 'doctor', 'staff'];
@@ -78,8 +92,8 @@ function mountCrud(path, ctrl, { publicList = true, publicShow = true, fileField
 router.post('/admin/login', authLimiter, login);
 router.post('/admin/logout', authenticate, logout);
 router.get('/admin/me', authenticate, me);
-router.put('/admin/me', authenticate, upload.single('avatar'), updateMe);
-router.put('/admin/me/password', authenticate, updatePassword);
+router.put('/admin/me', authenticate, accountLimiter, upload.single('avatar'), updateMe);
+router.put('/admin/me/password', authenticate, accountLimiter, updatePassword);
 router.get('/admin/dashboard', ...panelAuth(), dashboard);
 
 // Settings
@@ -147,6 +161,7 @@ router.get('/admin/category-options', ...panelAuth(), R.listCategoryOptions);
 mountCrud('departments', R.departments, { fileField: 'featured_image' });
 mountCrud('department-categories', R.departmentCategories, { fileField: 'icon' });
 mountCrud('partnership-categories', R.partnershipCategories);
+mountCrud('partnerships', R.partnerships, { fileField: 'logo' });
 mountCrud('doctors', R.doctors, { fileField: 'photo' });
 mountCrud('services', R.services, { fileField: 'featured_image' });
 mountCrud('specializations', R.specializations);
@@ -429,8 +444,7 @@ router.get('/public/home', async (_req, res) => {
     homeCache = { at: Date.now(), payload };
     return ok(res, payload);
   } catch (err) {
-    console.error(err);
-    return fail(res, err.message, 500);
+    return serverError(res, err);
   }
 });
 

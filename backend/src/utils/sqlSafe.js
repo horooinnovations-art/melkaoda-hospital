@@ -10,6 +10,10 @@ const SYSTEM_COLUMNS = new Set([
   'deleted_at',
   'password',
   'remember_token',
+  // Privilege and session-invalidation markers: settable only by direct DB
+  // access or the boot-time root-admin designation, never by a request body.
+  'is_root_admin',
+  'password_changed_at',
 ]);
 
 const columnCache = new Map();

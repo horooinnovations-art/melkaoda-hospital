@@ -1,7 +1,12 @@
-export const TOKEN_KEY = "gambo_admin_token";
-export const USER_KEY = "gambo_admin_user";
-const LEGACY_TOKEN_KEY = "loke_admin_token";
-const LEGACY_USER_KEY = "loke_admin_user";
+export const TOKEN_KEY = "melkaoda_admin_token";
+export const USER_KEY = "melkaoda_admin_user";
+/**
+ * Keys this project inherited from its Gambo and Loke ancestors. Read on load so
+ * an already-signed-in admin is not logged out by the rename, and cleared on
+ * sign-out (MEL-CFG-002).
+ */
+const LEGACY_TOKEN_KEYS = ["gambo_admin_token", "loke_admin_token"];
+const LEGACY_USER_KEYS = ["gambo_admin_user", "loke_admin_user"];
 
 export interface AdminUser {
   id: number;
@@ -19,7 +24,18 @@ export interface AdminUser {
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY);
+  const current = localStorage.getItem(TOKEN_KEY);
+  if (current) return current;
+  for (const key of LEGACY_TOKEN_KEYS) {
+    const legacy = localStorage.getItem(key);
+    if (legacy) {
+      // Migrate forward once, then stop reading the old key.
+      localStorage.setItem(TOKEN_KEY, legacy);
+      localStorage.removeItem(key);
+      return legacy;
+    }
+  }
+  return null;
 }
 
 export function setToken(token: string) {
@@ -29,13 +45,17 @@ export function setToken(token: string) {
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
-  localStorage.removeItem(LEGACY_TOKEN_KEY);
-  localStorage.removeItem(LEGACY_USER_KEY);
+  for (const key of [...LEGACY_TOKEN_KEYS, ...LEGACY_USER_KEYS]) {
+    localStorage.removeItem(key);
+  }
 }
 
 export function getStoredUser(): AdminUser | null {
   if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem(USER_KEY) || localStorage.getItem(LEGACY_USER_KEY);
+  const raw =
+    localStorage.getItem(USER_KEY) ||
+    LEGACY_USER_KEYS.map((k) => localStorage.getItem(k)).find(Boolean) ||
+    null;
   if (!raw) return null;
   try {
     return JSON.parse(raw) as AdminUser;

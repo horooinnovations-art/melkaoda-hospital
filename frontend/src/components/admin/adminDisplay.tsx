@@ -59,14 +59,14 @@ export function BoolBadge({
       className={cn(
         "inline-flex max-w-full items-center gap-1.5 truncate rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] transition",
         on
-          ? "bg-[var(--hb-accent-soft)] text-slate-900 ring-1 ring-slate-200"
-          : "bg-stone/80 text-ink-muted ring-1 ring-slate-100"
+          ? "bg-[var(--ld-accent-soft)] text-[var(--ld-accent)] border border-[var(--ld-accent)]/30"
+          : "bg-white/5 text-[var(--ld-faint)] border border-[var(--ld-line)]"
       )}
     >
       <span
         className={cn(
           "h-1.5 w-1.5 shrink-0 rounded-full",
-          on ? "animate-pulse bg-[var(--hb-accent-soft)]0" : "bg-ink-muted/40"
+          on ? "animate-pulse bg-[var(--ld-accent)]" : "bg-[var(--ld-faint)]/50"
         )}
       />
       <span className="truncate">{on ? trueLabel : falseLabel}</span>
@@ -94,7 +94,7 @@ export function EntityAvatar({
   return (
     <div
       className={cn(
-        "relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-[var(--hb-accent-soft)] to-white ring-1 ring-slate-200 shadow-sm",
+        "relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-[#142036] border border-[var(--ld-line-strong)] shadow-sm",
         className
       )}
     >
@@ -106,13 +106,13 @@ export function EntityAvatar({
           className="object-cover"
           optimizeWidth={120}
           fallback={
-            <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-900">
+            <span className="flex h-full w-full items-center justify-center text-xs font-bold text-[var(--ld-accent)]">
               {initials || "•"}
             </span>
           }
         />
       ) : (
-        <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-900">
+        <span className="flex h-full w-full items-center justify-center text-xs font-bold text-[var(--ld-accent)]">
           {initials || "•"}
         </span>
       )}
@@ -206,7 +206,7 @@ export function renderSmartCell(
     key === "deadline"
   ) {
     return (
-      <span className="text-sm text-ink-muted">
+      <span className="text-sm text-[var(--ld-muted)]">
         {formatDate(String(value ?? ""), {
           year: "numeric",
           month: "short",
@@ -218,7 +218,7 @@ export function renderSmartCell(
 
   if (key === "order") {
     return (
-      <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-md bg-[var(--hb-accent-soft)] text-xs font-semibold text-slate-900">
+      <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-md border border-[var(--ld-accent)]/30 bg-[var(--ld-accent-soft)] text-xs font-bold text-[var(--ld-accent)]">
         {formatCellValue(value)}
       </span>
     );

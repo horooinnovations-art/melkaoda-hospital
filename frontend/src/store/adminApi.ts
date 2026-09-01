@@ -250,7 +250,7 @@ export const adminApi = createApi({
     }),
 
     updateMyPassword: builder.mutation<
-      { message?: string },
+      { message?: string; token?: string },
       { current_password: string; password: string; password_confirmation: string }
     >({
       query: (body) => ({
@@ -258,6 +258,10 @@ export const adminApi = createApi({
         method: "PUT",
         body,
       }),
+      // Changing the password invalidates every token issued earlier, including
+      // this tab's. The API returns a replacement; store it or the next request
+      // 401s.
+      transformResponse: (res: ApiResponse<{ message?: string; token?: string }>) => res.data,
     }),
 
     getDashboard: builder.query<DashboardData, void>({
