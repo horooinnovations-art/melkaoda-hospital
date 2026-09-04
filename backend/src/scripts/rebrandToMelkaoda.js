@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import pool from '../config/db.js';
+import { confirmDestructive } from './_guard.js';
 
 const TABLE_COLUMNS = [
   { table: 'settings', columns: ['value'], where: '1=1' },
@@ -122,6 +123,16 @@ async function rebrandTable({ table, columns, where }) {
 }
 
 async function main() {
+  // Refuses to run without --confirm, and makes a remote target be typed
+  // back before touching it (MEL2-OPS-001).
+  const { dryRun } = await confirmDestructive(
+    'Rewrites Deder/Gambo/Loke to "Melka Oda" across every content table.'
+  );
+  if (dryRun) {
+    console.log('[dry-run] No changes were made.');
+    process.exit(0);
+  }
+
   console.log('Rebranding Deder/Gambo/Loke → Melka Oda General Hospital in database content...');
   let total = 0;
   for (const entry of TABLE_COLUMNS) {

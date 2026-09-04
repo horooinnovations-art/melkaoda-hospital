@@ -167,7 +167,7 @@ export const ADMIN_RESOURCE_CONFIGS: Record<AdminResource, AdminResourceConfig> 
         type: "text",
         placeholder: "fas fa-heartbeat",
         defaultValue: "fas fa-heartbeat",
-        hint: "Font Awesome class, same as the Deder admin.",
+        hint: "Font Awesome class name, e.g. fa-heart-pulse.",
       },
       { name: "featured_image", label: "Featured Image", type: "file" },
       hiddenField("featured_image_id"),

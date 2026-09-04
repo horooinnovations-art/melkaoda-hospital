@@ -1,5 +1,5 @@
 /**
- * Deder-parity permission map for admin UI routes.
+ * Permission map for admin UI routes.
  * `null` = any authenticated panel user (dashboard / profile).
  * `super_admin` = role check, not a permission slug.
  */
@@ -27,6 +27,10 @@ export const ADMIN_ROUTE_PERMISSIONS: Record<string, string | null> = {
   "/admin/partnerships": "manage_pages",
   "/admin/partnership-categories": "manage_pages",
   "/admin/careers": "manage_careers",
+  // Applicant and attendee records sit behind the same permission as the
+  // vacancy or event they belong to.
+  "/admin/job-applications": "manage_careers",
+  "/admin/event-registrations": "manage_events",
   "/admin/users": "manage_users",
   "/admin/roles": "manage_roles",
   "/admin/permissions": "super_admin",
@@ -47,21 +51,25 @@ export function isSuperAdmin(user: AccessUser) {
   return (user?.roles || []).includes("super_admin");
 }
 
-/** Email or name contains "admin" (case-insensitive). */
-export function hasAdminTerm(user: { email?: string | null; name?: string | null } | null | undefined) {
-  const email = String(user?.email || "").toLowerCase();
-  const name = String(user?.name || "").toLowerCase();
-  return email.includes("admin") || name.includes("admin");
-}
-
 /**
- * Privileged super admin: has super_admin role AND "admin" in email/name.
- * Only these accounts can see, create, and manage other super admins.
+ * Privileged super admin: the `super_admin` role AND the server's read-only
+ * `is_root_admin` marker.
+ *
+ * This used to test whether the user's own email or name contained the word
+ * "admin" — the same self-grantable heuristic the API removed in favour of the
+ * `users.is_root_admin` column, left behind on this side (MEL2-SEC-008). It
+ * unlocked create-and-manage affordances the API then rejected, and it ignored
+ * the authoritative flag the API already returns.
+ *
+ * The server enforces this independently; this only decides what is worth
+ * showing.
  */
 export function isPrivilegedSuperAdmin(
-  user: (AccessUser & { email?: string | null; name?: string | null }) | null | undefined
+  user: (AccessUser & { is_root_admin?: boolean | number | string | null }) | null | undefined
 ) {
-  return isSuperAdmin(user) && hasAdminTerm(user);
+  const flag = user?.is_root_admin;
+  const isRoot = flag === true || flag === 1 || flag === "1";
+  return isSuperAdmin(user) && isRoot;
 }
 
 export function userHasSuperRole(user: {

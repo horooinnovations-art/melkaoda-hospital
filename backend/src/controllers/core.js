@@ -14,6 +14,10 @@ import {
   denormalizeSettingKey,
   formatAddress,
 } from '../utils/settings.js';
+import { validator } from '../utils/validate.js';
+import { logger } from '../utils/logger.js';
+import { sendContactReply } from '../services/mail.js';
+import { checkLock, recordFailure, clearFailures } from '../services/loginThrottle.js';
 import { upload, saveMedia, attachPhoto, attachPhotos } from '../services/media.js';
 import { logAudit, logLogin, logLogout } from '../services/audit.js';
 import {
@@ -49,13 +53,28 @@ export async function login(req, res) {
       { email }
     );
 
+    // A locked account is refused before the password is considered, but the
+    // bcrypt round below still runs for unknown emails so the timing signal
+    // stays flat.
+    const lock = user ? await checkLock(user.id) : { locked: false };
+
     const storedHash = user ? normalizePasswordHash(user.password) : null;
     const usableHash = Boolean(storedHash) && looksLikeBcryptHash(storedHash);
 
     // Always spend the bcrypt round, then decide.
     const passwordMatches = await verifyPassword(password, usableHash ? storedHash : DUMMY_HASH);
 
+    if (lock.locked) {
+      await logLogin(req, user, false);
+      return fail(
+        res,
+        `Too many failed sign-in attempts. Try again in ${lock.minutes} minute${lock.minutes === 1 ? '' : 's'}.`,
+        429
+      );
+    }
+
     if (!user || !usableHash || !passwordMatches) {
+      if (user) await recordFailure(user.id);
       await logLogin(req, user || null, false);
       if (user && !usableHash) {
         // Operator-facing only. The caller gets the same generic message as
@@ -100,6 +119,7 @@ export async function login(req, res) {
       id: user.id,
       ip: req.ip,
     });
+    await clearFailures(user.id);
 
     await logLogin(req, user, true);
 
@@ -139,7 +159,7 @@ export async function me(req, res) {
   );
 }
 
-/** Deder ProfileController@update — name, email, phone, avatar */
+/** Update one's own profile — name, email, phone, avatar. */
 export async function updateMe(req, res) {
   try {
     const name = String(req.body?.name || '').trim();
@@ -201,7 +221,7 @@ export async function updateMe(req, res) {
   }
 }
 
-/** Deder ProfileController@updatePassword — requires current password */
+/** Change one's own password. Requires the current password. */
 export async function updatePassword(req, res) {
   try {
     const currentPassword = String(req.body?.current_password || '');
@@ -281,14 +301,11 @@ export async function dashboard(req, res) {
 
     return ok(res, { counts, recentContacts, recentNews });
   } catch (err) {
-    // leadership_history may not exist yet
-    console.error(err);
-    return ok(res, {
-      counts: {},
-      recentContacts: [],
-      recentNews: [],
-      warning: err.message,
-    });
+    // This used to answer 200 with `warning: err.message`, handing raw MySQL
+    // text — table and column names — to any panel user, and telling the client
+    // the request had succeeded. It now fails like every other handler: masked
+    // message, correlation id, real detail in the log (MEL2-SEC-010).
+    return serverError(res, err, 'dashboard');
   }
 }
 
@@ -440,20 +457,36 @@ export async function updateSettings(req, res) {
 }
 
 // ---- Contact ----
+/**
+ * Public contact form.
+ *
+ * Every field is length- and format-checked against the column it lands in.
+ * The previous version tested presence only, so an over-long phone number or
+ * subject reached the driver and threw under `STRICT_ALL_TABLES` — which, with
+ * the async guard missing, hung the request instead of answering 422
+ * (MEL2-SEC-003).
+ */
 export async function submitContact(req, res) {
-  const { name, email, phone, subject, message: msg, department } = req.body;
-  if (!name || !email || !subject || !msg) return fail(res, 'Required fields missing', 422);
+  const v = validator(req.body)
+    .string('name', { required: true, max: 255, min: 2, label: 'Name' })
+    .email('email', { required: true })
+    .phone('phone', { required: false })
+    .string('subject', { required: true, max: 255, min: 3, label: 'Subject' })
+    .string('message', { required: true, max: 5000, min: 10, label: 'Message' })
+    .string('department', { required: false, max: 100, label: 'Department' });
+
+  if (!v.ok) return fail(res, v.message, 422);
 
   const result = await query(
     `INSERT INTO contact_submissions (name, email, phone, subject, message, department, status, ip_address, created_at, updated_at)
      VALUES (:name, :email, :phone, :subject, :message, :department, 'new', :ip, NOW(), NOW())`,
     {
-      name,
-      email,
-      phone: phone || null,
-      subject,
-      message: msg,
-      department: department || null,
+      name: v.values.name,
+      email: v.values.email,
+      phone: v.values.phone || null,
+      subject: v.values.subject,
+      message: v.values.message,
+      department: v.values.department || null,
       ip: req.ip,
     }
   );
@@ -469,13 +502,59 @@ export async function listContacts(req, res) {
   return ok(res, { data: rows, meta: { total: totalRow.total, page, perPage } });
 }
 
+/**
+ * Answer a contact submission.
+ *
+ * The reply is both stored and emailed. It used to be stored only — there was
+ * no mail transport in the project at all — so an administrator who clicked
+ * "Send reply" was told it had been sent while the person who wrote in received
+ * nothing (MEL2-BIZ-002).
+ *
+ * Delivery failure does not fail the request: the reply is already saved and
+ * the administrator should not lose their text. It is reported back in the
+ * response so the panel can say plainly that sending did not work.
+ */
 export async function replyContact(req, res) {
-  const { reply_message } = req.body;
+  const v = validator(req.body).string('reply_message', {
+    required: true,
+    max: 10000,
+    min: 2,
+    label: 'Reply',
+  });
+  if (!v.ok) return fail(res, v.message, 422);
+
+  const submission = await queryOne(
+    `SELECT id, name, email, subject FROM contact_submissions WHERE id = :id LIMIT 1`,
+    { id: req.params.id }
+  );
+  if (!submission) return fail(res, 'Submission not found', 404);
+
   await query(
     `UPDATE contact_submissions SET status = 'replied', reply_message = :reply_message, replied_at = NOW(), replied_by = :uid, updated_at = NOW() WHERE id = :id`,
-    { id: req.params.id, reply_message, uid: req.user.id }
+    { id: submission.id, reply_message: v.values.reply_message, uid: req.user.id }
   );
-  return message(res, 'Reply saved');
+
+  await logAudit(req, 'update', {
+    modelType: 'contact_submissions',
+    modelId: submission.id,
+    oldValues: { id: submission.id, status: 'new/read' },
+    newValues: { id: submission.id, status: 'replied' },
+  });
+
+  const delivery = await sendContactReply(submission, v.values.reply_message);
+  if (!delivery.sent) {
+    logger.warn('contact_reply_not_delivered', {
+      id: submission.id,
+      reason: delivery.reason,
+    });
+    return ok(res, {
+      message: 'Reply saved, but the email could not be sent.',
+      delivered: false,
+      reason: delivery.reason,
+    });
+  }
+
+  return ok(res, { message: 'Reply sent', delivered: true });
 }
 
 export {

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/asyncHandler.js';
 import rateLimit from 'express-rate-limit';
 import {
   login,
@@ -20,14 +20,17 @@ import {
 } from '../controllers/core.js';
 import * as R from '../controllers/resources.js';
 import * as RBAC from '../controllers/rbac.js';
+import * as SUB from '../controllers/submissions.js';
+import * as PR from '../controllers/passwordReset.js';
 import { RESOURCE_PERMISSIONS } from '../config/permissions.js';
-import { saveMedia } from '../services/media.js';
+import { saveMedia, destroyMedia } from '../services/media.js';
+import { logAudit } from '../services/audit.js';
 import { ok, fail, message, serverError } from '../utils/helpers.js';
-import { normalizeSettings, rebrandContent } from '../utils/settings.js';
+import { normalizeSettings } from '../utils/settings.js';
 import { normalizeMediaUrl, nestMedia, isFastCdnUrl } from '../utils/mediaUrl.js';
 import { query, queryOne } from '../config/db.js';
 
-const router = Router();
+const router = safeRouter();
 
 /**
  * These key on req.ip, which is only the real client once `trust proxy` is set
@@ -35,6 +38,19 @@ const router = Router();
  */
 const limiter = (max, windowMs = 60_000) =>
   rateLimit({ windowMs, max, standardHeaders: true, legacyHeaders: false });
+
+/**
+ * Floor for everything under /api/v1.
+ *
+ * Only login, the two public forms and the download counter were limited, so
+ * every public read endpoint and every admin endpoint was unmetered — free to
+ * scrape and free to flood, on an instance where one home request costs ten
+ * queries (MEL2-API-001). This sits high enough not to interfere with a person
+ * browsing the site and low enough to blunt a script.
+ */
+const globalLimiter = limiter(300);
+/** Admin traffic is a handful of operators, not the public. */
+const adminLimiter = limiter(120);
 
 const authLimiter = limiter(8);
 const formLimiter = limiter(10);
@@ -47,14 +63,17 @@ const trackLimiter = limiter(60);
  */
 const accountLimiter = limiter(10, 15 * 60_000);
 
-/** Roles allowed into the admin panel (Deder RoleMiddleware). */
+/** Roles allowed into the admin panel. */
 const PANEL_ROLES = ['admin', 'super_admin', 'editor', 'doctor', 'staff'];
 
 function panelAuth(...permissions) {
-  const chain = [authenticate, requireRoles(...PANEL_ROLES)];
+  const chain = [adminLimiter, authenticate, requireRoles(...PANEL_ROLES)];
   if (permissions.length) chain.push(requirePermission(...permissions));
   return chain;
 }
+
+// Applies to every route below, public and admin alike.
+router.use(globalLimiter);
 
 function mountCrud(path, ctrl, { publicList = true, publicShow = true, fileField = 'photo' } = {}) {
   if (publicList) router.get(`/public/${path}`, ctrl.listPublic);
@@ -90,6 +109,12 @@ function mountCrud(path, ctrl, { publicList = true, publicShow = true, fileField
 
 // Auth
 router.post('/admin/login', authLimiter, login);
+/**
+ * Password reset. Rate-limited hard: the request endpoint sends mail and the
+ * completion endpoint is a token guess. Both answer neutrally.
+ */
+router.post('/admin/password/forgot', limiter(5, 15 * 60_000), PR.requestPasswordReset);
+router.post('/admin/password/reset', limiter(10, 15 * 60_000), PR.completePasswordReset);
 router.post('/admin/logout', authenticate, logout);
 router.get('/admin/me', authenticate, me);
 router.put('/admin/me', authenticate, accountLimiter, upload.single('avatar'), updateMe);
@@ -143,14 +168,56 @@ router.post(
   }
 );
 router.delete('/admin/media/:id', ...panelAuth('manage_media'), async (req, res) => {
-  await query(`DELETE FROM media WHERE id = :id`, { id: req.params.id });
+  const media = await queryOne(`SELECT * FROM media WHERE id = :id LIMIT 1`, {
+    id: req.params.id,
+  });
+  if (!media) return fail(res, 'Not found', 404);
+  // Résumés are applicant PII and are managed from the applications screen, not
+  // the media library — deleting one here would orphan an application's file.
+  if (media.folder === 'resumes') {
+    return fail(res, 'Applicant files are managed from Job Applications', 403);
+  }
+  // Removes the Cloudinary asset too. This used to drop only the row, leaving
+  // the remote file paid for and unreferenced forever, with no audit entry.
+  await destroyMedia(media);
+  await logAudit(req, 'delete', {
+    modelType: 'media',
+    modelId: media.id,
+    oldValues: { id: media.id, url: media.url, folder: media.folder },
+  });
   return ok(res, { message: 'Deleted' });
 });
+
+/**
+ * Job applications and event registrations.
+ *
+ * Both tables were written by the public forms and read by nothing — no route,
+ * no page, no export (MEL2-BIZ-001). Applications sit behind `manage_careers`
+ * and registrations behind `manage_events`, matching the permission that
+ * governs the vacancy or event they belong to.
+ *
+ * The résumé download is a separate, audited endpoint: it returns a signed
+ * five-minute URL rather than putting a link to applicant PII in every list
+ * payload.
+ */
+router.get('/admin/job-applications', ...panelAuth('manage_careers'), SUB.listApplications);
+router.get('/admin/job-applications/:id', ...panelAuth('manage_careers'), SUB.showApplication);
+router.get(
+  '/admin/job-applications/:id/resume',
+  ...panelAuth('manage_careers'),
+  SUB.downloadResume
+);
+router.put('/admin/job-applications/:id', ...panelAuth('manage_careers'), SUB.updateApplication);
+router.post('/admin/job-applications/:id', ...panelAuth('manage_careers'), SUB.updateApplication);
+
+router.get('/admin/event-registrations', ...panelAuth('manage_events'), SUB.listRegistrations);
+router.put('/admin/event-registrations/:id', ...panelAuth('manage_events'), SUB.updateRegistration);
+router.post('/admin/event-registrations/:id', ...panelAuth('manage_events'), SUB.updateRegistration);
 
 router.get('/admin/audit-logs', ...panelAuth('view_audit_logs'), R.listAuditLogs);
 router.get('/admin/audit-logs/:id', ...panelAuth('view_audit_logs'), R.showAuditLog);
 
-// Admin form select options used by the Deder-parity CRUD dialogs.
+// Admin form select options used by the CRUD dialogs.
 router.get('/admin/department-options', ...panelAuth(), R.listDepartmentOptions);
 router.get('/admin/department-category-options', ...panelAuth(), R.listDepartmentCategoryOptions);
 router.get('/admin/doctor-options', ...panelAuth(), R.listDoctorOptions);
@@ -186,7 +253,7 @@ router.get(
   R.listPartnershipCategories
 );
 
-// Users / Roles / Permissions — Deder-parity RBAC admin
+// Users / Roles / Permissions — RBAC admin
 router.get('/admin/users', ...panelAuth('manage_users'), RBAC.listUsers);
 router.get('/admin/users/:id', ...panelAuth('manage_users'), RBAC.showUser);
 router.post('/admin/users', ...panelAuth('manage_users'), RBAC.createUser);
@@ -222,7 +289,7 @@ router.post('/public/downloads/:id/track', trackLimiter, R.trackDownload);
 let homeCache = { at: 0, payload: null };
 const HOME_CACHE_MS = 60_000;
 
-// Home aggregate — mirrors Deder Public\HomeController@index
+// Home aggregate — one payload for the whole landing page.
 router.get('/public/home', async (_req, res) => {
   try {
     if (homeCache.payload && Date.now() - homeCache.at < HOME_CACHE_MS) {
@@ -233,7 +300,7 @@ router.get('/public/home', async (_req, res) => {
     const rawSettings = Object.fromEntries(settingsRows.map((r) => [r.key, r.value]));
     const settings = normalizeSettings(rawSettings);
 
-    // Deder-shaped settings aliases used by the home blade
+    // Settings aliases the home page reads.
     settings.name = settings.site_name || settings.organization_name;
     settings.description = settings.about || settings.organization_description;
     if (settings.logo_url) settings.logo_url = normalizeMediaUrl(settings.logo_url);
@@ -329,7 +396,7 @@ router.get('/public/home', async (_req, res) => {
     let gallery = galleryRaw;
     let leadership = leadershipRaw;
 
-    // Normalize + nest media like Deder Eloquent relations
+    // Normalize URLs and nest each row's media object.
     departments = departments.map((row) => {
       nestMedia(row, 'image_url', 'featured_image');
       return row;
@@ -425,7 +492,7 @@ router.get('/public/home', async (_req, res) => {
       homeFeatures = [];
     }
 
-    const payload = rebrandContent({
+    const payload = {
       settings,
       departments,
       doctors,
@@ -440,7 +507,7 @@ router.get('/public/home', async (_req, res) => {
       homeFeaturesTitle: rawSettings.home_features_title || '',
       homeFeaturesSubtitle: rawSettings.home_features_subtitle || '',
       homeFeatures,
-    });
+    };
     homeCache = { at: Date.now(), payload };
     return ok(res, payload);
   } catch (err) {

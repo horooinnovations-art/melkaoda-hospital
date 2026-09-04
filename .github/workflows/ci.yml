@@ -1,0 +1,122 @@
+name: CI
+
+# Nothing stood between a commit and production: Render builds on push, and the
+# test suite, the type checker and the linter were only ever run by hand
+# (MEL2-TEST-001). Every one of them is fast; there is no reason for them not to
+# gate a merge.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A superseded run has nothing useful left to say.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend — tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install
+        working-directory: backend
+        run: npm ci
+
+      - name: Test
+        working-directory: backend
+        # The suite is pure unit tests over the security helpers — no database
+        # is required, and none should be reachable from CI.
+        run: npm test
+
+      - name: Audit (production dependencies)
+        working-directory: backend
+        # Advisory: reports without failing the build, so a newly published CVE
+        # in a transitive dependency does not block an unrelated fix. Read it.
+        run: npm audit --omit=dev || true
+
+  frontend:
+    name: Frontend — types, lint, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Lint
+        working-directory: frontend
+        run: npx next lint
+
+      - name: Build
+        working-directory: frontend
+        # A build here catches what a typecheck cannot: a route that fails to
+        # prerender, a missing import in a server component.
+        env:
+          NEXT_PUBLIC_API_URL: https://example.invalid/api/v1
+          NEXT_PUBLIC_SITE_NAME: Melka Oda General Hospital
+        run: npm run build
+
+  secrets:
+    name: Secret and dump scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Refuse database dumps and env files
+        # A production dump carrying administrator password hashes and public
+        # correspondence was committed and pushed once already (MEL2-SEC-001).
+        # This makes the second time impossible rather than unlikely.
+        run: |
+          set -e
+          offenders=$(git ls-files \
+            | grep -Ei '\.(sql|dump)$|(^|/)\.env($|\.)' \
+            | grep -v '^database/migrations/' \
+            | grep -v '^database/leadership_history.sql$' \
+            | grep -v '^media-recovery.sql$' \
+            | grep -v '\.example$' \
+            || true)
+          if [ -n "$offenders" ]; then
+            echo "::error::Refusing: database dumps or environment files are staged for commit."
+            echo "$offenders"
+            exit 1
+          fi
+          echo "No dumps or env files tracked."
+
+      - name: Refuse obvious credential literals
+        run: |
+          set -e
+          hits=$(git grep -nIE \
+            "\\\$2[aby]\\\$[0-9]{2}\\\$|BEGIN (RSA |OPENSSH )?PRIVATE KEY" \
+            -- ':!*.md' ':!*.html' ':!.github/**' ':!backend/tests/**' \
+            || true)
+          if [ -n "$hits" ]; then
+            echo "::error::Refusing: a password hash or private key appears in tracked files."
+            echo "$hits"
+            exit 1
+          fi
+          echo "No credential literals found."

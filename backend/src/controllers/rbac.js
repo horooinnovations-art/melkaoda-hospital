@@ -1,5 +1,5 @@
 import { hashPassword } from '../utils/password.js';
-import { query, queryOne } from '../config/db.js';
+import pool, { query, queryOne } from '../config/db.js';
 import { ok, fail, message, paginate, slugify, serverError } from '../utils/helpers.js';
 import { normalizeMediaUrl } from '../utils/mediaUrl.js';
 import { logAudit } from '../services/audit.js';
@@ -208,25 +208,81 @@ async function countActiveSuperAdmins() {
   return Number(row?.total || 0);
 }
 
+/**
+ * A role editor may only grant permissions they already hold.
+ *
+ * Without this, anyone with `manage_roles` could add every permission in the
+ * system to a custom role they were already a member of — including
+ * `manage_users` — and re-authenticate as an effective administrator. The only
+ * guard was `role.is_system`, which protects the seeded roles and nothing else
+ * (MEL2-SEC-005).
+ *
+ * super_admin bypasses, because it bypasses every permission check anyway;
+ * refusing here would only be theatre.
+ *
+ * @returns {Promise<string[]>} slugs the caller may not grant (empty when ok)
+ */
+async function permissionsBeyondCaller(req, permissionIds) {
+  if (isSuper(req)) return [];
+  if (!permissionIds.length) return [];
+
+  const placeholders = permissionIds.map((_, i) => `:p${i}`).join(',');
+  const params = Object.fromEntries(permissionIds.map((id, i) => [`p${i}`, id]));
+  const rows = await query(
+    `SELECT slug FROM permissions WHERE id IN (${placeholders})`,
+    params
+  );
+
+  const held = new Set(req.user?.permissions || []);
+  return rows.map((r) => r.slug).filter((slug) => !held.has(slug));
+}
+
+/**
+ * Replace a user's roles atomically.
+ *
+ * The delete and the inserts ran unwrapped, so a failure part-way through left
+ * the user with no roles at all rather than the set they started with.
+ */
 async function syncUserRoles(userId, roleIds) {
-  await query(`DELETE FROM user_roles WHERE user_id = :uid`, { uid: userId });
-  for (const rid of roleIds) {
-    await query(
-      `INSERT INTO user_roles (user_id, role_id, created_at, updated_at)
-       VALUES (:uid, :rid, NOW(), NOW())`,
-      { uid: userId, rid }
-    );
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.execute(`DELETE FROM user_roles WHERE user_id = ?`, [userId]);
+    for (const rid of roleIds) {
+      await conn.execute(
+        `INSERT INTO user_roles (user_id, role_id, created_at, updated_at)
+         VALUES (?, ?, NOW(), NOW())`,
+        [userId, rid]
+      );
+    }
+    await conn.commit();
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
   }
 }
 
+/** Replace a role's permission set atomically — same reasoning as above. */
 async function syncRolePermissions(roleId, permissionIds) {
-  await query(`DELETE FROM role_permissions WHERE role_id = :rid`, { rid: roleId });
-  for (const pid of permissionIds) {
-    await query(
-      `INSERT INTO role_permissions (role_id, permission_id, created_at, updated_at)
-       VALUES (:rid, :pid, NOW(), NOW())`,
-      { rid: roleId, pid }
-    );
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.execute(`DELETE FROM role_permissions WHERE role_id = ?`, [roleId]);
+    for (const pid of permissionIds) {
+      await conn.execute(
+        `INSERT INTO role_permissions (role_id, permission_id, created_at, updated_at)
+         VALUES (?, ?, NOW(), NOW())`,
+        [roleId, pid]
+      );
+    }
+    await conn.commit();
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
   }
 }
 
@@ -643,6 +699,15 @@ export async function createRole(req, res) {
     const taken = await queryOne(`SELECT id FROM roles WHERE slug = :slug LIMIT 1`, { slug });
     if (taken) return fail(res, 'Slug already exists', 422);
 
+    const beyond = await permissionsBeyondCaller(req, permissionIds);
+    if (beyond.length) {
+      return fail(
+        res,
+        `You cannot grant permissions you do not hold yourself: ${beyond.join(', ')}`,
+        403
+      );
+    }
+
     const result = await query(
       `INSERT INTO roles (name, slug, description, is_system, created_at, updated_at)
        VALUES (:name, :slug, :description, 0, NOW(), NOW())`,
@@ -690,6 +755,20 @@ export async function updateRole(req, res) {
     );
     if (taken) return fail(res, 'Slug already exists', 422);
 
+    const syncPermissions =
+      req.body?.permission_ids !== undefined || req.body?.permissions !== undefined;
+
+    if (syncPermissions) {
+      const beyond = await permissionsBeyondCaller(req, permissionIds);
+      if (beyond.length) {
+        return fail(
+          res,
+          `You cannot grant permissions you do not hold yourself: ${beyond.join(', ')}`,
+          403
+        );
+      }
+    }
+
     await query(
       `UPDATE roles SET name = :name, slug = :slug, description = :description, updated_at = NOW()
        WHERE id = :id`,
@@ -697,7 +776,7 @@ export async function updateRole(req, res) {
     );
 
     // Always sync when permission_ids/permissions is provided (including empty array).
-    if (req.body?.permission_ids !== undefined || req.body?.permissions !== undefined) {
+    if (syncPermissions) {
       await syncRolePermissions(id, permissionIds);
     }
 

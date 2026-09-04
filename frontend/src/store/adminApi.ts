@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -146,6 +147,65 @@ export interface PermissionsListResponse extends PaginatedResponse<AdminPermissi
   modules?: string[];
 }
 
+
+/**
+ * Job applications and event registrations.
+ *
+ * Both tables were written by the public forms and had no read path anywhere in
+ * the product — no endpoint, no screen, no export (MEL2-BIZ-001).
+ *
+ * `has_resume` is a boolean, never a URL: the file is private and is fetched
+ * through a separate, audited endpoint that mints a short-lived signed link.
+ */
+export interface JobApplication {
+  id: number;
+  career_id: number;
+  career_title?: string | null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  cover_letter?: string | null;
+  status: "submitted" | "under_review" | "shortlisted" | "rejected" | "hired";
+  reviewed_by?: number | null;
+  reviewer_name?: string | null;
+  reviewed_at?: string | null;
+  notes?: string | null;
+  has_resume?: boolean;
+  resume_is_legacy?: boolean;
+  created_at?: string;
+}
+
+export interface JobApplicationsResponse extends PaginatedResponse<JobApplication> {
+  filters?: {
+    statuses: string[];
+    counts: Record<string, number>;
+    careers: Array<{ id: number; title: string }>;
+  };
+}
+
+export interface EventRegistration {
+  id: number;
+  event_id: number;
+  event_title?: string | null;
+  event_date?: string | null;
+  name: string;
+  email: string;
+  phone: string;
+  organization?: string | null;
+  notes?: string | null;
+  status: "pending" | "confirmed" | "attended" | "cancelled";
+  created_at?: string;
+}
+
+export interface EventRegistrationsResponse extends PaginatedResponse<EventRegistration> {
+  filters?: {
+    statuses: string[];
+    counts: Record<string, number>;
+    events: Array<{ id: number; title: string }>;
+  };
+}
+
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: "/",
   prepareHeaders: (headers) => {
@@ -204,6 +264,8 @@ export const adminApi = createApi({
     "Roles",
     "Permissions",
     "AdminResource",
+    "JobApplications",
+    "EventRegistrations",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<
@@ -218,6 +280,25 @@ export const adminApi = createApi({
       transformResponse: (res: ApiResponse<{ token: string; user: AdminUser }>) =>
         res.data,
       invalidatesTags: ["Auth", "Dashboard"],
+    }),
+
+    /**
+     * Password reset. Both endpoints answer neutrally — the request one says
+     * the same thing whether or not the address exists, so it cannot be used to
+     * discover accounts. Before this there was no reset path at all
+     * (MEL2-SEC-006).
+     */
+    requestPasswordReset: builder.mutation<{ message: string }, { email: string }>({
+      query: (body) => ({ url: "/admin/password/forgot", method: "POST", body }),
+      transformResponse: (res: ApiResponse<{ message: string }>) => res.data,
+    }),
+
+    completePasswordReset: builder.mutation<
+      { message: string },
+      { token: string; password: string; password_confirmation: string }
+    >({
+      query: (body) => ({ url: "/admin/password/reset", method: "POST", body }),
+      transformResponse: (res: ApiResponse<{ message: string }>) => res.data,
     }),
 
     logout: builder.mutation<{ message: string }, void>({
@@ -654,6 +735,128 @@ export const adminApi = createApi({
       invalidatesTags: ["Permissions"],
     }),
 
+
+    // ── Job applications ────────────────────────────────────────────────────
+    getJobApplications: builder.query<
+      JobApplicationsResponse,
+      { page?: number; perPage?: number; search?: string; status?: string; career_id?: number }
+    >({
+      query: ({ page = 1, perPage = 25, search, status, career_id } = {}) => ({
+        url: "/admin/job-applications",
+        params: {
+          page,
+          perPage,
+          ...(search ? { search } : {}),
+          ...(status ? { status } : {}),
+          ...(career_id ? { career_id } : {}),
+        },
+      }),
+      transformResponse: (res: ApiResponse<JobApplicationsResponse>) => res.data,
+      providesTags: ["JobApplications"],
+    }),
+
+    getJobApplication: builder.query<JobApplication, number>({
+      query: (id) => `/admin/job-applications/${id}`,
+      transformResponse: (res: ApiResponse<JobApplication>) => res.data,
+      providesTags: ["JobApplications"],
+    }),
+
+    /**
+     * One audited access to an applicant's file.
+     *
+     * The response shape depends on where media is stored, so this reads the
+     * content type rather than assuming: the Cloudinary driver answers with JSON
+     * carrying a five-minute signed URL, while the local driver streams the file
+     * itself (the file lives outside every static-served directory, so there is
+     * no URL to hand out). Either way the caller gets something openable.
+     *
+     * Not cached — each call is a separate access, and each is logged.
+     */
+    getResumeLink: builder.mutation<
+      { url: string; filename: string; revoke?: boolean },
+      number
+    >({
+      queryFn: async (id, _api, _extra, baseQuery) => {
+        const result = await baseQuery({
+          url: `/admin/job-applications/${id}/resume`,
+          // Let the raw body through; RTK Query would otherwise try to parse a
+          // PDF as JSON and fail.
+          responseHandler: (response) => response.blob(),
+        });
+
+        if (result.error) return { error: result.error };
+
+        const blob = result.data as Blob;
+
+        if (blob.type.includes("application/json")) {
+          const parsed = JSON.parse(await blob.text()) as ApiResponse<{
+            url: string;
+            filename: string;
+          }>;
+          if (!parsed.success) {
+            return {
+              error: { status: 409, data: parsed } as FetchBaseQueryError,
+            };
+          }
+          return { data: { url: parsed.data.url, filename: parsed.data.filename } };
+        }
+
+        // Streamed file — hand back an object URL the caller must revoke.
+        return {
+          data: {
+            url: URL.createObjectURL(blob),
+            filename: `application-${id}`,
+            revoke: true,
+          },
+        };
+      },
+    }),
+
+    updateJobApplication: builder.mutation<
+      JobApplication,
+      { id: number; body: { status?: string; notes?: string } }
+    >({
+      query: ({ id, body }) => ({
+        url: `/admin/job-applications/${id}`,
+        method: "PUT",
+        body,
+      }),
+      transformResponse: (res: ApiResponse<JobApplication>) => res.data,
+      invalidatesTags: ["JobApplications"],
+    }),
+
+    // ── Event registrations ─────────────────────────────────────────────────
+    getEventRegistrations: builder.query<
+      EventRegistrationsResponse,
+      { page?: number; perPage?: number; search?: string; status?: string; event_id?: number }
+    >({
+      query: ({ page = 1, perPage = 25, search, status, event_id } = {}) => ({
+        url: "/admin/event-registrations",
+        params: {
+          page,
+          perPage,
+          ...(search ? { search } : {}),
+          ...(status ? { status } : {}),
+          ...(event_id ? { event_id } : {}),
+        },
+      }),
+      transformResponse: (res: ApiResponse<EventRegistrationsResponse>) => res.data,
+      providesTags: ["EventRegistrations"],
+    }),
+
+    updateEventRegistration: builder.mutation<
+      EventRegistration,
+      { id: number; body: { status?: string; notes?: string } }
+    >({
+      query: ({ id, body }) => ({
+        url: `/admin/event-registrations/${id}`,
+        method: "PUT",
+        body,
+      }),
+      transformResponse: (res: ApiResponse<EventRegistration>) => res.data,
+      invalidatesTags: ["EventRegistrations"],
+    }),
+
     deletePermission: builder.mutation<{ message: string }, number>({
       query: (id) => ({
         url: `/admin/permissions/${id}`,
@@ -701,4 +904,12 @@ export const {
   useCreatePermissionMutation,
   useUpdatePermissionMutation,
   useDeletePermissionMutation,
+  useGetJobApplicationsQuery,
+  useGetJobApplicationQuery,
+  useGetResumeLinkMutation,
+  useUpdateJobApplicationMutation,
+  useGetEventRegistrationsQuery,
+  useUpdateEventRegistrationMutation,
+  useRequestPasswordResetMutation,
+  useCompletePasswordResetMutation,
 } = adminApi;

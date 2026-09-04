@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import Reveal from "@/components/motion/Reveal";
 
 interface SectionIntroProps {
-  /** Ignored — kept for call-site compatibility after leaving Loke chapter indexes. */
+  /** Ignored — retained for call-site compatibility. */
   index?: string;
   eyebrow: string;
   title: React.ReactNode;

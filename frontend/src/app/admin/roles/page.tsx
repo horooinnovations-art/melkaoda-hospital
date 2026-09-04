@@ -313,7 +313,7 @@ export default function AdminRolesPage() {
               {editing ? "Edit Role" : "Add Role"}
             </DialogTitle>
             <DialogDescription>
-              Assign permissions grouped by module, like the Deder admin.
+              Assign permissions grouped by module.
             </DialogDescription>
           </DialogHeader>
 

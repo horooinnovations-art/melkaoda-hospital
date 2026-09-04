@@ -44,3 +44,14 @@ audit-report.html
 deployed_env_file/
 *.env
 !*.env.example
+
+# Scratch API captures. `backend/*.json` above already covers these, but they
+# were sitting in the tree — one of them held a stored error response.
+backend/home*.json
+backend/doctors.json
+backend/settings.json
+docs/**/*.local.md
+
+# cPanel deployment bundles produced by `npm run package:cpanel`. Rebuild them,
+# never commit them — the web bundle alone is 80 MB and contains node_modules.
+dist-cpanel/

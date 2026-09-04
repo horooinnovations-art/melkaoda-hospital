@@ -16,12 +16,18 @@ test('production boot validation rejects weak defaults (subprocess)', () => {
     delete process.env.CLOUDINARY_CLOUD_NAME;
     delete process.env.CLOUDINARY_API_KEY;
     delete process.env.CLOUDINARY_API_SECRET;
+    delete process.env.MEDIA_DRIVER;
     const { validateEnv } = await import('./src/config/env.js');
     const r = validateEnv();
     if (r.ok) { console.error('expected failure'); process.exit(2); }
     if (!r.errors.some((e) => e.includes('JWT_SECRET'))) process.exit(3);
     if (!r.errors.some((e) => e.includes('ADMIN_'))) process.exit(4);
-    if (!r.errors.some((e) => e.includes('CLOUDINARY'))) process.exit(5);
+    // Media storage must be stated explicitly. This used to assert a hard
+    // Cloudinary requirement, which was wrong for any host with a persistent
+    // disk — the rule now is that production cannot stay silent about where a
+    // hospital's files are written, not that it must use one particular
+    // provider (MEL2-CPANEL).
+    if (!r.errors.some((e) => e.includes('MEDIA_DRIVER'))) process.exit(5);
     process.exit(0);
   `;
   const result = spawnSync(process.execPath, ['--input-type=module', '-e', script], {

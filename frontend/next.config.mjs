@@ -4,6 +4,9 @@ const API_PROXY_TARGET = (
 
 const isDev = process.env.NODE_ENV === "development";
 
+/** Scheme + host of the API, without the /api/v1 path. */
+const API_ORIGIN = API_PROXY_TARGET.replace(/\/api\/v1$/, "");
+
 /**
  * Security headers for the HTML surface.
  *
@@ -29,7 +32,10 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   // Cloudinary and the media host serve images; data:/blob: cover previews.
-  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.tile.openstreetmap.org http://127.0.0.1:5000 http://localhost:5000",
+  // The API origin serves legacy /storage assets and must be listed, or those
+  // images are silently blocked in production; the localhost entries are
+  // development-only and no longer leak into the deployed policy.
+  `img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.tile.openstreetmap.org ${API_ORIGIN}${isDev ? " http://127.0.0.1:5000 http://localhost:5000" : ""}`,
   // Same-origin API via the rewrite below, plus the API host directly.
   `connect-src 'self' ${API_PROXY_TARGET.replace(/\/api\/v1$/, "")}${isDev ? " ws: http://127.0.0.1:5000 http://localhost:5000" : ""}`,
   "manifest-src 'self'",
@@ -61,8 +67,24 @@ const SECURITY_HEADERS = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Do not advertise the framework and version (MEL-SEC-006 / Gambo INFO-002).
+  // Do not advertise the framework and version.
   poweredByHeader: false,
+  /**
+   * Self-contained server bundle: `.next/standalone/server.js` plus only the
+   * node_modules the app actually imports.
+   *
+   * cPanel runs Node apps under Phusion Passenger, which boots a startup file
+   * directly — there is no `npm start`, and no way to run the Next CLI. The
+   * standalone server is a plain Node entry point, which is exactly what
+   * Passenger needs. See docs/CPANEL-DEPLOYMENT.md.
+   */
+  output: "standalone",
+  /**
+   * Without this, a package-lock.json in a sibling project folder makes Next
+   * infer the wrong workspace root and nest the standalone build several
+   * directories deep, breaking the upload layout.
+   */
+  outputFileTracingRoot: import.meta.dirname,
   // `npm run dev` uses turbopack and `npm run build` uses webpack; the two write
   // incompatible artifacts into the same directory and neither prunes the
   // other's, which is what makes `next start` 500 on every SSR route after a dev
@@ -80,9 +102,11 @@ const nextConfig = {
       { protocol: "http", hostname: "localhost" },
       { protocol: "http", hostname: "127.0.0.1" },
       { protocol: "https", hostname: "res.cloudinary.com" },
-      // This deployment's own API host. The Deder and Gambo hosts that used to
-      // be listed here belonged to sibling projects (MEL-CFG-002).
-      { protocol: "https", hostname: "melkaoda.onrender.com" },
+      // This deployment's own hosts. Sibling-project hostnames (Deder, Gambo,
+      // Loke, and the old Render app) are deliberately not listed: media now
+      // lives on this account's own disk.
+      { protocol: "https", hostname: "melkaoda.horooinnovations.com" },
+      { protocol: "https", hostname: "melkaodaapi.horooinnovations.com" },
     ],
   },
   async headers() {

@@ -67,8 +67,23 @@ app.use(
     credentials: false,
   })
 );
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+/**
+ * A 10 MB JSON limit applied to every route, including the unauthenticated
+ * contact form, on a 512 MB instance — a handful of concurrent maximum-size
+ * bodies is enough to pressure memory (MEL2-API-001). File uploads do not come
+ * through here; multer handles multipart with its own 8 MB per-file limit. The
+ * largest legitimate JSON body is a settings save with rich-text fields.
+ */
+app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '512kb' }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: process.env.JSON_BODY_LIMIT || '512kb',
+    // Caps how many keys a form body may carry, so a crafted body cannot make
+    // the parser do unbounded work.
+    parameterLimit: 500,
+  })
+);
 
 /**
  * Method spoofing for multipart forms, which cannot issue PUT/DELETE directly.
@@ -167,8 +182,10 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     logger.info('schema_bootstrap_disabled', { reason: 'SCHEMA_BOOTSTRAP=0' });
     return;
   }
+  // A refusal here is deliberate and must be loud — it means this process was
+  // about to issue DDL against a database it should not be touching.
   bootstrapSchema().catch((err) =>
-    logger.warn('schema_bootstrap_skipped', { error: err.message })
+    logger.error('schema_bootstrap_skipped', { error: err.message })
   );
 });
 

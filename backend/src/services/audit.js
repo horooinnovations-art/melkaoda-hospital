@@ -24,7 +24,22 @@ function computeChanges(oldValues = {}, newValues = {}) {
 }
 
 /**
- * Deder-parity AuditService. Never throws — audit must not break requests.
+ * Actions not worth a row.
+ *
+ * `view` and `dashboard_view` made up 63% of the audit table and told nobody
+ * anything — they buried the entries that matter (who changed what, who signed
+ * in, who opened an applicant's file) under page-navigation noise
+ * (MEL2-SEC-010). Set AUDIT_LOG_VIEWS=1 to record them anyway.
+ */
+const NOISY_ACTIONS = new Set(['view', 'dashboard_view']);
+
+function shouldRecord(action) {
+  if (!NOISY_ACTIONS.has(action)) return true;
+  return process.env.AUDIT_LOG_VIEWS === '1' || process.env.AUDIT_LOG_VIEWS === 'true';
+}
+
+/**
+ * Audit trail. Never throws — auditing must not break the request it records.
  */
 export async function logAudit(req, action, {
   modelType = null,
@@ -35,6 +50,8 @@ export async function logAudit(req, action, {
   extra = {},
 } = {}) {
   try {
+    if (!shouldRecord(String(action || ''))) return;
+
     const changes =
       action === 'update' && oldValues && newValues
         ? computeChanges(oldValues, newValues)

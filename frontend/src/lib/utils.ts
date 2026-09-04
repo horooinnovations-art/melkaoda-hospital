@@ -130,7 +130,7 @@ export function isAlwaysOpen(raw?: string | null) {
   );
 }
 
-/** Collapse "Loke, …, Loke, …" style repeated address tokens. */
+/** Collapse repeated address tokens, e.g. "Siraro, Oromia, Siraro, Oromia". */
 export function formatPublicAddress(
   ...parts: Array<string | null | undefined>
 ): string | undefined {

@@ -9,7 +9,10 @@
     "start": "node backend/src/server.js",
     "dev:api": "node --watch backend/src/server.js",
     "dev:web": "npm --prefix frontend run dev",
-    "build:web": "npm --prefix frontend run build"
+    "build:web": "npm --prefix frontend run build",
+    "package:cpanel": "node scripts/package-cpanel.mjs",
+    "migrate": "npm --prefix backend run migrate",
+    "test": "npm --prefix backend test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

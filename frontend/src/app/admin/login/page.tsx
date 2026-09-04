@@ -21,6 +21,7 @@ import { setToken, setStoredUser, clearToken } from "@/lib/auth";
 import { hasPanelAccess } from "@/lib/permissions";
 import { SITE_NAME } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/media";
+import Link from "next/link";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -178,6 +179,15 @@ export default function AdminLoginPage() {
                 "Sign in"
               )}
             </Button>
+
+            {/* Until now a locked-out administrator had no self-service route
+                back in at all (MEL2-SEC-006). */}
+            <Link
+              href="/admin/forgot-password"
+              className="block text-center text-sm text-[#525252] underline underline-offset-4 hover:text-[#111]"
+            >
+              Forgot your password?
+            </Link>
           </form>
         </section>
       </div>

@@ -1,5 +1,5 @@
 /**
- * Canonical Deder-parity permission slugs.
+ * Canonical permission slugs.
  * Controllers / routes check these; super_admin bypasses all checks.
  */
 export const CANONICAL_PERMISSIONS = [

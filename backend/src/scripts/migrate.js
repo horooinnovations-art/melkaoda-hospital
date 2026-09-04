@@ -46,10 +46,54 @@ export function parseStatements(sql) {
     .filter((line) => !line.trim().startsWith('--'))
     .join('\n');
 
-  return withoutComments
-    .split(';')
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // Split on semicolons that are not inside a quoted string. The previous
+  // version split on every `;`, so an idempotency guard that carries DDL as a
+  // string literal — `SELECT IF(..., 'ALTER TABLE ...;', 'DO 0')` — was torn in
+  // half and the migration failed with a syntax error (MEL2-DB-001).
+  const statements = [];
+  let current = '';
+  let quote = null;
+
+  for (let i = 0; i < withoutComments.length; i += 1) {
+    const char = withoutComments[i];
+
+    if (quote) {
+      current += char;
+      // Doubled quote inside a string is an escaped quote, not a terminator.
+      if (char === quote) {
+        if (withoutComments[i + 1] === quote) {
+          current += withoutComments[i + 1];
+          i += 1;
+        } else {
+          quote = null;
+        }
+      } else if (char === '\\') {
+        // Backslash escape: consume the next character verbatim.
+        current += withoutComments[i + 1] ?? '';
+        i += 1;
+      }
+      continue;
+    }
+
+    if (char === "'" || char === '"' || char === '`') {
+      quote = char;
+      current += char;
+      continue;
+    }
+
+    if (char === ';') {
+      const trimmed = current.trim();
+      if (trimmed) statements.push(trimmed);
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+
+  const tail = current.trim();
+  if (tail) statements.push(tail);
+  return statements;
 }
 
 async function main() {

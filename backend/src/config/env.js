@@ -16,7 +16,7 @@ const DEFAULT_ADMIN_EMAILS = new Set([
   'admin@dederhospital.com',
   'admin@melkaodahospital.com',
 ]);
-const DEFAULT_ADMIN_EMAIL = 'admin@gambohospital.com';
+const DEFAULT_ADMIN_EMAIL = 'admin@melkaodahospital.com';
 const DEFAULT_ADMIN_PASSWORD = 'Admin@12345';
 const WEAK_JWT = new Set([
   'dev-secret',
@@ -28,8 +28,65 @@ const WEAK_JWT = new Set([
 /** Below this a secret is brute-forceable regardless of what it spells. */
 const MIN_JWT_SECRET_LENGTH = 32;
 
+/** Minimum length for the bootstrap administrator credential. */
+const MIN_ADMIN_PASSWORD_LENGTH = 16;
+/** Lowercase fragments that make a password guessable however long it is. */
+const ADMIN_PASSWORD_STOPWORDS = [
+  'admin',
+  'password',
+  'melkaoda',
+  'hospital',
+  'welcome',
+  'changeme',
+  'letmein',
+  'qwerty',
+  '123456',
+];
+
 export function isProduction() {
   return String(process.env.NODE_ENV || '').toLowerCase() === 'production';
+}
+
+/**
+ * Why a bootstrap admin password is not acceptable, or '' if it is.
+ *
+ * The old check was length >= 12 and inequality with one hard-coded default,
+ * which a 19-character all-lowercase phrase beginning "admin" passed
+ * comfortably — and that is what was actually deployed (MEL2-SEC-006). Length
+ * alone is not entropy: this also requires three character classes and refuses
+ * the obvious dictionary stems.
+ *
+ * @returns {string} a sentence completing "ADMIN_PASSWORD ..."
+ */
+export function adminPasswordWeakness(password) {
+  const value = String(password || '');
+  if (value.length < MIN_ADMIN_PASSWORD_LENGTH) {
+    return `must be at least ${MIN_ADMIN_PASSWORD_LENGTH} characters in production.`;
+  }
+
+  const classes =
+    (/[a-z]/.test(value) ? 1 : 0) +
+    (/[A-Z]/.test(value) ? 1 : 0) +
+    (/\d/.test(value) ? 1 : 0) +
+    (/[^A-Za-z0-9]/.test(value) ? 1 : 0);
+  if (classes < 3) {
+    return (
+      'must mix at least three of: lowercase, uppercase, digits, symbols. ' +
+      'Generate one with `openssl rand -base64 24`.'
+    );
+  }
+
+  const lowered = value.toLowerCase();
+  const hit = ADMIN_PASSWORD_STOPWORDS.find((word) => lowered.includes(word));
+  if (hit) {
+    return `must not contain the guessable word "${hit}". Generate one with \`openssl rand -base64 24\`.`;
+  }
+
+  if (new Set(value).size < 8) {
+    return 'repeats too few distinct characters to be random.';
+  }
+
+  return '';
 }
 
 /**
@@ -105,8 +162,9 @@ export function validateEnv() {
       errors.push(
         'ADMIN_PASSWORD must be set to a strong non-default value in production.'
       );
-    } else if (String(adminPassword).length < 12) {
-      errors.push('ADMIN_PASSWORD must be at least 12 characters in production.');
+    } else {
+      const weakness = adminPasswordWeakness(adminPassword);
+      if (weakness) errors.push(`ADMIN_PASSWORD ${weakness}`);
     }
     if (!String(process.env.ROOT_ADMIN_EMAILS || '').trim()) {
       warnings.push(
@@ -134,17 +192,43 @@ export function validateEnv() {
     );
   }
 
+  /**
+   * Media storage.
+   *
+   * Production used to require Cloudinary outright, on the grounds that "Render
+   * disk is ephemeral". True of Render, false of cPanel — where the account's
+   * disk is as durable as the database — so the check blocked the one host on
+   * which local files are entirely safe.
+   *
+   * Production must now state a driver explicitly. What is refused is not local
+   * storage; it is *silence* about where a hospital's files are being written.
+   */
   const cloudinaryOk = Boolean(
     process.env.CLOUDINARY_CLOUD_NAME &&
       process.env.CLOUDINARY_API_KEY &&
       process.env.CLOUDINARY_API_SECRET
   );
-  if (prod && !cloudinaryOk) {
+  const driver = String(process.env.MEDIA_DRIVER || '').trim().toLowerCase();
+
+  if (driver && !['local', 'cloudinary'].includes(driver)) {
+    errors.push(`MEDIA_DRIVER must be "local" or "cloudinary" (got "${driver}").`);
+  } else if (prod && !driver) {
     errors.push(
-      'CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are required in production (Render disk is ephemeral).'
+      'MEDIA_DRIVER must be set in production: "local" for a host with a persistent disk ' +
+        '(cPanel, VPS), or "cloudinary" for an ephemeral one (Render, Heroku).'
     );
-  } else if (!cloudinaryOk) {
-    warnings.push('Cloudinary is not configured — uploads will use local ./uploads (dev only).');
+  } else if (driver === 'cloudinary' && !cloudinaryOk) {
+    errors.push(
+      'MEDIA_DRIVER=cloudinary but CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and ' +
+        'CLOUDINARY_API_SECRET are not all set.'
+    );
+  } else if (driver === 'local' && prod) {
+    warnings.push(
+      'MEDIA_DRIVER=local — uploads/ and storage/ hold the only copy of every image, ' +
+        'document and résumé. Confirm both are inside your backup routine.'
+    );
+  } else if (!driver && !cloudinaryOk) {
+    warnings.push('MEDIA_DRIVER unset and Cloudinary not configured — using local ./uploads.');
   }
 
   if (!process.env.FRONTEND_URL && prod) {
@@ -157,6 +241,31 @@ export function validateEnv() {
 
   if (!process.env.APP_URL && !process.env.PUBLIC_API_URL && prod) {
     warnings.push('APP_URL / PUBLIC_API_URL unset — media absolute URLs may fall back incorrectly.');
+  }
+
+  // Mail is not required to boot, but its absence disables the contact reply,
+  // the application receipt and password reset entirely — and that used to be
+  // silent, because no mail library was installed at all (MEL2-BIZ-002).
+  const mailOk = Boolean(
+    process.env.MAIL_HOST && process.env.MAIL_USERNAME && process.env.MAIL_PASSWORD
+  );
+  if (prod && !mailOk) {
+    warnings.push(
+      'MAIL_HOST / MAIL_USERNAME / MAIL_PASSWORD are not all set — contact replies, application ' +
+        'receipts and password resets will not be delivered.'
+    );
+  }
+
+  // Boot-time DDL against a shared database should be a deliberate act. In
+  // production it is expected to be off and applied through `npm run migrate`
+  // instead (MEL2-OPS-001).
+  const bootstrapOff =
+    process.env.SCHEMA_BOOTSTRAP === '0' || process.env.SCHEMA_BOOTSTRAP === 'false';
+  if (prod && !bootstrapOff) {
+    warnings.push(
+      'SCHEMA_BOOTSTRAP is not disabled — the API will issue DDL and seed data on every boot. ' +
+        'Set SCHEMA_BOOTSTRAP=0 and run `npm run migrate` deliberately instead.'
+    );
   }
 
   return { ok: errors.length === 0, errors, warnings };
@@ -173,4 +282,10 @@ export function assertEnvOrExit() {
   }
 }
 
-export { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_EMAILS, DEFAULT_ADMIN_PASSWORD, MIN_JWT_SECRET_LENGTH };
+export {
+  DEFAULT_ADMIN_EMAIL,
+  DEFAULT_ADMIN_EMAILS,
+  DEFAULT_ADMIN_PASSWORD,
+  MIN_JWT_SECRET_LENGTH,
+  MIN_ADMIN_PASSWORD_LENGTH,
+};

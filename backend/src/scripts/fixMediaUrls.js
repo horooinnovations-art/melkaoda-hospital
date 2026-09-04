@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import pool from '../config/db.js';
+import { confirmDestructive } from './_guard.js';
 
 const STORAGE_HOST =
   process.env.MEDIA_STORAGE_HOST || process.env.APP_URL || 'http://localhost:5000';
@@ -41,6 +42,16 @@ function fixUrl(url) {
 }
 
 async function main() {
+  // Refuses to run without --confirm, and makes a remote target be typed
+  // back before touching it (MEL2-OPS-001).
+  const { dryRun } = await confirmDestructive(
+    'Rewrites media and settings URLs in bulk.'
+  );
+  if (dryRun) {
+    console.log('[dry-run] No changes were made.');
+    process.exit(0);
+  }
+
   console.log('Fixing media URLs…');
   const [mediaRows] = await pool.query(`SELECT id, url, path FROM media`);
   let mediaUpdated = 0;

@@ -36,7 +36,10 @@ const GOOD_PROD = {
   JWT_SECRET: 'Kx7pQ2mZ9vLb4nRt6yHc1sGd0aWe8uIo5jFq3xBv',
   DB_PASSWORD: 'a-real-database-password',
   ADMIN_EMAIL: 'operator@melkaodahospital.example',
-  ADMIN_PASSWORD: 'a-strong-operator-password',
+  // Three character classes, no dictionary stem — the bar validateEnv now
+  // applies. The old fixture ('a-strong-operator-password') was all lowercase
+  // and would be rejected today, which is the point of MEL2-SEC-006.
+  ADMIN_PASSWORD: '7Kq!vZ2mR9xTf4Ld6Wn0',
   ROOT_ADMIN_EMAILS: 'operator@melkaodahospital.example',
   FRONTEND_URL: 'https://melkaoda-web.onrender.com',
   CLOUDINARY_CLOUD_NAME: 'cloud',
@@ -44,6 +47,9 @@ const GOOD_PROD = {
   CLOUDINARY_API_SECRET: 'secret',
   APP_URL: 'https://melkaoda.onrender.com',
   DB_SSL_INSECURE: '',
+  SCHEMA_BOOTSTRAP: '0',
+  // Production must state where files go; there is no silent default.
+  MEDIA_DRIVER: 'cloudinary',
 };
 
 // ─── MEL-SEC-011: the JWT secret needs length, not just a denylist ───────────
@@ -166,4 +172,76 @@ test('getWritableColumns excludes the privilege and session markers', async () =
     assert.ok(block.includes(`'${column}'`), `${column} is not in SYSTEM_COLUMNS`);
   }
   assert.equal(typeof getWritableColumns, 'function');
+});
+
+/**
+ * The deployed ADMIN_PASSWORD was 19 characters of lowercase plus one symbol,
+ * beginning "admin". It satisfied the old rule — length >= 12 and inequality
+ * with one hard-coded default — comfortably (MEL2-SEC-006).
+ */
+test('a long but low-entropy ADMIN_PASSWORD is rejected in production', () => {
+  const r = validateWith({ ...GOOD_PROD, ADMIN_PASSWORD: 'admin@melkaodahosp' });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => e.includes('ADMIN_PASSWORD')));
+});
+
+test('missing mail configuration warns rather than blocking the boot', () => {
+  const r = validateWith({ ...GOOD_PROD });
+  assert.equal(r.ok, true);
+  assert.ok(
+    r.warnings.some((w) => w.includes('MAIL_HOST')),
+    'expected a warning that contact replies and password resets cannot be delivered'
+  );
+});
+
+test('boot-time DDL left enabled in production is warned about', () => {
+  // Empty rather than absent: the baseline pins it to '0', and spawnSync
+  // inherits the runner's environment, so it cannot simply be omitted here.
+  const r = validateWith({ ...GOOD_PROD, SCHEMA_BOOTSTRAP: '' });
+  assert.ok(r.warnings.some((w) => w.includes('SCHEMA_BOOTSTRAP')));
+});
+
+/**
+ * Media storage (MEL2-CPANEL).
+ *
+ * Production used to require Cloudinary outright because "Render disk is
+ * ephemeral" — true of Render, false of cPanel, where the account's disk is as
+ * durable as the database. The requirement now is that production *states* a
+ * driver, not that it picks a particular one.
+ */
+test('production must state a media driver', () => {
+  const r = validateWith({ ...GOOD_PROD, MEDIA_DRIVER: '' });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => e.includes('MEDIA_DRIVER')));
+});
+
+test('local storage is accepted in production, with a backup warning', () => {
+  const r = validateWith({
+    ...GOOD_PROD,
+    MEDIA_DRIVER: 'local',
+    CLOUDINARY_CLOUD_NAME: '',
+    CLOUDINARY_API_KEY: '',
+    CLOUDINARY_API_SECRET: '',
+  });
+  assert.equal(r.ok, true, `expected local storage to be allowed, got ${JSON.stringify(r.errors)}`);
+  assert.ok(
+    r.warnings.some((w) => w.includes('backup')),
+    'operators must be told that uploads/ and storage/ are the only copy'
+  );
+});
+
+test('claiming cloudinary without credentials is rejected', () => {
+  const r = validateWith({
+    ...GOOD_PROD,
+    MEDIA_DRIVER: 'cloudinary',
+    CLOUDINARY_API_SECRET: '',
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => e.includes('CLOUDINARY_API_SECRET')));
+});
+
+test('an unrecognised media driver is rejected rather than ignored', () => {
+  const r = validateWith({ ...GOOD_PROD, MEDIA_DRIVER: 's3' });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => e.includes('MEDIA_DRIVER')));
 });

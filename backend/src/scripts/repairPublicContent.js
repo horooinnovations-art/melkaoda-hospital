@@ -6,10 +6,21 @@
  */
 import dotenv from 'dotenv';
 import pool from '../config/db.js';
+import { confirmDestructive } from './_guard.js';
 
 dotenv.config();
 
 async function main() {
+  // Refuses to run without --confirm, and makes a remote target be typed
+  // back before touching it (MEL2-OPS-001).
+  const { dryRun } = await confirmDestructive(
+    'Repairs public content rows in bulk.'
+  );
+  if (dryRun) {
+    console.log('[dry-run] No changes were made.');
+    process.exit(0);
+  }
+
   const [news] = await pool.query(
     `UPDATE news
      SET deleted_at = NULL

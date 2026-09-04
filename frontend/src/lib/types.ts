@@ -60,7 +60,7 @@ export interface HomeData {
   testimonials: Testimonial[];
   gallery: GalleryItem[];
   leadership: Leader[];
-  /** Same shape as Deder HomeController `$heroImages` */
+  /** Hero slides for the home page. */
   heroImages?: Array<{ url: string; alt?: string; title?: string }>;
   stats?: {
     total_doctors?: number;

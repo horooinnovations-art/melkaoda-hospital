@@ -3,7 +3,7 @@ import { normalizeMediaUrl } from './mediaUrl.js';
 /**
  * Split address fragments on commas and keep first occurrence of each token.
  * Fixes polluted values like:
- * "Loke, Siraro, Oromia, Ethiopia, Loke, Oromia, Ethiopia, Loke, Oromia, Ethiopia"
+ * "Siraro, Oromia, Ethiopia, Siraro, Oromia, Ethiopia, Siraro, Oromia"
  */
 export function dedupeAddressTokens(parts) {
   const tokens = (Array.isArray(parts) ? parts : [parts])
@@ -29,9 +29,8 @@ export function formatAddress(...parts) {
 }
 
 /**
- * Normalize Deder/Loke settings keys so the frontend can use stable aliases
- * while the MySQL `settings` table keeps the original schema keys.
- * Also rebrands Deder → Loke in string values for API consumers.
+ * Expose stable alias keys to the frontend while the `settings` table keeps the
+ * column names it inherited from the original CMS schema.
  */
 export function normalizeSettings(raw = {}) {
   const settings = { ...raw };
@@ -103,7 +102,7 @@ export function normalizeSettings(raw = {}) {
   }
   settings.mission = pick('mission', 'about_mission');
   settings.vision = pick('vision', 'about_vision');
-  // Deder stores the About "values" section in core_values
+  // The About page's "values" section is stored under core_values.
   settings.values = pick('core_values', 'values');
   settings.history = pick('history', 'about_history');
   settings.awards = pick('awards_accreditations', 'awards');
@@ -139,14 +138,16 @@ export function normalizeSettings(raw = {}) {
   settings.tax_id = pick('tax_id');
   settings.license_number = pick('license_number');
 
-  for (const [key, value] of Object.entries(settings)) {
-    if (typeof value === 'string') settings[key] = rebrandText(value);
-  }
-
+  // No rebranding happens here any more. Rewriting stored text on the way out
+  // meant the settings an editor saved and the settings the public saw were
+  // different strings, and it corrupted any legitimate use of the words Deder,
+  // Gambo or Loke — all three are real Ethiopian place names, and this
+  // hospital's own address contains one (MEL2-BIZ-002). The rebrand is a
+  // one-off data migration; see `npm run rebrand:melkaoda`.
   return settings;
 }
 
-/** Map frontend alias keys back to Deder schema keys for persistence. */
+/** Map frontend alias keys back to the stored schema keys for persistence. */
 export function denormalizeSettingKey(key) {
   const map = {
     site_name: 'organization_name',
@@ -167,34 +168,13 @@ export function denormalizeSettingKey(key) {
   return map[key] || key;
 }
 
-export function rebrandText(value) {
-  if (value == null) return value;
-  if (typeof value !== 'string') return value;
-
-  // Never rewrite URLs / storage / CDN paths
-  if (
-    /^https?:\/\//i.test(value) ||
-    value.includes('res.cloudinary.com') ||
-    value.includes('/storage/') ||
-    value.includes('cloudinary')
-  ) {
-    return value;
-  }
-
-  return value
-    .replace(/Deder General Hospital/gi, 'Melka Oda General Hospital')
-    .replace(/Gambo General Hospital/gi, 'Melka Oda General Hospital')
-    .replace(/Loke General Hospital/gi, 'Melka Oda General Hospital')
-    .replace(/Deder Hospital/gi, 'Melka Oda Hospital')
-    .replace(/Gambo Hospital/gi, 'Melka Oda Hospital')
-    .replace(/Loke Hospital/gi, 'Melka Oda Hospital')
-    .replace(/Deder/g, 'Melka Oda')
-    .replace(/Gambo/g, 'Melka Oda')
-    .replace(/Loke/g, 'Melka Oda')
-    .replace(/deder/g, 'melkaoda')
-    .replace(/gambo/g, 'melkaoda')
-    .replace(/loke/g, 'melkaoda');
-}
+/**
+ * `rebrandText` has been removed along with the Deder→Loke script that was its
+ * only caller. Rewriting sibling-hospital names is a one-off data migration and
+ * now lives entirely in `scripts/rebrandToMelkaoda.js`, which owns its own copy
+ * — nothing in the request path or the shared utilities refers to another
+ * hospital's brand any more.
+ */
 
 /**
  * Returns candidate DB slugs for fallback matching if legacy slugs exist in DB.
@@ -213,14 +193,10 @@ export function slugLookupCandidates(slug) {
   return candidates;
 }
 
-/** Deep-walk objects/arrays and rebrand string fields (for API responses). */
-export function rebrandContent(value) {
-  if (typeof value === 'string') return rebrandText(value);
-  if (Array.isArray(value)) return value.map(rebrandContent);
-  if (value && typeof value === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = rebrandContent(v);
-    return out;
-  }
-  return value;
-}
+/**
+ * `rebrandContent` — a deep walk that rewrote every string of every public
+ * response — has been removed (MEL2-BIZ-002). It made the API serve text that
+ * differed from what was stored and what editors could see, and it cost a full
+ * recursive regex pass on every public request. Rebranding is data work; do it
+ * once with the migration script, not on the way out.
+ */

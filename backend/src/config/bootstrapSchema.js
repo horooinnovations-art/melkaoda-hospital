@@ -320,7 +320,43 @@ async function seedContentSettings() {
   }
 }
 
+/**
+ * Hosts that are unambiguously a developer's own machine.
+ */
+const LOCAL_DB_HOSTS = new Set(['localhost', '127.0.0.1', '::1', 'host.docker.internal', '']);
+
+/**
+ * Boot-time DDL must never fire from a development process against a remote
+ * database.
+ *
+ * `backend/.env` carries the live Aiven credentials with NODE_ENV=development
+ * and no SCHEMA_BOOTSTRAP setting, so `npm run dev` issued ALTER TABLE, seeded
+ * settings, backfilled slugs and rewrote addresses on production hospital data
+ * — as a side effect of starting a dev server (MEL2-OPS-001).
+ *
+ * Production still bootstraps when the operator leaves it enabled; what is
+ * refused is the combination "not production" plus "not a local database",
+ * which has no legitimate use.
+ */
+export function bootstrapWouldTouchRemoteDb({
+  nodeEnv = process.env.NODE_ENV,
+  dbHost = process.env.DB_HOST,
+} = {}) {
+  const isProd = String(nodeEnv || '').toLowerCase() === 'production';
+  if (isProd) return false;
+  const host = String(dbHost || '').trim().toLowerCase();
+  return !LOCAL_DB_HOSTS.has(host);
+}
+
 export async function bootstrapSchema() {
+  if (bootstrapWouldTouchRemoteDb()) {
+    throw new Error(
+      `refusing to run boot-time schema changes: NODE_ENV is "${process.env.NODE_ENV || 'unset'}" ` +
+        `but DB_HOST is the remote host "${process.env.DB_HOST}". Point this environment at a ` +
+        'development database, or set SCHEMA_BOOTSTRAP=0 and use `npm run migrate` deliberately.'
+    );
+  }
+
   // Visibility toggle for gallery images (hide from public without deleting).
   await ensureColumn(
     'gallery',

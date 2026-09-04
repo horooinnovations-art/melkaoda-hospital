@@ -9,6 +9,7 @@ dotenv.config();
 
 import pool from '../config/db.js';
 import { v2 as cloudinary } from 'cloudinary';
+import { confirmDestructive } from './_guard.js';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dz0zqwhyd',
@@ -32,6 +33,16 @@ async function fetchAllCloudinaryResources() {
 }
 
 async function main() {
+  // Refuses to run without --confirm, and makes a remote target be typed
+  // back before touching it (MEL2-OPS-001).
+  const { dryRun } = await confirmDestructive(
+    'Rebinds media, gallery and settings rows to Cloudinary URLs.'
+  );
+  if (dryRun) {
+    console.log('[dry-run] No changes were made.');
+    process.exit(0);
+  }
+
   console.log('Fetching all assets from Cloudinary API...');
   const resources = await fetchAllCloudinaryResources();
   console.log(`Found ${resources.length} total Cloudinary assets.`);

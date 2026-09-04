@@ -58,7 +58,7 @@ export const SAMPLE_NEWS_CATEGORIES: CategoryItem[] = [
     id: 6,
     name: "Awards & Achievements",
     slug: "awards-achievements",
-    description: "Recognition, awards, and milestones achieved by Gambo Hospital.",
+    description: "Recognition, awards, and milestones achieved by Melka Oda General Hospital.",
     icon: "fas-award",
     order: 6,
     is_active: true,
@@ -127,7 +127,7 @@ export const SAMPLE_GALLERY_CATEGORIES: CategoryItem[] = [
 export function getStoredNewsCategories(): CategoryItem[] {
   if (typeof window === "undefined") return SAMPLE_NEWS_CATEGORIES;
   try {
-    const saved = localStorage.getItem("gambo_news_categories");
+    const saved = localStorage.getItem("melkaoda_news_categories");
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -141,7 +141,7 @@ export function getStoredNewsCategories(): CategoryItem[] {
 export function saveStoredNewsCategories(items: CategoryItem[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem("gambo_news_categories", JSON.stringify(items));
+    localStorage.setItem("melkaoda_news_categories", JSON.stringify(items));
   } catch {
     /* ignore */
   }
@@ -150,7 +150,7 @@ export function saveStoredNewsCategories(items: CategoryItem[]) {
 export function getStoredGalleryCategories(): CategoryItem[] {
   if (typeof window === "undefined") return SAMPLE_GALLERY_CATEGORIES;
   try {
-    const saved = localStorage.getItem("gambo_gallery_categories");
+    const saved = localStorage.getItem("melkaoda_gallery_categories");
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -164,7 +164,7 @@ export function getStoredGalleryCategories(): CategoryItem[] {
 export function saveStoredGalleryCategories(items: CategoryItem[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem("gambo_gallery_categories", JSON.stringify(items));
+    localStorage.setItem("melkaoda_gallery_categories", JSON.stringify(items));
   } catch {
     /* ignore */
   }

@@ -37,6 +37,8 @@ import {
   X,
   UserRound,
   Handshake,
+  FileUser,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/api";
@@ -76,6 +78,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
       { href: "/admin/partnerships", label: "Partnerships", icon: Handshake },
       { href: "/admin/partnership-categories", label: "Partnership Categories", icon: FolderTree },
       { href: "/admin/events", label: "Events", icon: Calendar },
+      { href: "/admin/event-registrations", label: "Registrations", icon: ClipboardList },
       { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
       { href: "/admin/faqs", label: "FAQs", icon: HelpCircle },
       { href: "/admin/downloads", label: "Downloads", icon: Download },
@@ -96,7 +99,12 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Careers",
-    items: [{ href: "/admin/careers", label: "Job Openings", icon: Briefcase }],
+    items: [
+      { href: "/admin/careers", label: "Job Openings", icon: Briefcase },
+      // The read side for the public application form, which used to write to a
+      // table nothing could open (MEL2-BIZ-001).
+      { href: "/admin/job-applications", label: "Applications", icon: FileUser },
+    ],
   },
   {
     label: "System",

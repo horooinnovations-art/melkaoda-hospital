@@ -117,14 +117,11 @@ export async function authenticate(req, res, next) {
     );
 
     const roleSlugs = roles.map((r) => r.slug);
-    const permissions = roleSlugs.includes('super_admin')
-      ? []
-      : await getUserPermissions(user.id);
-
-    let permissionSlugs = permissions;
-    if (roleSlugs.includes('super_admin')) {
-      permissionSlugs = await getUserPermissions(user.id);
-    }
+    // Loaded for everyone, super admins included: they bypass permission checks
+    // in userHasPermission, but the panel still needs the list to decide what to
+    // show, and permissionsBeyondCaller reads it when granting. This used to be
+    // computed as an empty array and then immediately recomputed.
+    const permissionSlugs = await getUserPermissions(user.id);
 
     req.user = {
       ...formatAuthUser(user, roleSlugs, permissionSlugs, {
@@ -138,7 +135,7 @@ export async function authenticate(req, res, next) {
   }
 }
 
-/** Panel entry: any of these roles (super_admin always). Matches Deder RoleMiddleware. */
+/** Panel entry: any of these roles (super_admin always). */
 export function requireRoles(...allowed) {
   return (req, res, next) => {
     const roles = req.user?.roles || [];
@@ -149,7 +146,7 @@ export function requireRoles(...allowed) {
 }
 
 /**
- * Fine-grained feature gate (Deder ChecksPermissions).
+ * Fine-grained feature gate.
  * super_admin bypasses. Otherwise user must have at least one listed permission.
  */
 export function requirePermission(...permissions) {
@@ -162,7 +159,7 @@ export function requirePermission(...permissions) {
   };
 }
 
-/** Permissions page — super_admin only (Deder PermissionController). */
+/** Permissions page — super_admin only. */
 export function requireSuperAdmin(req, res, next) {
   if ((req.user?.roles || []).includes('super_admin')) return next();
   return res.status(403).json({ success: false, message: 'Super admin access required' });

@@ -1,8 +1,9 @@
 import { createCrud } from './crudFactory.js';
 import { query, queryOne } from '../config/db.js';
 import { ok, fail, toBool, paginate, parseJsonField, serverError } from '../utils/helpers.js';
-import { normalizeMediaUrl } from '../utils/mediaUrl.js';
 import { slugLookupCandidates } from '../utils/settings.js';
+import { validator } from '../utils/validate.js';
+import { sendApplicationReceipt, sendEventRegistrationReceipt } from '../services/mail.js';
 
 const WEEK_DAYS = [
   'monday',
@@ -457,7 +458,11 @@ export const gallery = createCrud({
   mediaField: 'media_id',
   mediaAs: 'media',
   mediaFolder: 'gallery',
-  publicFilter: "COALESCE(type, 'image') = 'image'",
+  // `is_active` is the admin visibility toggle — bootstrapSchema adds the
+  // column expressly to "hide from public without deleting". It was missing
+  // here, so switching an image off hid it from the home page and left it
+  // published on /gallery (MEL2-BIZ-003).
+  publicFilter: "COALESCE(type, 'image') = 'image' AND COALESCE(is_active, 1) = 1",
   searchable: ['title', 'description'],
   orderBy: '`order` ASC, id DESC',
   mapIncoming: async (data, _req, mode) => {
@@ -688,50 +693,39 @@ export const healthEducation = createCrud({
   },
 });
 
-export const users = createCrud({
-  table: 'users',
-  searchable: ['name', 'email'],
-  orderBy: 'id DESC',
-  mapIncoming: async (data) => {
-    // password hashing handled in dedicated route when needed
-    delete data.password;
-    return data;
-  },
-  afterFetch: async (rows) => {
-    for (const row of rows) {
-      delete row.password;
-      delete row.remember_token;
-      if (row.avatar) row.avatar = normalizeMediaUrl(row.avatar);
-    }
-  },
-});
+/**
+ * Users, roles and permissions are handled by controllers/rbac.js, which
+ * enforces the root-admin tier, the last-super-admin guard and the
+ * permission-subset rule. Generic CRUD objects for those tables were also
+ * defined here and exported, but never mounted — a second, unguarded way into
+ * the same tables, one route registration away from being live. Removed.
+ */
 
-export const roles = createCrud({
-  table: 'roles',
-  softDelete: false,
-  slugFrom: 'name',
-  searchable: ['name', 'slug'],
-  orderBy: 'id ASC',
-});
-
-export const permissions = createCrud({
-  table: 'permissions',
-  softDelete: false,
-  slugFrom: 'name',
-  searchable: ['name', 'slug', 'module'],
-  orderBy: 'module ASC, id ASC',
-});
-
+/**
+ * Media library.
+ *
+ * Uses the shared `paginate()` clamp like every other list. It previously
+ * interpolated `Number(perPage)` unbounded, so `?perPage=1000000` dumped the
+ * whole table and `?perPage=abc` produced `LIMIT NaN` — a driver error that,
+ * before the async guard existed, hung the request (MEL2-API-002).
+ *
+ * Résumés are excluded: they are applicant PII and belong only to the job
+ * applications screen, behind `manage_careers` (MEL2-SEC-004).
+ */
 export async function listMedia(req, res) {
-  const { page = 1, perPage = 24 } = req.query;
-  const offset = (Math.max(1, Number(page)) - 1) * Number(perPage);
+  const { page, perPage, offset } = paginate(req.query, { page: 1, perPage: 24 });
   const rows = await query(
-    `SELECT * FROM media ORDER BY created_at DESC LIMIT ${Number(perPage)} OFFSET ${offset}`
+    `SELECT * FROM media
+     WHERE COALESCE(folder, '') <> 'resumes'
+     ORDER BY created_at DESC
+     LIMIT ${perPage} OFFSET ${offset}`
   );
-  const total = await query(`SELECT COUNT(*) AS total FROM media`);
-  return res.json({
-    success: true,
-    data: { data: rows, meta: { total: total[0].total, page: Number(page), perPage: Number(perPage) } },
+  const totalRow = await queryOne(
+    `SELECT COUNT(*) AS total FROM media WHERE COALESCE(folder, '') <> 'resumes'`
+  );
+  return ok(res, {
+    data: rows,
+    meta: { total: Number(totalRow?.total || 0), page, perPage },
   });
 }
 
@@ -850,7 +844,27 @@ export async function showAuditLog(req, res) {
   }
 }
 
+/**
+ * Public job application.
+ *
+ * Two things changed here. The form is now validated *before* the file is
+ * stored — it used to upload to Cloudinary first and validate second, so every
+ * rejected submission left an orphaned remote asset and a media row behind. And
+ * the résumé is linked by `resume_media_id` rather than by a public URL, so the
+ * file can be served through a signed, audited download instead of sitting on a
+ * URL that works for anyone who ever sees it (MEL2-SEC-004).
+ */
 export async function applyCareer(req, res) {
+  const cleanup = async () => {
+    if (!req.file?.path) return;
+    try {
+      const fs = await import('fs');
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    } catch {
+      /* temp file already gone */
+    }
+  };
+
   try {
     let career = [];
     for (const candidate of slugLookupCandidates(req.params.slug)) {
@@ -860,26 +874,68 @@ export async function applyCareer(req, res) {
       );
       if (career[0]) break;
     }
-    if (!career[0]) return res.status(404).json({ success: false, message: 'Job not found' });
-
-    const { first_name, last_name, email, phone, cover_letter } = req.body;
-    let resume_path = null;
-    if (req.file) {
-      const { saveMedia } = await import('../services/media.js');
-      const media = await saveMedia(req.file, null, 'resumes');
-      resume_path = media.url;
-    }
-    if (!first_name || !last_name || !email || !phone || !resume_path) {
-      return res.status(422).json({ success: false, message: 'Missing required application fields' });
+    if (!career[0]) {
+      await cleanup();
+      return fail(res, 'Job not found', 404);
     }
 
-    await query(
-      `INSERT INTO job_applications (career_id, first_name, last_name, email, phone, resume_path, cover_letter, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted', NOW(), NOW())`,
-      [career[0].id, first_name, last_name, email, phone, resume_path, cover_letter || null]
+    if (career[0].application_deadline) {
+      const deadline = new Date(`${String(career[0].application_deadline).slice(0, 10)}T23:59:59`);
+      if (Number.isFinite(deadline.getTime()) && Date.now() > deadline.getTime()) {
+        await cleanup();
+        return fail(res, 'The deadline for this vacancy has passed', 422);
+      }
+    }
+
+    const v = validator(req.body)
+      .string('first_name', { required: true, max: 100, min: 2, label: 'First name' })
+      .string('last_name', { required: true, max: 100, min: 2, label: 'Last name' })
+      .email('email', { required: true })
+      .phone('phone', { required: true })
+      .string('cover_letter', { required: false, max: 10000, label: 'Cover letter' });
+
+    if (!v.ok) {
+      await cleanup();
+      return fail(res, v.message, 422);
+    }
+    if (!req.file) {
+      return fail(res, 'A résumé file is required', 422);
+    }
+
+    // Only now, with everything else known good, is the file stored.
+    const { saveMedia } = await import('../services/media.js');
+    const media = await saveMedia(req.file, null, 'resumes');
+
+    const result = await query(
+      `INSERT INTO job_applications (career_id, first_name, last_name, email, phone,
+                                     resume_path, resume_media_id, cover_letter, status,
+                                     created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted', NOW(), NOW())`,
+      [
+        career[0].id,
+        v.values.first_name,
+        v.values.last_name,
+        v.values.email,
+        v.values.phone,
+        // Kept for continuity with the legacy column, but it is the media id
+        // that the download path uses.
+        media.url,
+        media.id,
+        v.values.cover_letter || null,
+      ]
     );
+
+    // The applicant hears back that it arrived. Delivery failure is logged, not
+    // surfaced — the application is safely stored either way.
+    sendApplicationReceipt(
+      { ...v.values, id: result.insertId },
+      career[0].title
+    ).catch(() => {});
+
     return res.status(201).json({ success: true, message: 'Application submitted' });
   } catch (err) {
+    await cleanup();
+    if (err.status === 415) return fail(res, 'Unsupported file type', 415);
     return serverError(res, err, 'applyCareer');
   }
 }
@@ -925,6 +981,14 @@ export async function trackDownload(req, res) {
   }
 }
 
+/**
+ * Public event registration.
+ *
+ * Now checks that the event is actually open to registration. It previously
+ * accepted a submission for any event in any state — a cancelled one, a
+ * completed one, or one whose `registration_required` flag was off — and
+ * ignored capacity entirely (MEL2-LOW-011).
+ */
 export async function registerEvent(req, res) {
   try {
     let events = [];
@@ -932,16 +996,74 @@ export async function registerEvent(req, res) {
       events = await query(`SELECT * FROM events WHERE LOWER(slug) = LOWER(?) LIMIT 1`, [candidate]);
       if (events[0]) break;
     }
-    if (!events[0]) return res.status(404).json({ success: false, message: 'Event not found' });
-    const { name, email, phone, organization, notes } = req.body;
-    if (!name || !email || !phone) {
-      return res.status(422).json({ success: false, message: 'Name, email and phone required' });
+    const event = events[0];
+    if (!event) return fail(res, 'Event not found', 404);
+
+    if (!toBool(event.registration_required)) {
+      return fail(res, 'This event does not take registrations', 422);
     }
-    await query(
+    if (!['upcoming', 'ongoing'].includes(String(event.status))) {
+      return fail(res, 'Registration for this event is closed', 422);
+    }
+    const closesOn = event.registration_deadline || event.event_date;
+    if (closesOn) {
+      const day = new Date(`${String(closesOn).slice(0, 10)}T23:59:59`);
+      if (Number.isFinite(day.getTime()) && Date.now() > day.getTime()) {
+        return fail(
+          res,
+          event.registration_deadline
+            ? 'The registration deadline for this event has passed'
+            : 'This event has already taken place',
+          422
+        );
+      }
+    }
+
+    const v = validator(req.body)
+      .string('name', { required: true, max: 255, min: 2, label: 'Name' })
+      .email('email', { required: true })
+      .phone('phone', { required: true })
+      .string('organization', { required: false, max: 255, label: 'Organization' })
+      .string('notes', { required: false, max: 2000, label: 'Notes' });
+
+    if (!v.ok) return fail(res, v.message, 422);
+
+    // A refreshed page or a double-tapped button used to create a second row.
+    const duplicate = await queryOne(
+      `SELECT id FROM event_registrations
+       WHERE event_id = :eid AND LOWER(email) = LOWER(:email) LIMIT 1`,
+      { eid: event.id, email: v.values.email }
+    );
+    if (duplicate) {
+      return ok(res, { id: duplicate.id, message: 'You are already registered for this event' }, 200);
+    }
+
+    if (Number(event.max_attendees) > 0) {
+      const countRow = await queryOne(
+        `SELECT COUNT(*) AS total FROM event_registrations
+         WHERE event_id = :eid AND status <> 'cancelled'`,
+        { eid: event.id }
+      );
+      if (Number(countRow?.total || 0) >= Number(event.max_attendees)) {
+        return fail(res, 'This event is fully booked', 422);
+      }
+    }
+
+    const result = await query(
       `INSERT INTO event_registrations (event_id, name, email, phone, organization, status, notes, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW(), NOW())`,
-      [events[0].id, name, email, phone, organization || null, notes || null]
+      [
+        event.id,
+        v.values.name,
+        v.values.email,
+        v.values.phone,
+        v.values.organization || null,
+        v.values.notes || null,
+      ]
     );
+
+    sendEventRegistrationReceipt({ ...v.values, id: result.insertId }, event).catch(() => {});
+
     return res.status(201).json({ success: true, message: 'Registration submitted' });
   } catch (err) {
     return serverError(res, err, 'registerEvent');

@@ -1,7 +1,7 @@
 import { query, queryOne } from '../config/db.js';
 import { ok, fail, created, message, slugify, toBool, paginate, parseJsonField, serverError } from '../utils/helpers.js';
 import { attachPhoto, attachPhotos, saveMedia } from '../services/media.js';
-import { rebrandContent, slugLookupCandidates } from '../utils/settings.js';
+import { slugLookupCandidates } from '../utils/settings.js';
 import { logAudit } from '../services/audit.js';
 import { assertSafeIdent, getWritableColumns, pickAllowedFields } from '../utils/sqlSafe.js';
 
@@ -25,7 +25,42 @@ export function createCrud(config) {
     searchable = [],
     /** Optional extra restriction on top of schema columns */
     allowedColumns = null,
+    /**
+     * Columns never returned on a public endpoint.
+     *
+     * Public list and detail used to be `SELECT *` — the same query as the
+     * admin one with an extra WHERE clause — so the public contract was
+     * "whatever the table happens to hold". Nothing sensitive was exposed, but
+     * a column added later would be published the moment it existed, with no
+     * code change to review (MEL2-API-003). These are stripped after the row is
+     * fetched, so filters and media joins still see the full row.
+     */
+    publicHidden = [],
   } = config;
+
+  /**
+   * Internal bookkeeping no public consumer has a use for.
+   *
+   * `meta_title` / `meta_description` are deliberately absent: they are SEO
+   * fields an editor authors *for* the public page, so hiding them would remove
+   * the only thing they exist to do.
+   */
+  const ALWAYS_HIDDEN_PUBLICLY = [
+    'created_by',
+    'updated_by',
+    'author_id',
+    'reviewed_by',
+    'deleted_at',
+    'ip_address',
+  ];
+
+  const publicHiddenSet = new Set([...ALWAYS_HIDDEN_PUBLICLY, ...publicHidden]);
+
+  function stripForPublic(row) {
+    if (!row) return row;
+    for (const key of publicHiddenSet) delete row[key];
+    return row;
+  }
 
   assertSafeIdent(table, 'table name');
   const deletedClause = softDelete ? 'AND deleted_at IS NULL' : '';
@@ -92,9 +127,9 @@ export function createCrud(config) {
       }
       if (mediaField) await attachPhotos(rows, mediaField, mediaAs);
       if (afterFetch) await afterFetch(rows, req);
+      if (isPublic) rows.forEach(stripForPublic);
 
-      const payload = isPublic ? rebrandContent(rows) : rows;
-      return ok(res, { data: payload, meta: { total: totalRow.total, page, perPage } });
+      return ok(res, { data: rows, meta: { total: totalRow.total, page, perPage } });
     } catch (err) {
       return serverError(res, err);
     }
@@ -125,7 +160,8 @@ export function createCrud(config) {
       for (const f of jsonFields) row[f] = parseJsonField(row[f], row[f]);
       if (mediaField) await attachPhoto(row, mediaField, mediaAs);
       if (afterFetch) await afterFetch([row], req);
-      return ok(res, isPublic ? rebrandContent(row) : row);
+      if (isPublic) stripForPublic(row);
+      return ok(res, row);
     } catch (err) {
       return serverError(res, err);
     }

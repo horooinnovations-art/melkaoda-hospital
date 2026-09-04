@@ -68,8 +68,13 @@ export default function AdminUsersPage() {
   const [createUser, { isLoading: creating }] = useCreateUserMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUserMutation();
 
+  // The server's answer is authoritative; the local check is only a fallback
+  // for a cached response that predates the field. It used to be OR'd with a
+  // name-substring guess, which unlocked controls the API then refused.
   const canManageSupers =
-    Boolean(data?.can_manage_super_admins) || isPrivilegedSuperAdmin(me);
+    data?.can_manage_super_admins !== undefined
+      ? Boolean(data.can_manage_super_admins)
+      : isPrivilegedSuperAdmin(me);
 
   const rows = data?.data ?? [];
   const meta = data?.meta;
