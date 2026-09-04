@@ -12,7 +12,8 @@
     "build:web": "npm --prefix frontend run build",
     "package:cpanel": "node scripts/package-cpanel.mjs",
     "migrate": "npm --prefix backend run migrate",
-    "test": "npm --prefix backend test"
+    "test": "npm --prefix backend test",
+    "archive:cpanel": "bash scripts/archive-cpanel.sh"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
