@@ -157,7 +157,23 @@ dist-cpanel/
   web/    ~80 MB    (node_modules bundled — do NOT npm install this one)
 ```
 
-Zip each directory separately.
+Then zip each directory separately:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/zip-cpanel.ps1 `
+  -SourceRoot dist-cpanel -OutputDir "$HOME/Downloads"
+```
+
+Producing `melkaoda-cpanel-backend-<date>.zip` and
+`melkaoda-cpanel-frontend-<date>.zip`.
+
+**Do not use PowerShell's `Compress-Archive` for this.** It writes Windows path
+separators into the entry names, which Windows tolerates and Linux does not: on
+the server every entry extracts as one file whose *name* contains backslashes,
+so instead of a directory tree you get a flat pile of files called things like
+`src\config\db.js` — and Passenger reports only that it cannot find the startup
+file. The script above names each entry with forward slashes. Any tool that
+produces POSIX paths (7-Zip, `tar -a -c -f`, WinRAR) is equally fine.
 
 ---
 
