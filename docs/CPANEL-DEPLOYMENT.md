@@ -195,6 +195,30 @@ hook runs on the File Manager upload path, not on the SSH/FTP one.
 
 ---
 
+### cPanel writes its own broken app.js
+
+Creating an application makes NodeJS Selector drop a CommonJS boilerplate
+`app.js` into the application root and name it as the default startup file:
+
+```js
+var http = require('http');
+http.createServer(...)
+```
+
+The API package declares `"type": "module"`, so Node parses that stub as ESM and
+the app dies before it starts:
+
+```
+ReferenceError: require is not defined in ES module scope
+```
+
+The bundle ships **both** entry points so this cannot bite: `app.cjs` (CommonJS,
+works on every Node) and `app.js` (ESM, overwrites the stub on extraction and
+works from Node 22.12 onward, where `require()` can load ESM). Set the startup
+file to **`app.cjs`** — but if it is left at `app.js`, the API still boots.
+
+---
+
 ### node_modules belongs to the server, not the bundle
 
 cPanel's "Setup Node.js App" is CloudLinux's **NodeJS Selector**. It keeps each
@@ -430,6 +454,8 @@ you have measured it you do not have one.
 | Admin panel loads, nothing saves | `FRONTEND_URL` doesn't exactly match the site origin, so CORS refuses. No trailing slash. |
 | API calls go to onrender.com | Built with the wrong `NEXT_PUBLIC_API_URL`. Rebuild — it cannot be fixed on the server. |
 | App won't start, `ERR_REQUIRE_ESM` | Startup file is `src/server.js`. It must be `app.cjs`. |
+| `require is not defined in ES module scope` in `app.js` | cPanel's own boilerplate stub is still there. Re-extract the bundle (its `app.js` overwrites it) and set the startup file to `app.cjs`. |
+| `ls` shows no `.next` | `.next` is a dotfile — plain `ls` hides it. Use `ls -la`. If it really is absent, the bundle was never extracted there. |
 | "NodeJS Selector demands to store node modules..." | A real `node_modules` directory is in the application root, usually left by an earlier upload — extracting a new bundle does not remove it. Rename it (instant), then **Run NPM Install**. |
 | 503 from `/health` | Database credentials, or the user lacks privileges on the prefixed database name. |
 | Uploads fail in production | `MEDIA_DRIVER` unset. Production must state one; there is no silent default. |

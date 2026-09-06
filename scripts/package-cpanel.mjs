@@ -104,6 +104,10 @@ copyDir(path.join(root, 'backend', 'src'), path.join(api, 'src'));
 copyFile(path.join(root, 'backend', 'package.json'), path.join(api, 'package.json'));
 copyFile(path.join(root, 'backend', 'package-lock.json'), path.join(api, 'package-lock.json'));
 copyFile(path.join(root, 'backend', 'app.cjs'), path.join(api, 'app.cjs'));
+// Ships alongside app.cjs specifically to overwrite the CommonJS boilerplate
+// app.js that NodeJS Selector drops into the application root and then names
+// as the default startup file — that stub crashes on `"type": "module"`.
+copyFile(path.join(root, 'backend', 'app.js'), path.join(api, 'app.js'));
 copyFile(
   path.join(root, 'backend', '.env.cpanel.example'),
   path.join(api, '.env.example'),
@@ -244,6 +248,8 @@ console.log(`
   Next steps (full detail in docs/CPANEL-DEPLOYMENT.md):
     1. Zip each directory and upload it to its application root.
     2. API app  → startup file: app.cjs   then "Run NPM Install".
+                  (app.js ships too and also works, purely so it overwrites the
+                  broken stub cPanel creates.)
     3. Web app  → startup file: server.js   then "Run NPM Install".
                   Both apps install on the server: CloudLinux keeps node_modules
                   in a per-app virtual environment and refuses to set the app up
