@@ -275,6 +275,31 @@ alone; later redeploys extract over the top of it safely.
 
 ---
 
+### node and npm live in the app's virtual environment
+
+CloudLinux does not put node or npm on the system PATH. Every shell command in
+this guide — `npm install`, `npm run migrate`, `node app.js` — must run inside
+the application's virtual environment, or you get:
+
+```
+bash: npm: command not found
+```
+
+Activate it first. cPanel shows the exact line at the top of the application's
+page; it is also predictable:
+
+```bash
+source ~/nodevenv/melkaodaapi.horooinnovations.com/24/bin/activate
+cd ~/melkaodaapi.horooinnovations.com
+```
+
+`24` is the Node version directory — `ls ~/nodevenv/<app>/` if you are unsure.
+The prompt gains a `(<app>:24)` prefix while it is active, and **it does not
+persist**: activate again in every new SSH session. Each application has its own
+environment, so the web app needs its own activation with its own path.
+
+---
+
 ## 4. The API application
 
 **cPanel → Setup Node.js App → Create Application**
@@ -304,12 +329,15 @@ Then:
    must not contain "admin", "hospital" or "melkaoda" — those are rejected at
    boot.
 4. Click **Run NPM Install**.
-5. Enter the virtual environment (the `source ...activate` line cPanel shows at
-   the top of the app page) and apply the schema:
+5. Activate the virtual environment (see above) and apply the schema:
    ```bash
-   cd ~/apps/melkaoda-api
+   source ~/nodevenv/melkaodaapi.horooinnovations.com/24/bin/activate
+   cd ~/melkaodaapi.horooinnovations.com
    npm run migrate
    ```
+   Migrations already recorded in `schema_migrations` are skipped — importing a
+   database brings its migration history with it, so expect a mix of "skip" and
+   "applied" rather than everything applying.
    Migrations are idempotent, so a second run is a no-op. `SCHEMA_BOOTSTRAP=0`
    means restarts never change the schema on their own.
 6. Make the writable directories writable:
@@ -460,6 +488,7 @@ you have measured it you do not have one.
 | Site loads with no styling | `.next/static` missing from the web root. Re-run `package:cpanel`; don't hand-copy. |
 | Admin panel loads, nothing saves | `FRONTEND_URL` doesn't exactly match the site origin, so CORS refuses. No trailing slash. |
 | API calls go to onrender.com | Built with the wrong `NEXT_PUBLIC_API_URL`. Rebuild — it cannot be fixed on the server. |
+| `bash: npm: command not found` | The app's virtual environment is not activated. `source ~/nodevenv/<app>/<ver>/bin/activate` first — required in every new SSH session. |
 | App won't start, `ERR_REQUIRE_ESM` | Node < 22.12 loading `app.js`. Point the startup file at `app.cjs`. |
 | `ERR_REQUIRE_ASYNC_MODULE` | Something in the entry graph uses top-level await. The entry must be synchronous — re-extract the current bundle. |
 | `require is not defined in ES module scope` in `app.js` | cPanel's own boilerplate stub is still there. Re-extract the bundle (its `app.js` overwrites it) and set the startup file to `app.cjs`. |
