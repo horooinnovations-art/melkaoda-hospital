@@ -15,7 +15,31 @@ import pool, { query } from '../config/db.js';
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const migrationsDir = path.resolve(__dirname, '../../../database/migrations');
+
+/**
+ * Find `database/migrations`, which sits in a different place depending on how
+ * the code was deployed.
+ *
+ * In the repository, `backend/` is a subdirectory, so the folder is three
+ * levels up from `src/scripts`. In the cPanel bundle, `backend/` *is* the
+ * application root, so it is two. Hard-coding the repository layout made the
+ * deployed runner look outside the application entirely and fail with
+ * "Missing directory: /home/<user>/database/migrations".
+ *
+ * MIGRATIONS_DIR overrides both, for a layout neither guess covers.
+ */
+function resolveMigrationsDir() {
+  if (process.env.MIGRATIONS_DIR) {
+    return path.resolve(process.env.MIGRATIONS_DIR);
+  }
+  const candidates = [
+    path.resolve(__dirname, '../../database/migrations'), // deployed: app root is backend/
+    path.resolve(__dirname, '../../../database/migrations'), // repo: backend/ is nested
+  ];
+  return candidates.find((dir) => fs.existsSync(dir)) || candidates[0];
+}
+
+const migrationsDir = resolveMigrationsDir();
 
 async function ensureTable() {
   await query(`
