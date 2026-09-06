@@ -139,6 +139,28 @@ if (!fs.existsSync(standalone)) {
 log('assembling web/');
 copyDir(standalone, web);
 
+/**
+ * Remove the standalone bundle's node_modules.
+ *
+ * CloudLinux's NodeJS Selector — what cPanel's "Setup Node.js App" actually is —
+ * keeps an application's dependencies in a per-app virtual environment and puts
+ * a *symlink* named `node_modules` in the application root pointing at it. It
+ * refuses to set the app up at all if a real directory of that name is already
+ * there:
+ *
+ *   Cloudlinux NodeJS Selector demands to store node modules for application
+ *   in separate folder (virtual environment) pointed by symlink called
+ *   "node_modules". That's why application should not contain folder/file
+ *   with such name in application root
+ *
+ * So the dependencies are installed on the server with "Run NPM Install",
+ * exactly like the API. Next's standalone output only *prunes* node_modules; it
+ * does not change what the code requires, and `next` and `react` are pinned to
+ * exact versions in package.json, so a server-side install resolves the same
+ * tree the build was traced against.
+ */
+fs.rmSync(path.join(web, 'node_modules'), { recursive: true, force: true });
+
 // The two copies the standalone output leaves behind.
 copyDir(
   path.join(root, 'frontend', '.next', 'static'),
@@ -154,6 +176,40 @@ if (!hadPublic) warn('frontend/public does not exist — skipped.');
 if (!fs.existsSync(path.join(web, 'server.js'))) {
   die('the standalone bundle has no server.js — the build did not complete.');
 }
+
+/**
+ * Ship a runtime-only package.json.
+ *
+ * Next copies the source package.json into the standalone output verbatim,
+ * devDependencies and all. Those exist to *produce* a build — TypeScript,
+ * ESLint, Tailwind, the @types packages — and the build has already happened.
+ * Installing them on the server costs time, disk and inodes (shared hosting
+ * meters all three) for nothing.
+ *
+ * `dependencies` is kept whole and untouched: the server renders React
+ * components during SSR, so packages that look client-only (framer-motion,
+ * leaflet, tiptap) really are imported at request time.
+ */
+const webPkgPath = path.join(web, 'package.json');
+const webPkg = JSON.parse(fs.readFileSync(webPkgPath, 'utf8'));
+const droppedDevDeps = Object.keys(webPkg.devDependencies || {}).length;
+delete webPkg.devDependencies;
+// Only `start` is meaningful once built; the rest reference tools that are gone.
+webPkg.scripts = { start: 'node server.js' };
+fs.writeFileSync(webPkgPath, `${JSON.stringify(webPkg, null, 2)}\n`);
+
+// The lockfile makes the server-side install reproducible rather than
+// "whatever npm resolved today".
+copyFile(
+  path.join(root, 'frontend', 'package-lock.json'),
+  path.join(web, 'package-lock.json'),
+  { optional: true }
+);
+
+log(
+  `web/package.json: kept ${Object.keys(webPkg.dependencies || {}).length} runtime ` +
+    `dependencies, dropped ${droppedDevDeps} build-only ones`
+);
 
 // ── Verify ───────────────────────────────────────────────────────────────────
 
@@ -188,9 +244,10 @@ console.log(`
   Next steps (full detail in docs/CPANEL-DEPLOYMENT.md):
     1. Zip each directory and upload it to its application root.
     2. API app  → startup file: app.cjs   then "Run NPM Install".
-    3. Web app  → startup file: server.js  (its node_modules are already bundled;
-                  do NOT run npm install there — it would pull devDependencies
-                  the standalone bundle deliberately omits).
+    3. Web app  → startup file: server.js   then "Run NPM Install".
+                  Both apps install on the server: CloudLinux keeps node_modules
+                  in a per-app virtual environment and refuses to set the app up
+                  if a real node_modules directory is sitting in the app root.
     4. Create the .env file in the API root from .env.example.
     5. Restart both applications.
 `);

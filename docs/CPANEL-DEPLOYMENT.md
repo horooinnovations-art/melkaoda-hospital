@@ -153,9 +153,12 @@ Produces:
 
 ```
 dist-cpanel/
-  api/    ~0.4 MB   (no node_modules — installed on the server)
-  web/    ~80 MB    (node_modules bundled — do NOT npm install this one)
+  api/    ~0.3 MB   (no node_modules — installed on the server)
+  web/    ~15 MB    (no node_modules — installed on the server)
 ```
+
+Neither bundle ships `node_modules`. That is not an optimisation — see
+"node_modules belongs to the server" below.
 
 Then archive each directory:
 
@@ -189,6 +192,31 @@ file. (`scripts/zip-cpanel.ps1` remains for anyone who needs a correct ZIP.)
 
 If File Manager still objects, upload over SFTP or FTP instead — the ClamAV
 hook runs on the File Manager upload path, not on the SSH/FTP one.
+
+---
+
+### node_modules belongs to the server, not the bundle
+
+cPanel's "Setup Node.js App" is CloudLinux's **NodeJS Selector**. It keeps each
+application's dependencies in a per-app virtual environment
+(`~/nodevenv/<app>/<node-version>/lib/node_modules`) and puts a *symlink* named
+`node_modules` in the application root pointing at it. If a real directory of
+that name is already sitting in the root, it refuses to set the app up:
+
+```
+Cloudlinux NodeJS Selector demands to store node modules for application in
+separate folder (virtual environment) pointed by symlink called "node_modules".
+That's why application should not contain folder/file with such name in
+application root
+```
+
+Next's `output: "standalone"` produces a pruned `node_modules` beside
+`server.js`, which is exactly the shape NodeJS Selector rejects. So the
+packaging script deletes it and both apps install on the server instead.
+
+If you ever see that error again, the fix is to delete `node_modules` from the
+application root and click **Run NPM Install** — do not try to keep a real
+directory there.
 
 ---
 
@@ -262,9 +290,11 @@ logs boot failures to `~/logs/` and to the app's error log in the cPanel UI.
 1. Upload `melkaoda-cpanel-frontend-<date>.tar.gz` into the application root and
    **Extract** it there. No wrapper directory; `server.js` must end up at the
    root itself.
-2. **Do not run NPM Install.** The bundle already contains exactly the
-   dependencies it needs; installing would pull devDependencies the standalone
-   build deliberately omits.
+2. Click **Run NPM Install** — same as the API. The shipped `package.json`
+   carries only the 33 runtime dependencies (the build-only ones are stripped,
+   since the build already happened), and `next` and `react` are pinned to
+   exact versions, so the install resolves the same tree the build was traced
+   against. Expect ~194 packages.
 3. Add these environment variables in the cPanel app screen — these are read at
    request time, so unlike `NEXT_PUBLIC_API_URL` they can be corrected without
    rebuilding:
@@ -376,6 +406,7 @@ you have measured it you do not have one.
 | Admin panel loads, nothing saves | `FRONTEND_URL` doesn't exactly match the site origin, so CORS refuses. No trailing slash. |
 | API calls go to onrender.com | Built with the wrong `NEXT_PUBLIC_API_URL`. Rebuild — it cannot be fixed on the server. |
 | App won't start, `ERR_REQUIRE_ESM` | Startup file is `src/server.js`. It must be `app.cjs`. |
+| "NodeJS Selector demands to store node modules..." | A real `node_modules` directory is in the application root. Delete it and use **Run NPM Install**. |
 | 503 from `/health` | Database credentials, or the user lacks privileges on the prefixed database name. |
 | Uploads fail in production | `MEDIA_DRIVER` unset. Production must state one; there is no silent default. |
 | Everyone rate-limited together | `TRUST_PROXY_HOPS` wrong. Passenger behind Apache is `1`. |
