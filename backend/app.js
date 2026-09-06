@@ -1,34 +1,36 @@
 /**
- * Fallback Passenger entry point.
+ * Application entry point for cPanel (CloudLinux NodeJS Selector).
  *
- * `app.cjs` is the entry this project recommends, and the one the deployment
- * guide tells you to put in cPanel's "Application startup file" field. This file
- * exists for one reason: when you create an application, CloudLinux's NodeJS
- * Selector writes its own boilerplate `app.js` into the application root —
+ * The web server — LiteSpeed's `lsnode.js`, or Phusion Passenger on an Apache
+ * host — loads this file with `require()` and hooks `http.Server.listen` while
+ * it does. Two constraints follow, and both have already bitten this deployment:
  *
- *     var http = require('http');
- *     http.createServer(...)
+ *  1. Creating an application makes NodeJS Selector write its own CommonJS
+ *     boilerplate `app.js` into the application root and name it as the default
+ *     startup file. This package declares `"type": "module"`, so Node parses
+ *     that stub as ESM and it dies on `require is not defined in ES module
+ *     scope`. Shipping a file of the same name is what replaces it — extracting
+ *     a release cannot delete a file the archive does not contain.
  *
- * — and defaults the startup-file field to it. That stub is CommonJS, but this
- * package declares `"type": "module"`, so Node parses it as ESM and the app dies
- * before it starts:
+ *  2. `require()` can load an ES module only when nothing in the graph uses
+ *     top-level await. An earlier version of this file used
+ *     `await import('./src/server.js')`, which made the module itself async and
+ *     failed with:
  *
- *     ReferenceError: require is not defined in ES module scope
+ *         ERR_REQUIRE_ASYNC_MODULE: require() cannot be used on an ESM graph
+ *         with top-level await
  *
- * Extracting a release does not remove the stub on its own (tar overwrites, it
- * does not delete), so shipping a file of the same name is what replaces it.
- * Whichever of `app.js` or `app.cjs` the startup field names, the API now boots.
+ * Hence a plain static import. It keeps the graph synchronous, so `require()`
+ * resolves it, and `src/server.js` finishes evaluating — including its
+ * `app.listen()` — before the require returns. That is what the web server
+ * expects; a deferred listen races its socket hand-off.
  *
- * This file is ESM, matching `"type": "module"`. Passenger loads the startup
- * file with `require()`, which can load ESM from Node 22.12 onward. On an older
- * Node, set the startup file to `app.cjs` instead — that one is CommonJS and
- * works on every supported version.
+ * Nothing else belongs in this file. `import` declarations are hoisted, so any
+ * statement written above one still runs after it — the process-level
+ * `unhandledRejection` and `uncaughtException` handlers therefore live in
+ * `src/server.js`, where they are installed before anything can fail.
+ *
+ * Node 22.12 is the floor for `require(esm)`. On anything older, point the
+ * startup file at `app.cjs` instead.
  */
-
-process.on('unhandledRejection', (reason) => {
-  // Passenger surfaces stderr in the app's error log; without this a boot-time
-  // rejection dies silently and the app simply never answers.
-  console.error('[passenger] unhandled rejection during startup:', reason);
-});
-
-await import('./src/server.js');
+import './src/server.js';

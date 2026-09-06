@@ -19,11 +19,14 @@ its own Passenger process.
 Worth reading before the first deploy — each of these has its own failure mode
 and none of them announces itself clearly.
 
-**Passenger boots a file, not a command.** There is no `npm start`. cPanel runs
-one startup file under Phusion Passenger. The API needs a CommonJS entry
-(`app.cjs`) because its `package.json` declares `"type": "module"` and Passenger
-loads the startup file with `require()` — handing it ESM fails with
-`ERR_REQUIRE_ESM`, and the error names Passenger rather than the cause.
+**The web server boots a file, not a command.** There is no `npm start`. cPanel
+loads one startup file with `require()` — LiteSpeed's `lsnode.js` on this host,
+Phusion Passenger on an Apache one — and hooks `http.Server.listen` while it
+does. Two things follow: the entry must be loadable by `require()`, and the
+server must finish listening *during* that call. `app.js` is a single static
+`import './src/server.js'`, which satisfies both. Anything async at the top
+level does not: `await import(...)` there fails with
+`ERR_REQUIRE_ASYNC_MODULE`.
 
 **The Next.js build is not runnable as-is.** `output: "standalone"` writes
 `.next/standalone/` *without* `.next/static`. Upload only what Next produced and
@@ -212,10 +215,14 @@ the app dies before it starts:
 ReferenceError: require is not defined in ES module scope
 ```
 
-The bundle ships **both** entry points so this cannot bite: `app.cjs` (CommonJS,
-works on every Node) and `app.js` (ESM, overwrites the stub on extraction and
-works from Node 22.12 onward, where `require()` can load ESM). Set the startup
-file to **`app.cjs`** — but if it is left at `app.js`, the API still boots.
+The bundle ships **both** entry points so this cannot bite:
+
+| Entry | What it is | Use when |
+|---|---|---|
+| `app.js` | ESM, one static import. Overwrites the stub on extraction. | Node ≥ 22.12 — **leave the startup field at its default** |
+| `app.cjs` | CommonJS; requires the server, falling back to dynamic import | Node < 22.12, where `require()` cannot load ESM |
+
+Both load under `require()` and complete `listen()` before it returns.
 
 ---
 
@@ -278,7 +285,7 @@ alone; later redeploys extract over the top of it safely.
 | Application mode | Production |
 | Application root | `apps/melkaoda-api` |
 | Application URL | `melkaodaapi.horooinnovations.com` |
-| Application startup file | `app.cjs` |
+| Application startup file | `app.js` (or `app.cjs` on Node < 22.12) |
 
 Then:
 
@@ -453,7 +460,8 @@ you have measured it you do not have one.
 | Site loads with no styling | `.next/static` missing from the web root. Re-run `package:cpanel`; don't hand-copy. |
 | Admin panel loads, nothing saves | `FRONTEND_URL` doesn't exactly match the site origin, so CORS refuses. No trailing slash. |
 | API calls go to onrender.com | Built with the wrong `NEXT_PUBLIC_API_URL`. Rebuild — it cannot be fixed on the server. |
-| App won't start, `ERR_REQUIRE_ESM` | Startup file is `src/server.js`. It must be `app.cjs`. |
+| App won't start, `ERR_REQUIRE_ESM` | Node < 22.12 loading `app.js`. Point the startup file at `app.cjs`. |
+| `ERR_REQUIRE_ASYNC_MODULE` | Something in the entry graph uses top-level await. The entry must be synchronous — re-extract the current bundle. |
 | `require is not defined in ES module scope` in `app.js` | cPanel's own boilerplate stub is still there. Re-extract the bundle (its `app.js` overwrites it) and set the startup file to `app.cjs`. |
 | `ls` shows no `.next` | `.next` is a dotfile — plain `ls` hides it. Use `ls -la`. If it really is absent, the bundle was never extracted there. |
 | "NodeJS Selector demands to store node modules..." | A real `node_modules` directory is in the application root, usually left by an earlier upload — extracting a new bundle does not remove it. Rename it (instant), then **Run NPM Install**. |

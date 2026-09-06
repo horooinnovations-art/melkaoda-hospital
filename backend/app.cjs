@@ -1,30 +1,39 @@
 /**
- * Phusion Passenger entry point (cPanel → Setup Node.js App).
+ * CommonJS entry point for cPanel (CloudLinux NodeJS Selector).
  *
- * cPanel does not run `npm start`. It boots one file with the Node binary under
- * Passenger, and the "Application startup file" field must point here.
+ * `app.js` is the file the web server loads by default and is the one to
+ * prefer. This one exists for hosts running Node older than 22.12, where
+ * `require()` cannot load an ES module at all and `app.js` would fail with
+ * ERR_REQUIRE_ESM. The `.cjs` extension opts this file out of the
+ * `"type": "module"` declaration in package.json.
  *
- * Why CommonJS, and why `.cjs`:
- *   - `backend/package.json` declares `"type": "module"`, so every `.js` file in
- *     this tree is ESM. The `.cjs` extension opts this one file back into
- *     CommonJS regardless.
- *   - Passenger loads the startup file with `require()`. Handing it an ESM file
- *     fails with ERR_REQUIRE_ESM on the Node 18/20 builds cPanel usually ships,
- *     and the app never starts — with an error that points at Passenger rather
- *     than at the cause.
- *   - Dynamic `import()` is available inside CommonJS on every supported Node,
- *     and is the bridge between the two.
- *
- * Set the startup file to `app.cjs`. Nothing else in the codebase changes.
+ * Point the startup file here only if the Node version cannot load `app.js`.
  */
 
-process.on('unhandledRejection', (reason) => {
-  // Passenger surfaces stderr in the app's error log; without this a boot-time
-  // rejection dies silently and the app just never answers.
-  console.error('[passenger] unhandled rejection during startup:', reason);
-});
-
-import('./src/server.js').catch((err) => {
-  console.error('[passenger] failed to start the API:', err && err.stack ? err.stack : err);
+function fail(err) {
+  console.error('[startup] failed to start the API:', err && err.stack ? err.stack : err);
   process.exit(1);
-});
+}
+
+try {
+  /**
+   * Preferred path. From Node 22.12, `require()` loads an ES module provided
+   * nothing in the graph uses top-level await — this one does not. The server
+   * then finishes starting, `app.listen()` included, before this call returns,
+   * which is what LiteSpeed's lsnode.js and Passenger want: both hook
+   * `http.Server.listen` during the require, and a listen that happens a tick
+   * later races that hand-off.
+   */
+  require('./src/server.js');
+} catch (err) {
+  if (err && err.code === 'ERR_REQUIRE_ESM') {
+    /**
+     * Node < 22.12. Dynamic import is the only way in from CommonJS. The server
+     * starts one microtask later than the web server would like; if that proves
+     * unreliable, the real fix is a newer Node, not more code here.
+     */
+    import('./src/server.js').catch(fail);
+  } else {
+    fail(err);
+  }
+}

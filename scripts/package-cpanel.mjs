@@ -247,9 +247,8 @@ console.log(`
 
   Next steps (full detail in docs/CPANEL-DEPLOYMENT.md):
     1. Zip each directory and upload it to its application root.
-    2. API app  → startup file: app.cjs   then "Run NPM Install".
-                  (app.js ships too and also works, purely so it overwrites the
-                  broken stub cPanel creates.)
+    2. API app  → leave startup file at app.js   then "Run NPM Install".
+                  (app.cjs also ships, for Node older than 22.12.)
     3. Web app  → startup file: server.js   then "Run NPM Install".
                   Both apps install on the server: CloudLinux keeps node_modules
                   in a per-app virtual environment and refuses to set the app up
