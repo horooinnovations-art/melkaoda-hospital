@@ -214,9 +214,33 @@ Next's `output: "standalone"` produces a pruned `node_modules` beside
 `server.js`, which is exactly the shape NodeJS Selector rejects. So the
 packaging script deletes it and both apps install on the server instead.
 
-If you ever see that error again, the fix is to delete `node_modules` from the
+If you ever see that error again, the fix is to remove `node_modules` from the
 application root and click **Run NPM Install** — do not try to keep a real
 directory there.
+
+**Extracting a new bundle does not clear it.** `tar` adds and overwrites; it
+never deletes what is not in the archive. A `node_modules` left by an earlier
+upload survives every redeploy until you remove it yourself.
+
+Removing it through File Manager usually disappoints: it is thousands of files
+in deep paths, and the delete times out half way. Renaming is instant, because
+it only touches one directory entry:
+
+```bash
+# cPanel → Terminal, or over SSH
+cd ~/melkaoda.horooinnovations.com
+mv node_modules _old_node_modules   # instant; unblocks the Selector at once
+rm -rf _old_node_modules            # then clean up at leisure
+ls -la                              # confirm: no node_modules of any kind
+```
+
+If Terminal is not available, do the same in File Manager: **Rename**
+`node_modules` to `_old_node_modules` (fast), reload the NodeJS Selector page,
+then delete the renamed folder afterwards.
+
+After **Run NPM Install** succeeds, `ls -la` shows `node_modules` again — this
+time as a symlink into `~/nodevenv/...`, which is what it should be. Leave it
+alone; later redeploys extract over the top of it safely.
 
 ---
 
@@ -406,7 +430,7 @@ you have measured it you do not have one.
 | Admin panel loads, nothing saves | `FRONTEND_URL` doesn't exactly match the site origin, so CORS refuses. No trailing slash. |
 | API calls go to onrender.com | Built with the wrong `NEXT_PUBLIC_API_URL`. Rebuild — it cannot be fixed on the server. |
 | App won't start, `ERR_REQUIRE_ESM` | Startup file is `src/server.js`. It must be `app.cjs`. |
-| "NodeJS Selector demands to store node modules..." | A real `node_modules` directory is in the application root. Delete it and use **Run NPM Install**. |
+| "NodeJS Selector demands to store node modules..." | A real `node_modules` directory is in the application root, usually left by an earlier upload — extracting a new bundle does not remove it. Rename it (instant), then **Run NPM Install**. |
 | 503 from `/health` | Database credentials, or the user lacks privileges on the prefixed database name. |
 | Uploads fail in production | `MEDIA_DRIVER` unset. Production must state one; there is no silent default. |
 | Everyone rate-limited together | `TRUST_PROXY_HOPS` wrong. Passenger behind Apache is `1`. |
