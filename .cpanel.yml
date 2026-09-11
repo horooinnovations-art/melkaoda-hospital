@@ -1,0 +1,57 @@
+---
+# cPanel Git Version Control deployment — API only.
+#
+# cPanel clones this repository into ~/repositories/melkaoda-hospital and runs
+# the tasks below when you press Deploy. That replaces uploading a tarball for
+# the API: pull, deploy, restart.
+#
+# The FRONTEND is deliberately not deployed here. It needs `next build`, which
+# needs the ten build-only dependencies (TypeScript, Tailwind, ESLint, the
+# @types packages) and roughly a gigabyte of memory — shared hosting usually has
+# neither to spare, and a half-finished build leaves the live site serving a
+# broken .next directory. Keep building the web bundle on a workstation with
+# `npm run package:cpanel` and uploading it.
+#
+# What these tasks deliberately do NOT touch:
+#   .env                 the live secrets
+#   uploads/             every public image and document
+#   storage/private/     applicant résumés
+#   node_modules         the NodeJS Selector symlink into the virtualenv
+#
+# Nothing above is in the repository, so nothing above can be clobbered by a
+# deploy — but it is worth stating, because a `cp -R` of the wrong directory is
+# how that damage usually happens.
+
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/horooiyi/melkaodaapi.horooinnovations.com
+
+    # Application source. `cp -R` overwrites and adds but never deletes, so a
+    # file removed in git lingers on the server. That is the trade for not
+    # depending on rsync being installed; if you rename or delete a module,
+    # remove the stale file by hand once.
+    - /bin/mkdir -p $DEPLOYPATH/src
+    - /bin/cp -R backend/src/. $DEPLOYPATH/src/
+
+    # Passenger / lsnode entry points. Both ship: app.js is the one cPanel names
+    # by default, app.cjs is the fallback for Node older than 22.12.
+    - /bin/cp backend/app.js $DEPLOYPATH/app.js
+    - /bin/cp backend/app.cjs $DEPLOYPATH/app.cjs
+
+    # Manifest and lockfile. If these changed, press "Run NPM Install" in
+    # Setup Node.js App after deploying — the deploy does not install.
+    - /bin/cp backend/package.json $DEPLOYPATH/package.json
+    - /bin/cp backend/package-lock.json $DEPLOYPATH/package-lock.json
+
+    # Migrations travel with the code so `npm run migrate` works on the server.
+    # Deploying does not apply them; run it deliberately.
+    - /bin/mkdir -p $DEPLOYPATH/database/migrations
+    - /bin/cp -R database/migrations/. $DEPLOYPATH/database/migrations/
+
+    # The environment template, for reference next to the real .env.
+    - /bin/cp backend/.env.cpanel.example $DEPLOYPATH/.env.example
+
+    # Ask the application server to restart. Passenger and lsnode both watch
+    # this file; if the app does not come back, use Restart in the cPanel UI.
+    - /bin/mkdir -p $DEPLOYPATH/tmp
+    - /bin/touch $DEPLOYPATH/tmp/restart.txt

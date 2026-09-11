@@ -440,6 +440,62 @@ it, and editing them by hand breaks the app.
 
 ---
 
+## 7a. Deploying the API from Git (optional)
+
+cPanel can clone this repository and deploy the API on a button press, which
+replaces uploading a tarball every time the backend changes.
+
+**The frontend cannot work this way.** `next build` needs the ten build-only
+dependencies (TypeScript, Tailwind, ESLint, the `@types` packages) and roughly a
+gigabyte of memory. Shared hosting usually has neither to spare, and a build
+that dies half way leaves the live site serving a broken `.next`. Keep building
+the web bundle on a workstation and uploading it.
+
+### Set it up once
+
+1. **cPanel -> Git Version Control -> Create**
+   - Clone URL: `https://github.com/horooinnovations-art/melkaoda-hospital.git`
+   - Repository Path: `/home/horooiyi/repositories/melkaoda-hospital`
+   - Repository Name: `melkaoda-hospital`
+2. Leave the API application root exactly as it is. The repository is a separate
+   directory; `.cpanel.yml` copies files across into it.
+
+### Each deploy
+
+1. **Git Version Control -> Manage -> Pull or Deploy -> Update from Remote**
+2. **Deploy HEAD Commit**
+
+`.cpanel.yml` copies `backend/src`, both entry points, the manifest, the
+lockfile and `database/migrations`, then touches `tmp/restart.txt` to bring the
+app back.
+
+Two things it deliberately does not do:
+
+- **It does not install dependencies.** If `package.json` changed, press
+  **Run NPM Install** in Setup Node.js App afterwards.
+- **It does not run migrations.** Apply those yourself, so a schema change is
+  never a side effect of a deploy:
+  ```bash
+  source ~/nodevenv/melkaodaapi.horooinnovations.com/24/bin/activate
+  cd ~/melkaodaapi.horooinnovations.com
+  npm run migrate
+  ```
+
+### What it cannot touch
+
+`.env`, `uploads/`, `storage/private/` and the `node_modules` symlink are not in
+the repository, so no deploy can overwrite them. Worth knowing, because a
+mistaken `cp -R` of a parent directory is exactly how that damage happens.
+
+### The one sharp edge
+
+`cp -R` overwrites and adds but never deletes. A file you remove in git stays on
+the server. If you rename or delete a module, delete the stale file by hand
+once — otherwise the old one keeps being importable and the bug it causes is
+baffling.
+
+---
+
 ## 8. Redeploying
 
 **Code change:**
