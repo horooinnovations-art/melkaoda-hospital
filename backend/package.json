@@ -1,0 +1,39 @@
+{
+  "name": "melkaoda-hospital-api",
+  "version": "1.0.0",
+  "description": "Melka Oda General Hospital API - Express + MySQL",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/**/*.test.js",
+    "migrate": "node src/scripts/migrate.js",
+    "migrate:leadership-history": "node src/scripts/migrateLeadershipHistory.js",
+    "repair:public-content": "node src/scripts/repairPublicContent.js",
+    "rebrand:melkaoda": "node src/scripts/rebrandToMelkaoda.js",
+    "sync:cloudinary": "node src/scripts/syncCloudinaryToDb.js",
+    "bind:cloudinary": "node src/scripts/bindCloudinaryUrls.js",
+    "fix:media-urls": "node src/scripts/fixMediaUrls.js",
+    "media:localize": "node src/scripts/cloudinaryToLocal.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.12.0",
+    "nodemailer": "^10.0.0",
+    "slugify": "^1.6.6",
+    "uuid": "^11.0.5"
+  },
+  "overrides": {
+    "qs": "^6.15.4"
+  }
+}

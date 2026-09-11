@@ -22,9 +22,16 @@ coverage/
 .idea/
 .nvshot/
 
-# Reference Laravel upload — do not commit into the Loke monorepo
+# Reference Laravel upload — do not commit into the monorepo
 deder.horooinnovations.com/
-backend/*.json
+
+# NOTE: there was a `backend/*.json` rule here. It was meant to exclude a few
+# scratch API captures, but it also excluded backend/package.json and
+# backend/package-lock.json — so the published repository contained a backend
+# with no manifest and no lockfile. It could not be installed, CI could not
+# cache or `npm ci` it, and the cPanel bundles only worked because the packaging
+# script copies those files from the working tree rather than from git.
+# The scratch captures are named individually further down instead.
 
 
 # Database dumps. Two 5.2 MB backups containing users.password hashes and
@@ -45,8 +52,9 @@ deployed_env_file/
 *.env
 !*.env.example
 
-# Scratch API captures. `backend/*.json` above already covers these, but they
-# were sitting in the tree — one of them held a stored error response.
+# Scratch API captures. Named one by one rather than with a `backend/*.json`
+# glob, so that a real backend manifest or config file can never be silently
+# excluded again.
 backend/home*.json
 backend/doctors.json
 backend/settings.json
