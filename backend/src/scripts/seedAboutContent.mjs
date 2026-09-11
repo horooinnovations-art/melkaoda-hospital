@@ -60,7 +60,25 @@ function sqlQuote(value) {
   return mysql.escape(String(value));
 }
 
-const WANTED = process.argv.slice(2).filter((a) => !a.startsWith('-'));
+const ARGS = process.argv.slice(2);
+
+/**
+ * --overwrite replaces the value of a key that already exists.
+ *
+ * The default is deliberately additive, because the usual case is a key the
+ * database has never held and an editor's wording must never be destroyed by a
+ * seeding script. But a row can be wrong rather than merely present: on the
+ * live site `purpose` and `patient_care_promise` were both filled with a copy
+ * of the mission's opening paragraph, so the About page showed the same
+ * sentence three times. INSERT IGNORE cannot repair that, and telling someone
+ * to hand-write an UPDATE against a hospital database is worse than giving them
+ * one generated from the same source as the seed copy.
+ *
+ * It still only touches the keys named, and it prints the current values first
+ * so whatever is being replaced can be read before it is gone.
+ */
+const OVERWRITE = ARGS.includes('--overwrite');
+const WANTED = ARGS.filter((a) => !a.startsWith('-'));
 const keys = (WANTED.length ? WANTED : ['purpose', 'patient_care_promise']).filter(
   (k) => seed[k]
 );
@@ -70,13 +88,38 @@ if (!keys.length) {
   process.exit(1);
 }
 
+const keyList = keys.map(sqlQuote).join(', ');
+
 console.log('-- Generated from backend/src/config/bootstrapSchema.js');
-console.log('-- INSERT IGNORE: an existing row keeps whatever an editor wrote.');
-console.log('INSERT IGNORE INTO `settings` (`key`, value, type, created_at, updated_at) VALUES');
-console.log(
-  keys.map((k) => `  (${sqlQuote(k)}, ${sqlQuote(seed[k])}, 'string', NOW(), NOW())`).join(',\n') +
-    ';'
-);
+
+if (OVERWRITE) {
+  console.log('--');
+  console.log('-- OVERWRITE: this REPLACES the current value of each key listed.');
+  console.log('-- Read the SELECT output below before running the UPDATEs, and keep');
+  console.log('-- a copy of anything you still want.');
+  console.log('');
+  console.log('SELECT `key`, value FROM `settings` WHERE `key` IN (' + keyList + ');');
+  console.log('');
+  for (const k of keys) {
+    console.log(
+      'UPDATE `settings` SET value = ' +
+        sqlQuote(seed[k]) +
+        ", type = 'string', updated_at = NOW() WHERE `key` = " +
+        sqlQuote(k) +
+        ';'
+    );
+  }
+} else {
+  console.log('-- INSERT IGNORE: an existing row keeps whatever an editor wrote.');
+  console.log('-- Use --overwrite to replace a row that exists but holds the wrong copy.');
+  console.log('INSERT IGNORE INTO `settings` (`key`, value, type, created_at, updated_at) VALUES');
+  console.log(
+    keys
+      .map((k) => `  (${sqlQuote(k)}, ${sqlQuote(seed[k])}, 'string', NOW(), NOW())`)
+      .join(',\n') + ';'
+  );
+}
+
 console.log('');
 console.log('SELECT `key`, CHAR_LENGTH(value) AS chars FROM `settings`');
-console.log(`WHERE \`key\` IN (${keys.map(sqlQuote).join(', ')});`);
+console.log(`WHERE \`key\` IN (${keyList});`);
