@@ -182,6 +182,7 @@ export default function NovaHeader({
   // Server value first so the mark is in the HTML, then the query supersedes it
   // once it lands (an admin can change the logo without a redeploy).
   const name = (settings?.site_name as string) || initialName || SITE_NAME;
+  const tagline = ((settings?.tagline as string) || "").trim();
   const logo =
     resolveMediaUrl((settings?.logo_url as string) || initialLogo || "") ||
     undefined;
@@ -345,7 +346,12 @@ export default function NovaHeader({
       </span>
       <span className="nvh__lockup">
         <span className="nvh__name">{name}</span>
-        <span className="nvh__place">Kore District · Oromia</span>
+        {/* The tagline from Admin → Settings. This was the literal string
+            "Kore District · Oromia", which named a different district from the
+            one the hero showed — two contradictory locations on one page, and
+            neither editable. Rendered only when set: an empty lockup line is
+            better than an invented one. */}
+        {tagline ? <span className="nvh__place">{tagline}</span> : null}
       </span>
     </Link>
   );

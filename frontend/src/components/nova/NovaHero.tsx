@@ -209,7 +209,7 @@ export default function NovaHero({
   about,
   emergency,
   images,
-  place = "Siraro District · Ethiopia",
+  place,
 }: {
   data?: HomeData;
   name: string;
@@ -222,12 +222,32 @@ export default function NovaHero({
 }) {
   const heroRef = useHeroTorch<HTMLElement>();
 
+  /**
+   * The location line. An explicit `location_label` wins; otherwise it is
+   * composed from the City / State fields an editor has already filled in on
+   * the Address tab, so the hero and the footer cannot disagree. Empty when
+   * neither exists — the site should not assert a location nobody entered.
+   */
+  const settings = data?.settings;
+  const placeLabel =
+    cleanPublicText(place) ||
+    cleanPublicText((settings?.location_label as string) || "") ||
+    [settings?.city, settings?.state]
+      .map((part) => cleanPublicText(String(part ?? "")))
+      .filter(Boolean)
+      .join(" · ");
+
   const brand = cleanPublicText(name) || SITE_NAME;
   const brandWords = brand.trim().split(/\s+/).filter(Boolean);
   const headline = cleanPublicText(tagline) || "Care you can trust, close to home.";
+  /**
+   * The fallback names no district. The previous one said "the people of Siraro
+   * District", which is a factual claim about catchment that only an editor can
+   * make — and it contradicted the district the header was showing.
+   */
   const support =
     cleanPublicText(about) ||
-    "Safe, compassionate and high-quality health care for the people of Siraro District and the surrounding communities.";
+    "Safe, compassionate and high-quality health care for our community.";
 
   const stats = data?.stats;
   const trust = [
@@ -272,10 +292,17 @@ export default function NovaHero({
       <div className="nv-shell nv-shell--wide">
         <div className="nv-hero__grid">
           <div className="nv-hero__copy">
-            <p className="nv-hero__place">
-              <i aria-hidden />
-              {place}
-            </p>
+            {/* Where the hospital is, from Admin → Settings. This used to
+                default to the literal "Siraro District · Ethiopia" and was
+                never passed a value, so the site stated a location no editor
+                could change — and one the header contradicted. It renders only
+                when the setting is filled in. */}
+            {placeLabel ? (
+              <p className="nv-hero__place">
+                <i aria-hidden />
+                {placeLabel}
+              </p>
+            ) : null}
 
             <h1 className="nv-hero__title">
               <NovaWords

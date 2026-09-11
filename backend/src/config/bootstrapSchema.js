@@ -297,6 +297,35 @@ const SEED_CONTENT_SETTINGS = {
     'Our patient services team is happy to answer any question before you arrive.',
   downloads_intro:
     'Access forms, guides, and essential resources for patients, partners, and healthcare professionals.',
+
+  /**
+   * About-page institutional copy.
+   *
+   * Written to be true of this hospital as a general hospital serving a
+   * catchment, and deliberately free of any claim only the hospital can make —
+   * no dates, no figures, no accreditations, no place names. Those belong in
+   * the Settings fields an editor controls. Like everything else here it is
+   * INSERT IGNORE, so an editor's own wording is never overwritten.
+   */
+  purpose:
+    '<p>Melka Oda General Hospital exists to make good hospital care an ordinary ' +
+    'expectation rather than a journey. We serve the people of our catchment and the ' +
+    'health facilities that refer into us, so that a person needing care can find it ' +
+    'close to home, without delay, and without being turned away.</p>' +
+    '<p>Everything below — our mission, our values and the promises we make to ' +
+    'patients — follows from that one commitment.</p>',
+
+  patient_care_promise:
+    '<ol>' +
+    '<li><strong>You will be seen in order of clinical need.</strong> Triage decides who is seen first, never who arrived first or who is known to us.</li>' +
+    '<li><strong>You will be told what is happening, in a language you understand.</strong> Your diagnosis, your options and what happens next, explained before you are asked to consent.</li>' +
+    '<li><strong>You will know what it costs before you owe it.</strong> Fees, exemptions and insurance cover are explained at registration, not at discharge.</li>' +
+    '<li><strong>Your dignity and privacy are not optional.</strong> Examinations are screened, your records are confidential, and your consent is asked for.</li>' +
+    '<li><strong>You may ask, question and refuse.</strong> Seeking a second opinion or declining a treatment will not change the standard of care you receive.</li>' +
+    '<li><strong>Your referral will be answered.</strong> A facility that sends us a patient receives a decision, and receives our feedback once treatment is complete.</li>' +
+    '<li><strong>Emergency care does not wait for paperwork.</strong> Life-saving treatment begins first; registration follows.</li>' +
+    '<li><strong>You can tell us when we fall short.</strong> Every complaint is recorded and answered, and no one is disadvantaged for raising one.</li>' +
+    '</ol>',
 };
 
 /**

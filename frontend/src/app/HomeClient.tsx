@@ -255,8 +255,10 @@ export default function HomeClient({
     {
       icon: MapPin,
       title: "Find the campus",
-      desc:
-        address || "Siraro District, West Arsi Zone, Oromia Region, Ethiopia.",
+      // The address from Admin → Settings. The fallback used to spell out a
+      // full zone and region, so a site with no address configured still
+      // published a specific one (MEL2-CONTENT).
+      desc: address || "See the Contact page for directions.",
     },
   ];
 
@@ -642,7 +644,7 @@ export default function HomeClient({
                 <span>
                   <span className="nv-visit__meta-label block">Address</span>
                   <span className="nv-visit__meta-value block">
-                    {address || "Siraro District, West Arsi, Oromia, Ethiopia"}
+                    {address || "Address not published yet"}
                   </span>
                 </span>
               </div>

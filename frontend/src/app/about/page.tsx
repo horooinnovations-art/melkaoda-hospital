@@ -6,8 +6,10 @@ import {
   Award,
   BookOpen,
   Building2,
+  Compass,
   Flag,
   Globe2,
+  HandHeart,
   HeartHandshake,
   Landmark,
   Medal,
@@ -444,6 +446,17 @@ export default function AboutPage() {
   const tagline = (settings?.tagline as string) || "";
   const mission = settings?.mission as string | undefined;
   const vision = settings?.vision as string | undefined;
+  /**
+   * Two institutional statements that sit either side of the values.
+   *
+   * `purpose` opens the page's argument — why the hospital exists — before the
+   * mission and vision say how it acts on that. `patient_care_promise` closes
+   * it by turning the values into commitments a patient can actually hold the
+   * hospital to. Both are edited in Admin → Settings → About, and each section
+   * renders only when its field has content.
+   */
+  const purpose = settings?.purpose as string | undefined;
+  const patientCarePromise = settings?.patient_care_promise as string | undefined;
   const values = settings?.values;
   const history = settings?.history as string | undefined;
   const about = settings?.about as string | undefined;
@@ -463,22 +476,46 @@ export default function AboutPage() {
   const showStory = !!about;
   const showValues = parsedValues.items.length > 0 || parsedValues.intro || !!values;
 
-  let foundingYear = 1974;
-  if (parsedHistory.eras.length > 0) {
-    const firstEra = parsedHistory.eras[0];
-    if (firstEra.year) {
-      const match = firstEra.year.match(/\d{4}/);
-      if (match) foundingYear = parseInt(match[0], 10);
-    }
+  /**
+   * Founding year: the Settings field first, then the earliest year an editor
+   * wrote into the history timeline. It used to default to a hard-coded 1974,
+   * so a site with no history at all still announced "52+ years of service".
+   */
+  const settingsFoundingYear = Number(
+    String((settings?.founded_year as string | number) ?? "").match(/\d{4}/)?.[0]
+  );
+  let foundingYear = Number.isFinite(settingsFoundingYear) ? settingsFoundingYear : NaN;
+  if (!Number.isFinite(foundingYear) && parsedHistory.eras.length > 0) {
+    const match = parsedHistory.eras[0].year?.match(/\d{4}/);
+    if (match) foundingYear = parseInt(match[0], 10);
   }
-  const yearsOfService = new Date().getFullYear() - foundingYear;
+  const currentYear = new Date().getFullYear();
+  const yearsOfService =
+    Number.isFinite(foundingYear) && foundingYear > 1800 && foundingYear <= currentYear
+      ? currentYear - foundingYear
+      : null;
 
+  /**
+   * Only figures the data actually supports.
+   *
+   * These previously fell back to `|| 8`, `|| 6` and `|| 5`, so a hospital that
+   * had entered no leadership, no values and no awards still published "8
+   * Leaders · 6 Core Values · 5 Awards" — invented numbers presented as fact on
+   * a hospital's own About page. A card with nothing behind it is now omitted,
+   * and if none of them have data the strip does not render at all.
+   */
   const stats = [
-    { value: yearsOfService, suffix: "+", label: "Years of Service" },
-    { value: leaders.length || 8, suffix: "", label: "Leaders" },
-    { value: parsedValues.items.length || 6, suffix: "", label: "Core Values" },
-    { value: parsedAwards.items.length || 5, suffix: "", label: "Awards" },
-  ];
+    yearsOfService !== null
+      ? { value: yearsOfService, suffix: "+", label: "Years of Service" }
+      : null,
+    leaders.length ? { value: leaders.length, suffix: "", label: "Leaders" } : null,
+    parsedValues.items.length
+      ? { value: parsedValues.items.length, suffix: "", label: "Core Values" }
+      : null,
+    parsedAwards.items.length
+      ? { value: parsedAwards.items.length, suffix: "", label: "Awards" }
+      : null,
+  ].filter((stat): stat is { value: number; suffix: string; label: string } => stat !== null);
 
   return (
     <PageTransition>
@@ -500,6 +537,9 @@ export default function AboutPage() {
       <div className="nv-pb relative -mx-[calc((100vw-100%)/2)] w-screen">
         <span className="nv-pb__glow" aria-hidden />
 
+        {/* Omitted entirely when nothing has real data behind it, rather than
+            padding the page out with invented figures. */}
+        {stats.length > 0 && (
         <div className="nv-pb__inner mx-auto max-w-5xl px-5 pt-12 lg:px-8">
           <div className="nv-statbar">
             {stats.map((stat, i) => {
@@ -521,6 +561,7 @@ export default function AboutPage() {
             })}
           </div>
         </div>
+        )}
 
         <div className="nv-pb__inner nv-dstack mx-auto max-w-5xl px-5 py-12 lg:px-8 lg:py-16">
 
@@ -559,13 +600,43 @@ export default function AboutPage() {
             </section>
           )}
 
-          {/* ═══ SECTION 02: Mission & Vision ═══ */}
-          {(mission || vision) && (
+          {/* ═══ SECTION 02: Our Purpose ═══ */}
+          {purpose && (
             <>
               {showStory && <DetailDivider delay={0.02} />}
               <section className="nv-asec">
                 <DetailSectionHeader
-                  eyebrow="02 · Purpose"
+                  eyebrow="02 · Our purpose"
+                  title="Why this hospital exists"
+                  description="The commitment the mission and vision below are built on."
+                />
+                <NovaReveal from="up" delay={0.06}>
+                  <div className="nv-mv">
+                    <div className="nv-mv__head">
+                      <span className="nv-dpanel__icon" aria-hidden>
+                        <Compass />
+                      </span>
+                      <div>
+                        <p className="nv-dpanel__kicker">Our purpose</p>
+                        <h3 className="nv-dpanel__title">{siteName}</h3>
+                      </div>
+                    </div>
+                    <div className="nv-mv__body">
+                      <RichBody value={purpose} />
+                    </div>
+                  </div>
+                </NovaReveal>
+              </section>
+            </>
+          )}
+
+          {/* ═══ SECTION 03: Mission & Vision ═══ */}
+          {(mission || vision) && (
+            <>
+              {(showStory || purpose) && <DetailDivider delay={0.02} />}
+              <section className="nv-asec">
+                <DetailSectionHeader
+                  eyebrow="03 · Mission & vision"
                   title="Mission & vision"
                   description="What guides every decision, ward, and clinical pathway."
                 />
@@ -621,7 +692,7 @@ export default function AboutPage() {
               <DetailDivider delay={0.02} />
               <section className="nv-asec">
                 <DetailSectionHeader
-                  eyebrow="03 · Core values"
+                  eyebrow="04 · Core values"
                   title="What guides our care"
                   description={parsedValues.intro || undefined}
                 />
@@ -665,13 +736,43 @@ export default function AboutPage() {
             </>
           )}
 
-          {/* ═══ SECTION 04: History / Timeline ═══ */}
+          {/* ═══ SECTION 05: Our Patient Care Promise ═══ */}
+          {patientCarePromise && (
+            <>
+              <DetailDivider delay={0.02} />
+              <section className="nv-asec">
+                <DetailSectionHeader
+                  eyebrow="05 · Our patient care promise"
+                  title="What every patient can expect"
+                  description="The values above, written as commitments you can hold us to."
+                />
+                <NovaReveal from="up" delay={0.06}>
+                  <div className="nv-mv nv-promise">
+                    <div className="nv-mv__head">
+                      <span className="nv-dpanel__icon" aria-hidden>
+                        <HandHeart />
+                      </span>
+                      <div>
+                        <p className="nv-dpanel__kicker">Our promise to you</p>
+                        <h3 className="nv-dpanel__title">Patient care promise</h3>
+                      </div>
+                    </div>
+                    <div className="nv-mv__body">
+                      <RichBody value={patientCarePromise} />
+                    </div>
+                  </div>
+                </NovaReveal>
+              </section>
+            </>
+          )}
+
+          {/* ═══ SECTION 06: History / Timeline ═══ */}
           {history && (
             <>
               <DetailDivider delay={0.02} />
               <section className="nv-asec">
                 <DetailSectionHeader
-                  eyebrow="04 · History"
+                  eyebrow="06 · History"
                   title="Our journey"
                   description={parsedHistory.intro || undefined}
                 />
@@ -730,7 +831,7 @@ export default function AboutPage() {
               <DetailDivider delay={0.02} />
               <section className="nv-asec">
                 <DetailSectionHeader
-                  eyebrow="05 · Recognition"
+                  eyebrow="07 · Recognition"
                   title="Awards & excellence"
                   description={parsedAwards.intro || undefined}
                 />
@@ -781,12 +882,12 @@ export default function AboutPage() {
             </>
           )}
 
-          {/* ═══ SECTION 06: Leadership ═══ */}
+          {/* ═══ SECTION 08: Leadership ═══ */}
           <DetailDivider delay={0.02} />
           <section className="nv-asec">
             <div className="nv-lead-head">
               <DetailSectionHeader
-                eyebrow="06 · Leadership"
+                eyebrow="08 · Leadership"
                 title="Guided by experienced visionaries"
                 description="Meet the people shaping clinical excellence and hospital strategy."
               />

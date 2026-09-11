@@ -5081,3 +5081,56 @@
 }
 
 .nv-pgb svg { width: 15px; height: 15px; }
+
+/* ── Patient care promise ──────────────────────────────────────────────────
+   The promise is the one panel on the About page that speaks directly to the
+   reader rather than about the institution, so it carries a little more weight
+   than the mission and vision plates it echoes: a warmer ground and a full-
+   height accent rule down its leading edge. Everything else it inherits from
+   .nv-mv, so the two stay in step if that changes. */
+.nv-promise {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--nv-accent) 7%, var(--nv-plate)) 0%,
+      var(--nv-plate) 62%
+    );
+}
+
+.nv-promise::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--nv-accent) 0%,
+    color-mix(in oklab, var(--nv-accent) 35%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+/* The promise reads as a list of commitments; numbering them makes each one
+   individually citable by a patient. */
+.nv-promise .nv-mv__body ol {
+  counter-reset: nv-promise;
+  list-style: none;
+  padding-left: 0;
+}
+
+.nv-promise .nv-mv__body ol > li {
+  counter-increment: nv-promise;
+  position: relative;
+  padding-left: 2.4rem;
+}
+
+.nv-promise .nv-mv__body ol > li::before {
+  content: counter(nv-promise, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  font-family: var(--nv-mono, ui-monospace, monospace);
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  color: var(--nv-accent);
+}
