@@ -41,13 +41,22 @@ import Counter from "@/components/vitals/Counter";
 import { getImageFromItem } from "@/lib/media";
 import { SITE_NAME } from "@/lib/api";
 import { stripHtml } from "@/lib/utils";
+import {
+  htmlToText,
+  parseHeadingSections,
+  parseValuesStructured,
+  type Section,
+} from "@/lib/aboutContent";
 import type { Leader } from "@/lib/types";
 
 /* ─── Types ─── */
 type ValueItem = {
   emoji?: string;
   title: string;
+  /** The short bold statement shown under the title. */
   description: string;
+  /** Longer explanatory copy, when the author wrote any. */
+  body?: string;
 };
 
 type HistoryEra = {
@@ -117,13 +126,74 @@ function htmlToLines(raw: string): string[] {
     .filter(Boolean);
 }
 
+
+/* ─── Structured-section helpers ─── */
+
+/**
+ * Bullet text of a parsed section, in document order.
+ */
+function sectionBullets(html: string): string[] {
+  const out: string[] = [];
+  const re = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) {
+    const text = htmlToText(m[1]).replace(/\s+/g, " ").trim();
+    if (text) out.push(text);
+  }
+  return out;
+}
+
+/**
+ * Paragraph text of a parsed section. Lists are removed first because the
+ * callers render them separately as bullets, and leaving them in showed the
+ * same sentences twice.
+ */
+function sectionParagraphs(html: string): string[] {
+  const withoutLists = html.replace(/<(ul|ol)\b[\s\S]*?<\/\1>/gi, "");
+  return htmlToText(withoutLists)
+    .split(/\n+/)
+    .map((para) => para.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+/**
+ * One leading emoji, with its variation selectors and zero-width joiners, so a
+ * sequence such as a flag or a profession emoji is taken whole rather than
+ * halved. Shared with the heuristic parsers below, which match the same shape.
+ */
+const LEADING_EMOJI =
+  /^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.+)$/u;
+
+/**
+ * A leading emoji, split off a heading. The cards pick their own icon from the
+ * title, so an emoji left in place only pushed the wording out of alignment.
+ */
+function splitLeadingEmoji(heading: string): { emoji?: string; title: string } {
+  const m = heading.match(LEADING_EMOJI);
+  if (m && m[2].trim()) return { emoji: m[1].trim(), title: m[2].trim() };
+  return { title: heading.trim() };
+}
+
+/**
+ * A four-digit year from the heading only. Body text mentions years in passing,
+ * and reading one from there labels an era with a date it does not describe.
+ */
+function yearFromHeading(heading: string): string | undefined {
+  return heading.match(/\b(?:19|20)\d{2}\b/)?.[0];
+}
+
+/** Drop an authored list index such as "01 · " — the card renders its own. */
+function stripLeadingIndex(title: string): string {
+  return title.replace(/^\s*\d{1,2}\s*[·.):\]\-–—]\s*/, "").trim();
+}
+
 const HISTORY_HEADING =
   /^(Foundation(?:\s*\([^)]+\))?|Growth\s*&\s*Expansion|Expanding Catchment(?:\s*&\s*Capacity)?|Comprehensive Health Services|National Recognition(?:\s*&\s*Innovation)?|Community-Based Health Insurance(?:\s*\(CBHI\))?|CBHI|Quality Improvement Leadership|Today)\b/i;
 
 const HISTORY_SKIP =
   /^(our history|our journey of excellence|history)$/i;
 
-function parseHistoryContent(raw: unknown): { intro: string; eras: HistoryEra[] } {
+function parseHistoryHeuristic(raw: unknown): { intro: string; eras: HistoryEra[] } {
   if (typeof raw !== "string" || !raw.trim()) return { intro: "", eras: [] };
   const lines = htmlToLines(raw);
   const eras: HistoryEra[] = [];
@@ -184,7 +254,7 @@ function parseHistoryContent(raw: unknown): { intro: string; eras: HistoryEra[] 
 const AWARD_SKIP =
   /^(awards?\s*&?\s*accreditations?|recognition of excellence|recognition)$/i;
 
-function parseAwardsContent(raw: unknown): { intro: string; items: AwardItem[] } {
+function parseAwardsHeuristic(raw: unknown): { intro: string; items: AwardItem[] } {
   if (typeof raw !== "string" || !raw.trim()) return { intro: "", items: [] };
   const lines = htmlToLines(raw);
   const items: AwardItem[] = [];
@@ -198,9 +268,7 @@ function parseAwardsContent(raw: unknown): { intro: string; items: AwardItem[] }
       continue;
     }
 
-    const emojiMatch = line.match(
-      /^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.+)$/u
-    );
+    const emojiMatch = line.match(LEADING_EMOJI);
 
     if (emojiMatch) {
       const emoji = emojiMatch[1];
@@ -264,7 +332,7 @@ function iconForAward(title: string): LucideIcon {
   return Award;
 }
 
-function parseValuesContent(raw: unknown): { intro: string; items: ValueItem[] } {
+function parseValuesHeuristic(raw: unknown): { intro: string; items: ValueItem[] } {
   if (Array.isArray(raw)) {
     const items = raw
       .map((entry) => {
@@ -322,9 +390,7 @@ function parseValuesContent(raw: unknown): { intro: string; items: ValueItem[] }
       continue;
     }
 
-    const emojiMatch = line.match(
-      /^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.+)$/u
-    );
+    const emojiMatch = line.match(LEADING_EMOJI);
 
     if (emojiMatch) {
       const emoji = emojiMatch[1];
@@ -419,6 +485,119 @@ function PanelLabel({
   );
 }
 
+
+/* ─── Parser entry points ─── */
+
+/**
+ * The three parsers below read the markup the editor actually saves, and fall
+ * back to the heuristics above when there is no markup to read.
+ *
+ * The heuristics guess structure from line length: a line became a card title
+ * only if the following line ran past forty characters. On the live core values
+ * that turned ten uniformly-written values into six cards plus 1,671 characters
+ * of leftover text dumped under the section heading, so the same copy appeared
+ * twice — once as cards, once as an unstructured wall. Which values survived
+ * depended on whether their one-line statement happened to be long enough.
+ */
+
+function parseValuesContent(raw: unknown): { intro: string; items: ValueItem[] } {
+  if (typeof raw === "string" && raw.trim()) {
+    const structured = parseValuesStructured(raw);
+    if (structured) {
+      return {
+        intro: structured.intro,
+        items: structured.items.map((item) => ({
+          ...item,
+          title: stripLeadingIndex(item.title),
+        })),
+      };
+    }
+  }
+  return parseValuesHeuristic(raw);
+}
+
+/** A parsed section rendered as a history era. */
+function sectionToEra(section: Section): HistoryEra {
+  return {
+    title: section.heading,
+    year: yearFromHeading(section.heading),
+    paragraphs: sectionParagraphs(section.html),
+    bullets: sectionBullets(section.html),
+  };
+}
+
+function parseHistoryContent(raw: unknown): {
+  intro: string;
+  eras: HistoryEra[];
+  outro: string;
+} {
+  if (typeof raw === "string" && raw.trim()) {
+    const structured = parseHeadingSections(raw, HISTORY_SKIP);
+    if (structured) {
+      return {
+        intro: structured.intro,
+        eras: structured.sections.map(sectionToEra),
+        outro: structured.outro,
+      };
+    }
+  }
+  return { ...parseHistoryHeuristic(raw), outro: "" };
+}
+
+/** A parsed section rendered as an award card. */
+function sectionToAward(section: Section): AwardItem {
+  const { emoji, title } = splitLeadingEmoji(section.heading);
+  return {
+    emoji,
+    title,
+    // No subtitle is invented here. The heuristic guessed one from the first
+    // line; the whole opening paragraph stays in the description instead.
+    description: sectionParagraphs(section.html).join(" "),
+    highlights: sectionBullets(section.html),
+  };
+}
+
+function parseAwardsContent(raw: unknown): {
+  intro: string;
+  items: AwardItem[];
+  outro: string;
+} {
+  if (typeof raw === "string" && raw.trim()) {
+    const structured = parseHeadingSections(raw, AWARD_SKIP);
+    if (structured) {
+      return {
+        intro: structured.intro,
+        items: structured.sections.map(sectionToAward),
+        outro: structured.outro,
+      };
+    }
+  }
+  return { ...parseAwardsHeuristic(raw), outro: "" };
+}
+
+
+/**
+ * Closing copy that follows a section's cards — a summing-up sentence, or the
+ * hospital's sign-off and strapline. The previous parser had nowhere to put
+ * this and silently discarded it.
+ */
+function SectionOutro({ text }: { text: string }) {
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((para) => para.trim())
+    .filter(Boolean);
+  if (paragraphs.length === 0) return null;
+  return (
+    <NovaReveal from="up" delay={0.06}>
+      <div className="nv-copy nv-asec__outro">
+        {paragraphs.map((para, index) => (
+          <p key={index}>{para}</p>
+        ))}
+      </div>
+    </NovaReveal>
+  );
+}
+
 /* ─── Stat Card Icons ─── */
 const STAT_ICONS: LucideIcon[] = [Shield, Users, Star, Award];
 
@@ -486,8 +665,19 @@ export default function AboutPage() {
   );
   let foundingYear = Number.isFinite(settingsFoundingYear) ? settingsFoundingYear : NaN;
   if (!Number.isFinite(foundingYear) && parsedHistory.eras.length > 0) {
-    const match = parsedHistory.eras[0].year?.match(/\d{4}/);
-    if (match) foundingYear = parseInt(match[0], 10);
+    /**
+     * Fall back to the earliest year the opening era mentions.
+     *
+     * An era's own `year` label is only taken from its heading, because a date
+     * mentioned in passing should not retitle a card. The founding year is a
+     * different question: the opening era is the founding story, so the oldest
+     * year anywhere in it is the best evidence available.
+     */
+    const first = parsedHistory.eras[0];
+    const years = [first.year ?? "", ...first.paragraphs, ...first.bullets]
+      .join(" ")
+      .match(/\b(?:19|20)\d{2}\b/g);
+    if (years) foundingYear = Math.min(...years.map((y) => parseInt(y, 10)));
   }
   const currentYear = new Date().getFullYear();
   const yearsOfService =
@@ -722,6 +912,12 @@ export default function AboutPage() {
                             {item.description && (
                               <p className="nv-vcard__desc">{item.description}</p>
                             )}
+                            {/* The explanation the author wrote under the
+                                statement. It used to be dumped into the section
+                                intro, which is what showed the same copy twice. */}
+                            {item.body && (
+                              <p className="nv-vcard__body">{item.body}</p>
+                            )}
                           </article>
                         </NovaReveal>
                       );
@@ -821,6 +1017,7 @@ export default function AboutPage() {
                     <RichBody value={history} />
                   </DetailPanel>
                 )}
+                <SectionOutro text={parsedHistory.outro} />
               </section>
             </>
           )}
@@ -878,6 +1075,7 @@ export default function AboutPage() {
                     <RichBody value={awards} />
                   </DetailPanel>
                 )}
+                <SectionOutro text={parsedAwards.outro} />
               </section>
             </>
           )}

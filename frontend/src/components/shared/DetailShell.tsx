@@ -243,7 +243,19 @@ export function DetailSectionHeader({
         {eyebrow && <p className="nv-dhead__eyebrow">{eyebrow}</p>}
         <h2 className="nv-dhead__title">{title}</h2>
         <div className="nv-dhead__rule" aria-hidden />
-        {description && <p className="nv-dhead__desc">{description}</p>}
+        {/* Split on blank lines: a section intro can be a subtitle followed by
+            a lead paragraph, and one <p> ran them together as a single
+            sentence with no full stop between them. */}
+        {description &&
+          description
+            .split(/\n{2,}/)
+            .map((para) => para.trim())
+            .filter(Boolean)
+            .map((para, index) => (
+              <p key={index} className="nv-dhead__desc">
+                {para}
+              </p>
+            ))}
       </div>
     </NovaReveal>
   );

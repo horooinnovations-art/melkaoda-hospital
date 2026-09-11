@@ -3009,13 +3009,38 @@
   color: var(--nv-text);
 }
 
+/* The short statement under the title. It carries the weight, so the longer
+   explanation beneath it can recede without either being mistaken for the
+   other. */
 .nv-vcard__desc {
   position: relative;
   z-index: 1;
   margin-top: 10px;
   font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.64;
+  color: var(--nv-text);
+}
+
+.nv-vcard__body {
+  position: relative;
+  z-index: 1;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  line-height: 1.68;
   color: var(--nv-muted);
+}
+
+/* Closing copy beneath a section's cards: a summing-up line, or a sign-off. */
+.nv-asec__outro {
+  margin-top: 28px;
+  max-width: 62ch;
+  font-size: 0.9rem;
+  color: var(--nv-muted);
+}
+
+.nv-asec__outro p + p {
+  margin-top: 8px;
 }
 
 @media (prefers-reduced-motion: reduce) {
