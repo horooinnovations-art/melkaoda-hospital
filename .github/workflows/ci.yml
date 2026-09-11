@@ -110,9 +110,16 @@ jobs:
       - name: Refuse obvious credential literals
         run: |
           set -e
+          # A line may opt out with an `allowlist-secret` marker written on the
+          # line itself, next to the value. That keeps the exemption as narrow
+          # as possible: excluding whole files here would mean a real leak in
+          # one of them never trips the guard. The only current use is the
+          # dummy bcrypt hash in core.js, which exists precisely so that it
+          # never matches a password.
           hits=$(git grep -nIE \
             "\\\$2[aby]\\\$[0-9]{2}\\\$|BEGIN (RSA |OPENSSH )?PRIVATE KEY" \
             -- ':!*.md' ':!*.html' ':!.github/**' ':!backend/tests/**' \
+            | grep -v 'allowlist-secret' \
             || true)
           if [ -n "$hits" ]; then
             echo "::error::Refusing: a password hash or private key appears in tracked files."

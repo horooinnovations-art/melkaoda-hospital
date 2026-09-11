@@ -33,7 +33,8 @@ import {
  * roughly one bcrypt round and response timing stops distinguishing "no such
  * account" from "wrong password" (MEL-SEC-012).
  */
-const DUMMY_HASH = '$2a$12$C6UzMDM.H6dfI/f/IKcEe.iBmwLPmnvbYqBOCbUOOMKUyBBBUC/vu';
+// allowlist-secret: a hash of a value nobody holds; it must never match.
+const DUMMY_HASH = '$2a$12$C6UzMDM.H6dfI/f/IKcEe.iBmwLPmnvbYqBOCbUOOMKUyBBBUC/vu'; // allowlist-secret
 const GENERIC_LOGIN_FAILURE = 'Invalid email or password';
 
 export async function login(req, res) {
