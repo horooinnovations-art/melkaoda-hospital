@@ -35,11 +35,14 @@ const CSP = [
   // The API origin serves legacy /storage assets and must be listed, or those
   // images are silently blocked in production; the localhost entries are
   // development-only and no longer leak into the deployed policy.
-  // Map tiles are images. The tile layer serves CARTO's Voyager basemap, so
-  // that host must be listed or every tile is blocked and the map renders as an
-  // empty grey pane with only the attribution showing. OpenStreetMap's own
-  // hosts stay listed because they are the fallback tile source.
-  `img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com ${API_ORIGIN}${isDev ? " http://127.0.0.1:5000 http://localhost:5000" : ""}`,
+  // Map tiles are images, so the tile host must be listed here or every tile is
+  // blocked and the map renders as an empty pane with only the attribution.
+  //
+  // `tile.openstreetmap.org` is listed WITHOUT a wildcard as well as with one:
+  // in CSP `*.example.com` does not match bare `example.com`, and the tile URL
+  // has no subdomain. The CARTO host stays listed so that switching back to
+  // their basemap needs only an API key, not a policy change.
+  `img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com ${API_ORIGIN}${isDev ? " http://127.0.0.1:5000 http://localhost:5000" : ""}`,
   // The map falls back to a Google Maps embed when the hospital has an address
   // but no coordinates. Without this the fallback inherits default-src 'self'
   // and the browser replaces it with "This content is blocked", which is worse

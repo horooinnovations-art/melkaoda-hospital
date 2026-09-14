@@ -83,14 +83,26 @@ export default function LocationMapCanvas({
       className="h-full w-full"
       attributionControl
     >
-      {/* detectRetina is what fills in the {r} placeholder in the URL. Without
-          it the token resolves to nothing and a high-density screen upscales a
-          standard tile, which is why the labels looked soft. */}
+      {/**
+       * OpenStreetMap's own tiles.
+       *
+       * This was CARTO's Voyager basemap, which is the better-looking surface
+       * but now requires an account: without a key CARTO still serves the tile
+       * and stamps "API KEY REQUIRED" diagonally across it, so the hospital's
+       * location page carried a watermark on every tile.
+       *
+       * OpenStreetMap needs no key and its attribution is already below. There
+       * is no {r} token because OSM publishes no @2x tiles, and detectRetina
+       * against a source that has none just requests URLs that 404.
+       *
+       * To go back to Voyager, put a CARTO key in the URL and add
+       * https://*.basemaps.cartocdn.com back to img-src in next.config.mjs —
+       * it is still listed there for exactly that.
+       */}
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        maxZoom={20}
-        detectRetina
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        maxZoom={19}
       />
       <Recenter lat={lat} lng={lng} zoom={zoom} />
       <Marker position={[lat, lng]} icon={icon}>
