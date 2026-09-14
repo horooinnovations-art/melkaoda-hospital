@@ -308,7 +308,7 @@ environment, so the web app needs its own activation with its own path.
 |---|---|
 | Node.js version | 20.x or newer |
 | Application mode | Production |
-| Application root | `apps/melkaoda-api` |
+| Application root | `melkaodaapi.horooinnovations.com` |
 | Application URL | `melkaodaapi.horooinnovations.com` |
 | Application startup file | `app.js` (or `app.cjs` on Node < 22.12) |
 
@@ -342,7 +342,7 @@ Then:
    means restarts never change the schema on their own.
 6. Make the writable directories writable:
    ```bash
-   chmod 755 ~/apps/melkaoda-api/uploads ~/apps/melkaoda-api/storage/private
+   chmod 755 ~/melkaodaapi.horooinnovations.com/uploads \n          ~/melkaodaapi.horooinnovations.com/storage/private
    ```
 7. **Restart** the application.
 
@@ -366,7 +366,7 @@ logs boot failures to `~/logs/` and to the app's error log in the cPanel UI.
 |---|---|
 | Node.js version | 20.x or newer |
 | Application mode | Production |
-| Application root | `apps/melkaoda-web` |
+| Application root | `melkaoda.horooinnovations.com` |
 | Application URL | `melkaoda.horooinnovations.com` |
 | Application startup file | `server.js` |
 
@@ -411,7 +411,7 @@ media rows still point at the shared Cloudinary account. Until they are brought
 over, the site is not self-contained.
 
 ```bash
-cd ~/apps/melkaoda-api
+cd ~/melkaodaapi.horooinnovations.com
 node src/scripts/cloudinaryToLocal.js --dry-run    # report
 node src/scripts/cloudinaryToLocal.js --confirm    # download + repoint
 ```
@@ -523,9 +523,9 @@ Everything that matters now lives on this account:
 | What | Where |
 |---|---|
 | Content, users, audit log, submissions | MySQL database |
-| Images and documents | `apps/melkaoda-api/uploads/` |
-| Applicant résumés | `apps/melkaoda-api/storage/private/` |
-| Secrets | `apps/melkaoda-api/.env` |
+| Images and documents | `melkaodaapi.horooinnovations.com/uploads/` |
+| Applicant résumés | `melkaodaapi.horooinnovations.com/storage/private/` |
+| Secrets | `melkaodaapi.horooinnovations.com/.env` |
 
 Enable cPanel's full account backup on a schedule and download a copy off the
 server — a backup that lives only on the machine it protects is not a backup.
