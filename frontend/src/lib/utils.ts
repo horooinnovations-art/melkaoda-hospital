@@ -130,6 +130,132 @@ export function isAlwaysOpen(raw?: string | null) {
   );
 }
 
+/**
+ * A one-line opening-hours summary.
+ *
+ * The pages that show hours were printing the stored value verbatim behind the
+ * words "Every day", so a week written out day by day came out as "Every day
+ * Monday: 24hrs Tuesday: 24 hrs Wednesday: 24 hrs…" — a sentence that both
+ * repeats itself and contradicts its own opening.
+ *
+ * Consecutive days that share hours are collapsed into a range, which is how
+ * opening hours are written everywhere else: "Mon–Fri 08:00 – 17:00 · Sat
+ * 08:00 – 12:00 · Sun Closed".
+ */
+export function summarizeHours(raw?: string | null): string {
+  const rows = parseHoursSchedule(raw);
+  if (!rows.length) return "";
+
+  if (isAlwaysOpen(raw)) return "Open 24 hours, every day";
+
+  // A value with no day names in it, e.g. "24hrs" or "By appointment".
+  if (rows.length === 1 && /^(hours|every day)$/i.test(rows[0].day)) {
+    return rows[0].hours;
+  }
+
+  const allSame = rows.every((r) => r.hours === rows[0].hours);
+  if (allSame && rows.length >= 7) return `Every day ${rows[0].hours}`;
+
+  const groups: { from: string; to: string; hours: string }[] = [];
+  for (const row of rows) {
+    const last = groups[groups.length - 1];
+    if (last && last.hours === row.hours) last.to = row.day;
+    else groups.push({ from: row.day, to: row.day, hours: row.hours });
+  }
+
+  return groups
+    .map((g) => `${g.from === g.to ? g.from : `${g.from}–${g.to}`} ${g.hours}`)
+    .join(" · ");
+}
+
+/* ─── Working hours ────────────────────────────────────────────────────────
+   One stored string, edited either as a single value or as seven.
+
+   The stored shape stays "Monday: … Tuesday: …" in both modes. The switch
+   changes how the value is typed, not how it is saved, so the public side
+   never has to handle two formats and turning the switch on and off cannot
+   leave a half-migrated value behind.
+   ------------------------------------------------------------------------ */
+export const WEEK_DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
+export type WeekDay = (typeof WEEK_DAYS)[number];
+
+export type PerDayHours = Record<WeekDay, string>;
+
+export const EMPTY_WEEK = () =>
+  Object.fromEntries(WEEK_DAYS.map((d) => [d, ""])) as PerDayHours;
+
+/**
+ * Split a saved hours string into one entry per day.
+ *
+ * A value with no day names in it — "24hrs", which is what this field held
+ * before it could hold anything else — is read as that value applying to every
+ * day, so existing content opens in the editor instead of being discarded.
+ */
+export function splitHoursByDay(raw: string): PerDayHours {
+  const text = String(raw ?? "").replace(/\s+/g, " ").trim();
+  const out = EMPTY_WEEK();
+  if (!text) return out;
+
+  const marker = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s*[:\-–]?\s*/gi;
+  const found: { day: WeekDay; start: number }[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = marker.exec(text))) {
+    const day = (m[1][0].toUpperCase() + m[1].slice(1).toLowerCase()) as WeekDay;
+    found.push({ day, start: m.index + m[0].length });
+  }
+
+  if (!found.length) {
+    for (const day of WEEK_DAYS) out[day] = text;
+    return out;
+  }
+
+  found.forEach((entry, i) => {
+    const end =
+      i + 1 < found.length
+        ? text.indexOf(found[i + 1].day, entry.start)
+        : text.length;
+    out[entry.day] = text
+      .slice(entry.start, end === -1 ? text.length : end)
+      .replace(/^[:\-–]\s*/, "")
+      .trim();
+  });
+
+  return out;
+}
+
+/** The shared value when every day matches, otherwise an empty string. */
+export function commonHours(perDay: PerDayHours): string {
+  const values = WEEK_DAYS.map((d) => perDay[d].trim());
+  return values.every((v) => v === values[0]) ? values[0] : "";
+}
+
+/**
+ * Serialise back to the stored form, from either editor.
+ *
+ * An entirely blank week is stored as an empty string rather than seven days
+ * of "Closed": a hospital that has not filled this in yet should publish
+ * nothing, not claim it is shut.
+ */
+export function buildHoursValue(input: string | PerDayHours): string {
+  const perDay =
+    typeof input === "string"
+      ? (Object.fromEntries(WEEK_DAYS.map((d) => [d, input])) as PerDayHours)
+      : input;
+
+  if (WEEK_DAYS.every((d) => !perDay[d]?.trim())) return "";
+
+  return WEEK_DAYS.map((d) => `${d}: ${perDay[d]?.trim() || "Closed"}`).join(" ");
+}
+
 /** Collapse repeated address tokens, e.g. "Siraro, Oromia, Siraro, Oromia". */
 export function formatPublicAddress(
   ...parts: Array<string | null | undefined>

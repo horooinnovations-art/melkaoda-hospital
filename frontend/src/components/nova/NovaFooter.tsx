@@ -5,8 +5,9 @@ import { useMemo } from "react";
 import { HeartPulse, Mail, MapPin, Phone } from "lucide-react";
 import { useGetSettingsQuery } from "@/store/slices/apiSlice";
 import { SITE_NAME, DEFAULT_TAGLINE } from "@/lib/api";
-import { formatPublicAddress, stripHtml, truncate } from "@/lib/utils";
+import { formatPublicAddress } from "@/lib/utils";
 import MapLink from "@/components/shared/MapLink";
+import { summarizeRichText } from "@/lib/aboutContent";
 import { resolveMediaUrl } from "@/lib/media";
 import SmartImage from "@/components/shared/SmartImage";
 import {
@@ -66,7 +67,10 @@ export default function NovaFooter() {
 
   const name = (settings?.site_name as string) || SITE_NAME;
   const tagline = (settings?.tagline as string) || DEFAULT_TAGLINE;
-  const about = (settings?.about as string) || tagline;
+  // The About setting is a whole document, headings and strapline included.
+  // Stripping its tags and cutting to length printed the hospital name three
+  // times before the sentence started.
+  const about = summarizeRichText(settings?.about, 150) || tagline;
   const address = formatPublicAddress(settings?.address as string | undefined);
   const phone = settings?.phone as string | undefined;
   const email = settings?.email as string | undefined;
@@ -111,7 +115,7 @@ export default function NovaFooter() {
               {name}
             </Link>
 
-            <p className="nv-footer__blurb">{truncate(stripHtml(about), 150)}</p>
+            <p className="nv-footer__blurb">{about}</p>
 
             {emergency && (
               <a href={`tel:${emergency}`} className="nv-footer__accent">

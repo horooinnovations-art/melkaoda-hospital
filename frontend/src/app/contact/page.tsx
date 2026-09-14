@@ -20,13 +20,14 @@ import {
   useSubmitContactMutation,
 } from "@/store/slices/apiSlice";
 import { SITE_NAME } from "@/lib/api";
-import { formatPublicAddress, stripHtml, truncate } from "@/lib/utils";
+import { formatPublicAddress, summarizeHours } from "@/lib/utils";
 import PageHero from "@/components/layout/PageHero";
 import PageBody from "@/components/layout/PageBody";
 import NovaReveal from "@/components/nova/NovaReveal";
 import PageTransition from "@/components/motion/PageTransition";
 import LocationMap from "@/components/shared/LocationMap";
 import MapLink from "@/components/shared/MapLink";
+import { summarizeRichText } from "@/lib/aboutContent";
 import WorkingHoursDisplay from "@/components/shared/WorkingHoursDisplay";
 import {
   DetailSectionHeader,
@@ -52,7 +53,8 @@ export default function ContactPage() {
   const address = formatPublicAddress(settings?.address as string | undefined);
   const phone = settings?.phone as string | undefined;
   const email = settings?.email as string | undefined;
-  const hours = settings?.hours as string | undefined;
+  const hours = summarizeHours(settings?.hours as string | undefined);
+  const visiting = ((settings?.visiting_hours as string) || "").trim();
   const emergency = (settings?.emergency_phone as string) || phone;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,8 +103,8 @@ export default function ContactPage() {
     hours && {
       icon: Clock,
       label: "Opening hours",
-      value: `Every day ${hours}`,
-      hint: `Visiting hours: ${(settings?.visiting_hours as string) || "Daily: 02:30 – 06:30 and 07:30 – 11:30 LT"}`,
+      value: hours,
+      hint: visiting ? `Visiting hours: ${visiting}` : undefined,
       action: "24/7 Care",
     },
   ].filter(Boolean) as Array<{
@@ -110,7 +112,8 @@ export default function ContactPage() {
     label: string;
     value: string;
     href?: string;
-    hint: string;
+    /** Optional: a channel with nothing extra to say carries no hint. */
+    hint?: string;
     action?: string;
   }>;
 
@@ -138,9 +141,8 @@ export default function ContactPage() {
         accent="Touch"
         eyebrow="Ways to reach us"
         subtitle={
-          settings?.about
-            ? truncate(stripHtml(String(settings.about)), 170)
-            : ((settings?.tagline as string | undefined) ||
+          summarizeRichText(settings?.about, 170) ||
+          ((settings?.tagline as string | undefined) ||
               "Phone lines, the switchboard, the address and a form that reaches the right desk. Emergencies should always go to the number below rather than to this page.")
         }
         breadcrumbs={[{ label: "Contact" }]}

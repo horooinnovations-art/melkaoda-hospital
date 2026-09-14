@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,7 +28,13 @@ import { Switch } from "@/components/ui/switch";
 import { useGetAdminSettingsQuery, useUpdateAdminSettingsMutation } from "@/store/adminApi";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { resolveMediaUrl } from "@/lib/media";
-import { cn } from "@/lib/utils";
+import {
+  buildHoursValue,
+  cn,
+  commonHours,
+  splitHoursByDay,
+  WEEK_DAYS,
+} from "@/lib/utils";
 
 type FieldType =
   | "text"
@@ -484,6 +490,24 @@ export default function AdminSettingsPage() {
     setValues((prev) => ({ ...prev, [key]: value }));
   };
 
+  const sameHoursEveryDay =
+    values.hours_same_everyday === "1" ||
+    values.hours_same_everyday === 1 ||
+    values.hours_same_everyday === true;
+  const perDayHours = useMemo(
+    () => splitHoursByDay((values.hours as string) ?? ""),
+    [values.hours]
+  );
+  const everyDayHours = useMemo(() => {
+    // The days can disagree without anyone meaning them to: the live value
+    // holds "24hrs" on Monday and "24 hrs" on the other six. Proposing the
+    // first day's value beats showing an empty box, which could be saved over
+    // seven real ones without the editor noticing.
+    const shared = commonHours(perDayHours);
+    if (shared) return shared;
+    return WEEK_DAYS.map((day) => perDayHours[day]).find(Boolean) ?? "";
+  }, [perDayHours]);
+
   const handleFeatureChange = (index: number, key: string, value: string) => {
     const features = (Array.isArray(values.home_features) ? [...values.home_features] : Array(6).fill({ icon: "", title: "", description: "" })) as Record<string, string>[];
     features[index] = { ...features[index], [key]: value };
@@ -647,26 +671,94 @@ export default function AdminSettingsPage() {
 
                     {tab.id === "hours" ? (
                       <div className="space-y-6 p-6">
-                        {/* Same hours every day switch */}
+                        {/**
+                         * Working hours used to be one single-line box holding
+                         * the whole week as a run-on string — the saved value
+                         * was "Monday: 24hrsTuesday: 24 hrs…" and there was no
+                         * way to change one day without retyping all seven
+                         * inside a field narrower than the text. The switch
+                         * beside it promised per-day hours and did nothing.
+                         *
+                         * The switch now actually switches the editor, and the
+                         * value is written back in the canonical per-day form
+                         * whichever way it is edited, so the public side reads
+                         * one shape and never a half-migrated one.
+                         */}
                         <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4.5">
-                          <span className="font-semibold text-slate-900 text-sm sm:text-base">Same hours every day</span>
+                          <span className="font-semibold text-slate-900 text-sm sm:text-base">
+                            Same hours every day
+                          </span>
                           <Switch
-                            checked={values.hours_same_everyday === "1" || values.hours_same_everyday === 1 || values.hours_same_everyday === true}
-                            onCheckedChange={(c) => handleChange("hours_same_everyday", c ? "1" : "0")}
+                            checked={sameHoursEveryDay}
+                            onCheckedChange={(checked) => {
+                              handleChange("hours_same_everyday", checked ? "1" : "0");
+                              // Re-serialise immediately, so whichever editor is
+                              // on screen is the one that owns the saved value.
+                              handleChange(
+                                "hours",
+                                checked
+                                  ? buildHoursValue(everyDayHours)
+                                  : buildHoursValue(perDayHours)
+                              );
+                            }}
                           />
                         </div>
 
-                        {/* Hours Input */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-slate-900">Hours</Label>
-                          <Input
-                            type="text"
-                            value={(values.hours as string) ?? "24hrs"}
-                            onChange={(e) => handleChange("hours", e.target.value)}
-                            placeholder="24hrs"
-                            className="h-12 rounded-xl border-slate-200 bg-white text-sm font-medium"
-                          />
-                        </div>
+                        {sameHoursEveryDay ? (
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold text-slate-900">
+                              Hours, every day
+                            </Label>
+                            <Input
+                              type="text"
+                              value={everyDayHours}
+                              onChange={(e) =>
+                                handleChange("hours", buildHoursValue(e.target.value))
+                              }
+                              placeholder="24 hrs"
+                              className="h-12 rounded-xl text-sm font-medium"
+                            />
+                            <p className="text-xs text-ink-muted">
+                              Applied to all seven days. Examples:{" "}
+                              <span className="font-medium">24 hrs</span>,{" "}
+                              <span className="font-medium">08:00 – 17:00</span>.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold text-slate-900">
+                              Hours by day
+                            </Label>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {WEEK_DAYS.map((day) => (
+                                <div key={day} className="flex items-center gap-3">
+                                  <span className="w-24 flex-none text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                                    {day}
+                                  </span>
+                                  <Input
+                                    type="text"
+                                    value={perDayHours[day] ?? ""}
+                                    onChange={(e) =>
+                                      handleChange(
+                                        "hours",
+                                        buildHoursValue({
+                                          ...perDayHours,
+                                          [day]: e.target.value,
+                                        })
+                                      )
+                                    }
+                                    placeholder="Closed"
+                                    className="h-11 rounded-xl text-sm font-medium"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-ink-muted">
+                              Leave a day blank to publish it as{" "}
+                              <span className="font-medium">Closed</span>.
+                            </p>
+                          </div>
+                        )}
 
                         {/* Visiting Hours Section */}
                         <div className="pt-4 border-t border-slate-100 space-y-3">
@@ -682,7 +774,7 @@ export default function AdminSettingsPage() {
                             value={(values.visiting_hours as string) ?? "Daily: 02:30 – 06:30 and 07:30 – 11:30 LT"}
                             onChange={(e) => handleChange("visiting_hours", e.target.value)}
                             placeholder="Daily: 02:30 – 06:30 and 07:30 – 11:30 LT"
-                            className="h-12 rounded-xl border-slate-200 bg-white text-sm font-medium"
+                            className="h-12 rounded-xl text-sm font-medium"
                           />
                         </div>
                       </div>

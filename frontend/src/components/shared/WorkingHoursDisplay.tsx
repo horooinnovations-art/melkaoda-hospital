@@ -2,7 +2,7 @@
 
 import { Clock, CalendarCheck } from "lucide-react";
 import { useGetSettingsQuery } from "@/store/slices/apiSlice";
-import { cn } from "@/lib/utils";
+import { cn, summarizeHours } from "@/lib/utils";
 
 interface WorkingHoursDisplayProps {
   className?: string;
@@ -19,32 +19,41 @@ export default function WorkingHoursDisplay({
 }: WorkingHoursDisplayProps) {
   const { data: settings } = useGetSettingsQuery();
 
-  const workingHours = (settings?.hours as string) || "24hrs";
-  const visitingHours =
-    (settings?.visiting_hours as string) ||
-    "Daily: 02:30 – 06:30 and 07:30 – 11:30 LT";
+  /**
+   * No invented defaults. These used to fall back to "24hrs" and to a
+   * specific visiting window, so a hospital that had filled in neither
+   * still published both — including times its doors were shut.
+   */
+  const workingHours = summarizeHours(settings?.hours as string | undefined);
+  const visitingHours = (
+    (settings?.visiting_hours as string) || ""
+  ).trim();
 
   return (
     <div className={cn("grid gap-4", className)}>
-      <div className="nv-vrow">
-        <span className="nv-vrow__ico" aria-hidden>
-          <Clock />
-        </span>
-        <span>
-          <span className="nv-vrow__key">Open</span>
-          <span className="nv-vrow__val">Every day {workingHours}</span>
-        </span>
-      </div>
+      {workingHours && (
+        <div className="nv-vrow">
+          <span className="nv-vrow__ico" aria-hidden>
+            <Clock />
+          </span>
+          <span>
+            <span className="nv-vrow__key">Open</span>
+            <span className="nv-vrow__val">{workingHours}</span>
+          </span>
+        </div>
+      )}
 
-      <div className="nv-vrow">
-        <span className="nv-vrow__ico" aria-hidden>
-          <CalendarCheck />
-        </span>
-        <span>
-          <span className="nv-vrow__key">Visiting hours</span>
-          <span className="nv-vrow__val">{visitingHours}</span>
-        </span>
-      </div>
+      {visitingHours && (
+        <div className="nv-vrow">
+          <span className="nv-vrow__ico" aria-hidden>
+            <CalendarCheck />
+          </span>
+          <span>
+            <span className="nv-vrow__key">Visiting hours</span>
+            <span className="nv-vrow__val">{visitingHours}</span>
+          </span>
+        </div>
+      )}
     </div>
   );
 }

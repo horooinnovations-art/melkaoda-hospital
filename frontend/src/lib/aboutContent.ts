@@ -244,3 +244,69 @@ export function parseHeadingSections(
 
   return { intro, sections, outro };
 }
+
+/**
+ * A short, readable summary of a rich-text setting.
+ *
+ * The hospital's About text is a whole document: an `<h1>` with the hospital's
+ * name, a bold strapline, an "About …" subheading, then the prose. The footer
+ * blurb and the Contact hero were built by stripping the tags off all of that
+ * and cutting the result to length, which produced
+ *
+ *   "MELKA ODA GENERAL HOSPITAL Caring for Every Life. Advancing Health.
+ *    Strengthening Our Community. About Melka Oda General Hospital Melka Oda
+ *    General Hospital is a public…"
+ *
+ * — the hospital named three times before the sentence begins, and cut off
+ * before it says anything.
+ *
+ * Headings are dropped: they are titles, and the surface showing this summary
+ * has a title of its own. A leading paragraph that is entirely bold is dropped
+ * too, because that is a strapline, and the site prints the tagline separately.
+ * What remains is the prose, from its first real sentence.
+ */
+export function summarizeRichText(raw: unknown, maxChars = 240): string {
+  if (typeof raw !== 'string' || !raw.trim()) return '';
+
+  // Headings and block quotes are display furniture around the prose.
+  const body = raw
+    .replace(/<h[1-6]\b[^>]*>[\s\S]*?<\/h[1-6]>/gi, '')
+    .replace(/<blockquote\b[^>]*>[\s\S]*?<\/blockquote>/gi, '');
+
+  const paragraphs: string[] = [];
+  const re = /<p\b[^>]*>([\s\S]*?)<\/p>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(body))) {
+    const inner = m[1];
+    const text = htmlToText(inner).replace(/\s+/g, ' ').trim();
+    if (!text) continue;
+    // Entirely bold, and nothing else in the paragraph: a strapline.
+    const stripped = inner.replace(/<(strong|b)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
+    const isStrapline =
+      paragraphs.length === 0 && !htmlToText(stripped).trim();
+    if (isStrapline) continue;
+    paragraphs.push(text);
+  }
+
+  // No paragraph markup at all: fall back to the readable lines.
+  const parts = paragraphs.length ? paragraphs : htmlToLines(body);
+  if (!parts.length) return '';
+
+  let out = '';
+  for (const part of parts) {
+    if (!out) {
+      out = part;
+      continue;
+    }
+    if (out.length + 1 + part.length > maxChars) break;
+    out = `${out} ${part}`;
+  }
+
+  if (out.length <= maxChars) return out;
+
+  // Cut on a sentence if one ends in range, otherwise on a word.
+  const window = out.slice(0, maxChars);
+  const sentence = window.search(/[.!?](?=[^.!?]*$)/);
+  if (sentence > maxChars * 0.5) return window.slice(0, sentence + 1);
+  return `${window.slice(0, window.lastIndexOf(' ')).trimEnd()}…`;
+}
