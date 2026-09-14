@@ -21,6 +21,7 @@ import {
   isPublicItemActive,
   truncate,
 } from "@/lib/utils";
+import { useHospitalMapsUrl } from "@/components/shared/MapLink";
 import NovaHero from "@/components/nova/NovaHero";
 import NovaSectionHead from "@/components/nova/NovaSectionHead";
 import NovaReveal from "@/components/nova/NovaReveal";
@@ -127,6 +128,7 @@ export default function HomeClient({
     (settings.emergency_phone as string) || (settings.phone as string);
   const address = formatPublicAddress(settings.address as string | undefined);
   const phone = settings.phone as string | undefined;
+  const mapsUrl = useHospitalMapsUrl();
   const stats = data?.stats;
 
   const welcomeTitle =
@@ -259,6 +261,10 @@ export default function HomeClient({
       // full zone and region, so a site with no address configured still
       // published a specific one (MEL2-CONTENT).
       desc: address || "See the Contact page for directions.",
+      // Same treatment as the emergency number above: the card is the action.
+      // Someone reading an address on a phone wants directions, not a string to
+      // copy into another application by hand.
+      href: mapsUrl ?? undefined,
     },
   ];
 

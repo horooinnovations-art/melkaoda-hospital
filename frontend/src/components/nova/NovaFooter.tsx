@@ -6,6 +6,7 @@ import { HeartPulse, Mail, MapPin, Phone } from "lucide-react";
 import { useGetSettingsQuery } from "@/store/slices/apiSlice";
 import { SITE_NAME, DEFAULT_TAGLINE } from "@/lib/api";
 import { formatPublicAddress, stripHtml, truncate } from "@/lib/utils";
+import MapLink from "@/components/shared/MapLink";
 import { resolveMediaUrl } from "@/lib/media";
 import SmartImage from "@/components/shared/SmartImage";
 import {
@@ -127,10 +128,10 @@ export default function NovaFooter() {
             )}
 
             {address && (
-              <p className="nv-footer__where">
+              <MapLink className="nv-footer__where">
                 <MapPin aria-hidden />
                 <span>{address}</span>
-              </p>
+              </MapLink>
             )}
 
             {socials.length > 0 && (

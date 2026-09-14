@@ -83,10 +83,14 @@ export default function LocationMapCanvas({
       className="h-full w-full"
       attributionControl
     >
+      {/* detectRetina is what fills in the {r} placeholder in the URL. Without
+          it the token resolves to nothing and a high-density screen upscales a
+          standard tile, which is why the labels looked soft. */}
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         maxZoom={20}
+        detectRetina
       />
       <Recenter lat={lat} lng={lng} zoom={zoom} />
       <Marker position={[lat, lng]} icon={icon}>

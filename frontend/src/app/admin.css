@@ -1203,22 +1203,154 @@
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Search input & action button contrast fixes */
-.admin-shell form input,
-.admin-portal form input {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.14) !important;
+/* ─── Form controls & opaque surfaces ─────────────────────────────────────
+   These rules are keyed on the ELEMENT, not on a utility class.
+
+   What was here before was `.admin-shell form input`, which missed three
+   things at once: textareas, selects, and any control not inside a <form>.
+   That is why the Settings description box rendered as a pale slab of light
+   text on near-white, and why the homepage feature cards came out white with
+   invisible labels.
+
+   Chasing the utility classes cannot close this. Tailwind emits a separate
+   class for every opacity — `bg-white/80` is `.bg-white\/80`, `bg-white/85` is
+   another — so any list written here is complete only until the next page is
+   built. Styling the element covers every control the admin will ever render,
+   including ones added later.
+
+   `!important` throughout: these are deliberate overrides of whatever utility
+   classes a component happens to carry, and saying so explicitly is better
+   than depending on Tailwind keeping its utilities inside a cascade layer.
+   ------------------------------------------------------------------------ */
+
+/* Text-entry controls. Checkboxes, radios, ranges and colour wells are
+   excluded: they paint their own control surface, and giving them a field
+   background turns a checkbox into a grey square. */
+.admin-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+.admin-portal input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+.admin-login input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+.admin-shell textarea,
+.admin-portal textarea,
+.admin-login textarea,
+.admin-shell select,
+.admin-portal select,
+.admin-login select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--ld-ink) !important;
+  border-color: var(--ld-line-strong) !important;
 }
 
-.admin-shell form input::placeholder,
-.admin-portal form input::placeholder {
-  color: rgba(255, 255, 255, 0.4) !important;
+.admin-shell input::placeholder,
+.admin-portal input::placeholder,
+.admin-login input::placeholder,
+.admin-shell textarea::placeholder,
+.admin-portal textarea::placeholder,
+.admin-login textarea::placeholder {
+  color: var(--ld-faint) !important;
+  opacity: 1;
+}
+
+.admin-shell input:focus-visible,
+.admin-portal input:focus-visible,
+.admin-login input:focus-visible,
+.admin-shell textarea:focus-visible,
+.admin-portal textarea:focus-visible,
+.admin-login textarea:focus-visible,
+.admin-shell select:focus-visible,
+.admin-portal select:focus-visible,
+.admin-login select:focus-visible {
+  outline: none;
+  border-color: rgba(240, 177, 64, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(240, 177, 64, 0.16) !important;
+}
+
+/* A <select>'s dropdown list is painted by the platform, which takes no notice
+   of the control's own colours. Without this the options are dark text on a
+   dark sheet on Windows and Linux. */
+.admin-shell select option,
+.admin-portal select option,
+.admin-login select option {
+  background-color: var(--ld-panel-solid);
+  color: var(--ld-ink);
+}
+
+/* The button inside a file input is a separate pseudo-element and otherwise
+   renders as the platform's grey slab. */
+.admin-shell input[type="file"]::file-selector-button,
+.admin-portal input[type="file"]::file-selector-button,
+.admin-login input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  border: 1px solid var(--ld-line-strong);
+  border-radius: var(--ld-radius-xs);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ld-ink);
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.admin-shell input[type="file"]::file-selector-button:hover,
+.admin-portal input[type="file"]::file-selector-button:hover,
+.admin-login input[type="file"]::file-selector-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Checkboxes and radios keep their native control but need the accent colour,
+   or they render as the browser's default blue against the gold palette. */
+.admin-shell input[type="checkbox"],
+.admin-portal input[type="checkbox"],
+.admin-shell input[type="radio"],
+.admin-portal input[type="radio"] {
+  accent-color: var(--ld-accent);
+}
+
+/* Opaque white panels. The translucent `bg-white/5` … `bg-white/20` values are
+   left alone: those are white over a dark ground and are already correct. Only
+   the values dense enough to read as a white card are replaced. */
+.admin-shell .bg-white,
+.admin-portal .bg-white,
+.admin-shell .bg-white\/70,
+.admin-portal .bg-white\/70,
+.admin-shell .bg-white\/75,
+.admin-portal .bg-white\/75,
+.admin-shell .bg-white\/80,
+.admin-portal .bg-white\/80,
+.admin-shell .bg-white\/85,
+.admin-portal .bg-white\/85,
+.admin-shell .bg-white\/90,
+.admin-portal .bg-white\/90,
+.admin-shell .bg-white\/95,
+.admin-portal .bg-white\/95 {
+  background-color: rgba(255, 255, 255, 0.045) !important;
+}
+
+/* Row hovers and selected rows are written as light indigo washes, which on a
+   dark table read as a white flash. */
+.admin-shell .hover\:bg-indigo-50\/80:hover,
+.admin-portal .hover\:bg-indigo-50\/80:hover,
+.admin-shell .hover\:bg-indigo-50:hover,
+.admin-portal .hover\:bg-indigo-50:hover,
+.admin-shell .data-\[state\=selected\]\:bg-indigo-50[data-state="selected"],
+.admin-portal .data-\[state\=selected\]\:bg-indigo-50[data-state="selected"] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* The browser's autofill sheet repaints the field white and the text black, and
+   it does it after our styles. Only an inset shadow the size of the field can
+   cover it. */
+.admin-shell input:-webkit-autofill,
+.admin-portal input:-webkit-autofill,
+.admin-login input:-webkit-autofill,
+.admin-shell input:-webkit-autofill:focus,
+.admin-portal input:-webkit-autofill:focus,
+.admin-login input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ld-ink) !important;
+  -webkit-box-shadow: 0 0 0 1000px #141d31 inset !important;
+  caret-color: var(--ld-ink);
 }
 
 .admin-shell .ld-table__actions button,
 .admin-portal .ld-table__actions button {
   color: var(--ld-ink) !important;
 }
-
-

@@ -47,6 +47,7 @@ import { SITE_NAME } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/media";
 import { useGetSettingsQuery } from "@/store/slices/apiSlice";
 import SmartImage from "@/components/shared/SmartImage";
+import MapLink from "@/components/shared/MapLink";
 
 /**
  * Site header — a flush, full-width command bar.
@@ -648,9 +649,11 @@ export default function NovaHeader({
 
                 <ul className="nvh-panel__meta text-xs text-slate-700 space-y-1.5 pt-2 border-t border-slate-200/80">
                   {address && (
-                    <li className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-                      <span className="font-medium text-slate-700">{address}</span>
+                    <li>
+                      <MapLink className="flex items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                        <span className="font-medium text-slate-700">{address}</span>
+                      </MapLink>
                     </li>
                   )}
                   {phone && (

@@ -26,6 +26,7 @@ import {
   DetailSectionHeader,
 } from "@/components/shared/DetailShell";
 import { formatPublicAddress, stripHtml } from "@/lib/utils";
+import MapLink from "@/components/shared/MapLink";
 
 const FALLBACK_INTRO =
   "Everything you need to plan your visit and make the most of your healthcare experience.";
@@ -297,7 +298,9 @@ export default function PatientGuidePage() {
                 {directions ? (
                   <ListBody html={directions} glyph={MapPin} />
                 ) : (
-                  <p className="nv-dplain">{address}</p>
+                  <p className="nv-dplain">
+                    <MapLink>{address}</MapLink>
+                  </p>
                 )}
                 {mapUrl && (
                   <a

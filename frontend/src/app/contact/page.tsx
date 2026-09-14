@@ -26,6 +26,7 @@ import PageBody from "@/components/layout/PageBody";
 import NovaReveal from "@/components/nova/NovaReveal";
 import PageTransition from "@/components/motion/PageTransition";
 import LocationMap from "@/components/shared/LocationMap";
+import MapLink from "@/components/shared/MapLink";
 import WorkingHoursDisplay from "@/components/shared/WorkingHoursDisplay";
 import {
   DetailSectionHeader,
@@ -251,7 +252,7 @@ export default function ContactPage() {
                           </span>
                           <span>
                             <span className="nv-vrow__key">Campus address</span>
-                            <span className="nv-vrow__val">{address}</span>
+                            <MapLink className="nv-vrow__val">{address}</MapLink>
                           </span>
                         </div>
                       )}

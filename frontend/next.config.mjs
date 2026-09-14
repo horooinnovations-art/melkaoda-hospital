@@ -35,7 +35,17 @@ const CSP = [
   // The API origin serves legacy /storage assets and must be listed, or those
   // images are silently blocked in production; the localhost entries are
   // development-only and no longer leak into the deployed policy.
-  `img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.tile.openstreetmap.org ${API_ORIGIN}${isDev ? " http://127.0.0.1:5000 http://localhost:5000" : ""}`,
+  // Map tiles are images. The tile layer serves CARTO's Voyager basemap, so
+  // that host must be listed or every tile is blocked and the map renders as an
+  // empty grey pane with only the attribution showing. OpenStreetMap's own
+  // hosts stay listed because they are the fallback tile source.
+  `img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com ${API_ORIGIN}${isDev ? " http://127.0.0.1:5000 http://localhost:5000" : ""}`,
+  // The map falls back to a Google Maps embed when the hospital has an address
+  // but no coordinates. Without this the fallback inherits default-src 'self'
+  // and the browser replaces it with "This content is blocked", which is worse
+  // than no map at all. Framing OUT is still denied by frame-ancestors above;
+  // this only permits framing that one host IN.
+  "frame-src https://www.google.com https://maps.google.com",
   // Same-origin API via the rewrite below, plus the API host directly.
   `connect-src 'self' ${API_PROXY_TARGET.replace(/\/api\/v1$/, "")}${isDev ? " ws: http://127.0.0.1:5000 http://localhost:5000" : ""}`,
   "manifest-src 'self'",

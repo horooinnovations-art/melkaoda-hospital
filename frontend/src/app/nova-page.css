@@ -5159,3 +5159,97 @@
   letter-spacing: 0.08em;
   color: var(--nv-accent);
 }
+
+/* ── Address links ────────────────────────────────────────────────────────
+   Every published address opens the hospital's pin. The styling is deliberately
+   quiet: in the footer and the header panel these sit inside a block of contact
+   details, and underlining them all would turn that block into a list of links
+   competing with the navigation beside it. The underline appears on hover and
+   on keyboard focus, which is where it is actually needed.
+   ---------------------------------------------------------------------- */
+.nv-maplink {
+  color: inherit;
+  text-decoration: none;
+  text-underline-offset: 3px;
+  transition: color 0.25s var(--nv-ease-lux, ease);
+  cursor: pointer;
+}
+
+.nv-maplink:hover {
+  color: var(--nv-champagne, currentColor);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.nv-maplink:focus-visible {
+  outline: 2px solid var(--nv-champagne-line, currentColor);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* The footer address keeps the row layout it had as a paragraph. */
+a.nv-footer__where {
+  text-decoration: none;
+}
+
+/* ── Map surface ──────────────────────────────────────────────────────────
+   The tiles are a photographic surface inside a plated frame, so they get the
+   frame's inner radius rather than sitting square inside a rounded box.
+   ---------------------------------------------------------------------- */
+.nv-map-frame .leaflet-container {
+  border-radius: 15px;
+  background: var(--nv-plate-well);
+  font: inherit;
+}
+
+/* Leaflet's default zoom buttons are white browser chrome dropped onto the
+   design. These restate them in the page's own plate and hairline. */
+.nv-map-frame .leaflet-bar,
+.nv-map-frame .leaflet-bar a {
+  border: none;
+  background: rgba(18, 20, 24, 0.82);
+  color: var(--nv-text, #f2f0ec);
+  backdrop-filter: blur(8px);
+}
+
+.nv-map-frame .leaflet-bar {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.7);
+}
+
+.nv-map-frame .leaflet-bar a + a {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.nv-map-frame .leaflet-bar a:hover {
+  background: rgba(38, 42, 48, 0.92);
+  color: var(--nv-champagne, #e6c98d);
+}
+
+/* The attribution is a legal requirement, not a design element. Keep it
+   readable and out of the way rather than hidden. */
+.nv-map-frame .leaflet-control-attribution {
+  padding: 2px 8px;
+  border-radius: 8px 0 0 0;
+  background: rgba(18, 20, 24, 0.72);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  backdrop-filter: blur(6px);
+}
+
+.nv-map-frame .leaflet-control-attribution a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* The heads-up chips sit over the south-east corner where the attribution and
+   the zoom buttons also live. Lift the chips above both. */
+.nv-map-frame .nv-mhud {
+  z-index: 500;
+}
+
+/* The zoom control would otherwise sit under the hospital-name chip. */
+.nv-map-frame .leaflet-top.leaflet-left {
+  top: 52px;
+}
