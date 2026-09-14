@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ArrowUpRight, Expand, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -51,7 +52,62 @@ export function DetailFeaturedImageCard({
   title: string;
 }) {
   const [fullscreen, setFullscreen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const src = optimizeImageUrl(image, 1600) ?? image;
+
+  useEffect(() => setMounted(true), []);
+
+  /**
+   * While the lightbox is open: close on Escape, and stop the page behind it
+   * from scrolling. Without the scroll lock the document moves under a fixed
+   * overlay, so the reader appears to be scrolling the photograph and instead
+   * loses their place on the page.
+   */
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFullscreen(false);
+    };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [fullscreen]);
+
+  const lightbox = (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={title || "Featured image"}
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md animate-in fade-in duration-300"
+      onClick={() => setFullscreen(false)}
+    >
+      <button
+        type="button"
+        onClick={() => setFullscreen(false)}
+        className="absolute top-5 right-5 z-10 rounded-full border border-white/30 bg-black/60 p-3 text-white transition-colors hover:border-amber-400 hover:bg-black/90"
+        aria-label="Close fullscreen"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      <div
+        className="relative flex max-h-[90vh] max-w-[92vw] items-center justify-center overflow-hidden rounded-2xl border border-amber-400/30 bg-black/80 p-2 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <SmartImage
+          src={src}
+          alt={title || "Featured image"}
+          width={1920}
+          height={1440}
+          unoptimized
+          className="h-auto max-h-[85vh] w-auto max-w-[88vw] object-contain"
+        />
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -70,10 +126,20 @@ export function DetailFeaturedImageCard({
             />
           </div>
 
-          {/* Full Uncropped Image - 100% Fully Visible Container */}
-          <div
+          {/**
+           * The stage hugs the photograph instead of framing it.
+           *
+           * It used to be a full-width black slab of fixed height with the image
+           * centred inside it, so any picture that was not exactly that shape
+           * sat between two wide black bars — on a desktop window the bars were
+           * bigger than the picture. Letting the image set its own width removes
+           * them without cropping anything.
+           */}
+          <button
+            type="button"
             onClick={() => setFullscreen(true)}
-            className="relative flex min-h-[260px] max-h-[520px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-black/45 p-2"
+            aria-label="View this photograph full screen"
+            className="relative mx-auto flex w-fit max-w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-xl"
           >
             <SmartImage
               src={src}
@@ -82,9 +148,9 @@ export function DetailFeaturedImageCard({
               height={1200}
               priority
               unoptimized
-              className="h-full max-h-[490px] w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+              className="h-auto max-h-[70vh] w-auto max-w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.025]"
             />
-          </div>
+          </button>
 
           {/* Luxury Card Control Bar */}
           <div className="mt-3 flex items-center justify-between px-1 text-xs font-medium">
@@ -104,35 +170,18 @@ export function DetailFeaturedImageCard({
         </div>
       </NovaReveal>
 
-      {/* Lightbox Modal for 100% full view */}
-      {fullscreen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={() => setFullscreen(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setFullscreen(false)}
-            className="absolute top-5 right-5 z-10 rounded-full border border-white/30 bg-black/60 p-3 text-white transition-colors hover:border-amber-400 hover:bg-black/90"
-            aria-label="Close fullscreen"
-          >
-            <X className="h-6 w-6" />
-          </button>
-          <div
-            className="relative flex max-h-[90vh] max-w-[92vw] items-center justify-center overflow-hidden rounded-2xl border border-amber-400/30 bg-black/80 p-2 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SmartImage
-              src={src}
-              alt={title || "Featured image"}
-              width={1920}
-              height={1440}
-              unoptimized
-              className="max-h-[85vh] max-w-[88vw] object-contain"
-            />
-          </div>
-        </div>
-      )}
+      {/**
+       * The lightbox is portalled to <body>.
+       *
+       * `position: fixed` is only fixed to the viewport while no ancestor has a
+       * transform, filter or containment — any one of those makes it the
+       * containing block instead, and the page wrapper animates a transform on
+       * entry. When that happens the overlay stops covering the viewport: it
+       * covers the article, scrolls with it, and leaves the site header sitting
+       * on top of a supposedly modal layer. Rendering at the document root puts
+       * it out of reach of every ancestor, whatever is added above it later.
+       */}
+      {fullscreen && mounted ? createPortal(lightbox, document.body) : null}
     </>
   );
 }

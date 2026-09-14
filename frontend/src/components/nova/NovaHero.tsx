@@ -300,7 +300,11 @@ export default function NovaHero({
             {placeLabel ? (
               <p className="nv-hero__place">
                 <i aria-hidden />
-                {placeLabel}
+                {/* The label needs an element of its own. As a bare text node it
+                    became an anonymous flex item, which cannot be given
+                    min-width, so on a phone it stayed on one 447px line inside
+                    a 196px pill and was cut off mid-word. */}
+                <span className="nv-hero__place-text">{placeLabel}</span>
               </p>
             ) : null}
 

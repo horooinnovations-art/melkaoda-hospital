@@ -15,6 +15,35 @@ import DetailShell, {
 import { Calendar, Clock, FileText, MapPin, Tag } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
+/**
+ * What kind of record this page is showing.
+ *
+ * The narrative panel said "About this page" on every detail page in the site,
+ * so a visitor on the Pediatrics Ward page was told they were reading about a
+ * page. Naming the record is both more useful and what the surrounding
+ * breadcrumb already promises.
+ */
+const RESOURCE_NOUN: Partial<Record<PublicResource, string>> = {
+  departments: "Department",
+  doctors: "Doctor",
+  services: "Service",
+  leadership: "Leadership",
+  "leadership-history": "Former officer",
+  news: "Article",
+  announcements: "Announcement",
+  gallery: "Album",
+  pages: "Page",
+  events: "Event",
+  careers: "Vacancy",
+  testimonials: "Testimonial",
+  faqs: "Question",
+  insurance: "Insurance",
+  "emergency-services": "Emergency service",
+  "health-education": "Health education",
+  partnerships: "Partnership",
+  downloads: "Document",
+};
+
 interface ResourceDetailProps {
   resource: PublicResource;
   slug: string;
@@ -151,8 +180,14 @@ export default function ResourceDetail({
               <FileText className="h-4 w-4" />
             </span>
             <div>
-              <p className="nv-dpanel__kicker">Narrative</p>
-              <h3 className="nv-dpanel__title">About this page</h3>
+              <p className="nv-dpanel__kicker">
+                {RESOURCE_NOUN[resource] ?? "Narrative"}
+              </p>
+              {/* "About Pediatrics Ward", not "About this page". Falls back to
+                  the generic wording only when the record has no title yet. */}
+              <h3 className="nv-dpanel__title">
+                {title ? `About ${title}` : "About this page"}
+              </h3>
             </div>
           </div>
           {content.includes("<") ? (

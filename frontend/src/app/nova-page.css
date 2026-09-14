@@ -5253,3 +5253,72 @@ a.nv-footer__where {
 .nv-map-frame .leaflet-top.leaflet-left {
   top: 52px;
 }
+
+/* ══ Mobile fits ═════════════════════════════════════════════════════════
+   Measured in a real browser at 390px, not guessed. Each rule below closes a
+   case where content was laid out wider than its own box and then cut off by
+   the clip on <body>, so the page never scrolled sideways — it just lost the
+   ends of its words, which is harder to notice and worse to read.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* The locality pill. Its label is now a real element, so it can shrink and
+   wrap instead of running 447px along a 196px capsule. */
+.nv-hero__place-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .nv-hero__place {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  /* Three 116px figures in a 350px row left every label clipped mid-word.
+     Two columns fit, and the third centres itself under them. */
+  .nv-hero__trust {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nv-hero__trust-item {
+    min-width: 0;
+  }
+
+  .nv-hero__trust-label {
+    overflow-wrap: anywhere;
+  }
+
+  /* The service reel sat 20px past the right gutter rather than inside it. The
+     rail still scrolls horizontally; it just starts and ends where the rest of
+     the page does. */
+  .nv-reel {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* The directors timeline.
+   Its rows are grid items, and a grid item's automatic minimum size is its
+   content, so the row refused to shrink below 374px inside a 350px column.
+   Every card lost the right-hand end of its role line and its biography. */
+.nv-tl {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.nv-tl > *,
+.nv-tl__row,
+.nv-tl-card__body {
+  min-width: 0;
+}
+
+/* The header brand name was truncated to "Melka Oda General Ho…" on a phone.
+   A hospital's name is not a detail to elide; it wraps to a second line. */
+@media (max-width: 700px) {
+  .nvh__name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.15;
+  }
+}

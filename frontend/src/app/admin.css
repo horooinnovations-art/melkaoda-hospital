@@ -1362,3 +1362,61 @@
 .admin-portal .ld-table__actions button {
   color: var(--ld-ink) !important;
 }
+
+/* ─── Hard-coded light-theme colours ──────────────────────────────────────
+   Dozens of admin screens were written with literal hex values from when the
+   panel was light: `text-[#111]` in 34 places, `text-[#525252]` in 19,
+   `border-[#111]` in 32. Those are near-black on a near-black panel, which is
+   why table cells and panel headings read as empty rows — the text is there,
+   painted the same colour as what is behind it.
+
+   Overriding the utilities is the only fix that covers all of them at once.
+   Editing 100 call sites would work until the next screen is written from the
+   same template.
+   ------------------------------------------------------------------------ */
+.admin-shell .text-\[\#111\],
+.admin-portal .text-\[\#111\],
+.admin-login .text-\[\#111\],
+.admin-shell .text-\[\#333\],
+.admin-portal .text-\[\#333\],
+.admin-shell .text-\[\#080d18\],
+.admin-portal .text-\[\#080d18\] {
+  color: var(--ld-ink) !important;
+}
+
+.admin-shell .text-\[\#525252\],
+.admin-portal .text-\[\#525252\],
+.admin-login .text-\[\#525252\],
+.admin-shell .text-\[\#737373\],
+.admin-portal .text-\[\#737373\],
+.admin-login .text-\[\#737373\] {
+  color: var(--ld-muted) !important;
+}
+
+.admin-shell .border-\[\#111\],
+.admin-portal .border-\[\#111\],
+.admin-login .border-\[\#111\],
+.admin-shell .border-\[\#e5e5e5\],
+.admin-portal .border-\[\#e5e5e5\] {
+  border-color: var(--ld-line-strong) !important;
+}
+
+/* Light neutral fills. #111 is left alone: on this panel a near-black fill is
+   correct, and it is used for the primary button. */
+.admin-shell .bg-\[\#f5f5f5\],
+.admin-portal .bg-\[\#f5f5f5\],
+.admin-shell .bg-\[\#fafafa\],
+.admin-portal .bg-\[\#fafafa\],
+.admin-shell .bg-\[\#fffbeb\],
+.admin-portal .bg-\[\#fffbeb\] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* The primary button keeps a solid fill, but it has to be the accent rather
+   than near-black, or it disappears into the page. */
+.admin-shell .bg-\[\#111\],
+.admin-portal .bg-\[\#111\],
+.admin-login .bg-\[\#111\] {
+  background-color: var(--ld-accent) !important;
+  color: #17130c !important;
+}

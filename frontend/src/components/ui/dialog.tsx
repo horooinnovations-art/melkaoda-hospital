@@ -5,6 +5,15 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Admin-only. Every caller is under src/app/admin or src/components/admin.
+ *
+ * The overlay and content carry `admin-portal` deliberately: Radix renders
+ * them into <body>, outside `.admin-shell`, so the --ld-* tokens and the
+ * admin form-control rules do not reach them otherwise. That is why the modal
+ * stayed a white sheet with near-white labels on it while the page behind it
+ * was dark.
+ */
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
 const DialogPortal = DialogPrimitive.Portal;
@@ -17,7 +26,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "admin-portal fixed inset-0 z-50 bg-black/65 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -34,13 +43,13 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-2xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "admin-portal fixed left-[50%] top-[50%] z-50 grid w-full max-w-2xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] gap-4 overflow-y-auto rounded-2xl border border-white/12 bg-[#111828] p-6 text-[var(--ld-ink)] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-1 text-ink-muted opacity-70 transition-opacity hover:bg-indigo-50 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg p-1 text-[var(--ld-muted)] opacity-70 transition-opacity hover:bg-white/10 hover:text-[var(--ld-ink)] hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--ld-accent)]/40">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -59,7 +68,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("font-display text-xl font-semibold text-slate-900", className)}
+    className={cn("font-display text-xl font-semibold text-[var(--ld-ink)]", className)}
     {...props}
   />
 ));
@@ -71,7 +80,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-ink-muted", className)}
+    className={cn("text-sm text-[var(--ld-muted)]", className)}
     {...props}
   />
 ));
