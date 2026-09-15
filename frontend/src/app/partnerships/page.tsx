@@ -16,7 +16,7 @@ import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import type { Partner } from "@/lib/types";
 
-import { isPublicItemActive } from "@/lib/utils";
+import { isPublicItemActive, stripHtml } from "@/lib/utils";
 
 export default function PartnershipsPage() {
   const { data, isLoading, isError } = useGetResourceListQuery({
@@ -61,9 +61,13 @@ export default function PartnershipsPage() {
                     partner as unknown as Record<string, unknown>
                   );
                   const linkHref = `/partnerships/${partner.slug || partner.id}`;
+                  // stripHtml, because this is a text node: the field holds the
+                  // editor's HTML, and React escapes it, so the card opened with a
+                  // literal "<p>" instead of the sentence.
                   const blurb =
-                    partner.short_description ||
-                    partner.description ||
+                    stripHtml(
+                      partner.short_description || partner.description || ""
+                    ) ||
                     "Institutional partner supporting quality healthcare delivery.";
 
                   return (

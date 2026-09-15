@@ -26,6 +26,7 @@ import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import type { Partner } from "@/lib/types";
 import { stripHtml } from "@/lib/utils";
+import Prose from "@/components/shared/Prose";
 import { SITE_NAME } from "@/lib/api";
 
 export default function PartnerDetailPage({
@@ -50,6 +51,11 @@ export default function PartnerDetailPage({
   // (MEL-CONTENT-001).
   const apiItem = itemData as Partner | undefined;
   const partner = apiItem?.name ? apiItem : undefined;
+  const partnerName = partner?.name ?? "";
+  /** The narrative, as the editor wrote it. May or may not carry markup. */
+  const partnerBody = String(
+    partner?.description || partner?.short_description || ""
+  ).trim();
 
   const allPartners: Partner[] = (listData?.data as Partner[]) ?? [];
 
@@ -161,13 +167,23 @@ export default function PartnerDetailPage({
                       <p className="nv-dpanel__kicker">
                         {partner.partnership_type || "Institutional partner"}
                       </p>
-                      <h2 className="nv-dpanel__title">About the partnership</h2>
+                      <h2 className="nv-dpanel__title">
+                        {partnerName
+                          ? `About ${partnerName}`
+                          : "About the partnership"}
+                      </h2>
                     </div>
                   </div>
 
-                  <p className="nv-dplain">
-                    {stripHtml(partner.description || partner.short_description || "")}
-                  </p>
+                  {/* The editor writes paragraphs here. stripHtml collapsed the
+                      whole document into one block of running text. */}
+                  {partnerBody ? (
+                    partnerBody.includes("<") ? (
+                      <Prose html={partnerBody} />
+                    ) : (
+                      <p className="nv-dplain">{partnerBody}</p>
+                    )
+                  ) : null}
                 </div>
               </NovaReveal>
 

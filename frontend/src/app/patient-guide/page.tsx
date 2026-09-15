@@ -397,11 +397,17 @@ export default function PatientGuidePage() {
               title="Need More Help?"
               delay={0.11}
             >
-              <p className="nv-dplain">
-                {help
-                  ? stripHtml(help)
-                  : "Our patient services team is happy to answer any question before you arrive."}
-              </p>
+              {/* Same as the partnership narrative: this setting is rich text,
+                  and stripHtml turned an editor's paragraphs into one run. */}
+              {help && help.includes("<") ? (
+                <Prose html={help} />
+              ) : (
+                <p className="nv-dplain">
+                  {help
+                    ? stripHtml(help)
+                    : "Our patient services team is happy to answer any question before you arrive."}
+                </p>
+              )}
               <div className="nv-dmeta mt-5">
                 <Link href="/contact" className="nv-dlink">
                   <span>Contact us</span>
