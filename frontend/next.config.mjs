@@ -28,7 +28,15 @@ const CSP = [
   "frame-ancestors 'none'",
   "form-action 'self'",
   // Next's hydration bootstrap is inline; eval is needed by the dev overlay only.
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  //
+  // static.cloudflareinsights.com is Cloudflare's Web Analytics beacon. It is
+  // injected into the response by Cloudflare itself, not by this application,
+  // so blocking it changed nothing except to log a policy violation on every
+  // page view. Cloudflare already terminates and proxies all traffic to this
+  // site, so permitting its own beacon grants no access it does not have.
+  // To remove it instead, turn Web Analytics off in the Cloudflare dashboard
+  // and drop this entry.
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${isDev ? " 'unsafe-eval'" : ""}`,
   // Fontshare serves Clash Display and Satoshi, which the whole design is set
   // in: the stylesheet comes from api.fontshare.com and the font files from
   // cdn.fontshare.com. Both were blocked, so every page fell back to the
@@ -53,8 +61,10 @@ const CSP = [
   // than no map at all. Framing OUT is still denied by frame-ancestors above;
   // this only permits framing that one host IN.
   "frame-src https://www.google.com https://maps.google.com",
-  // Same-origin API via the rewrite below, plus the API host directly.
-  `connect-src 'self' ${API_PROXY_TARGET.replace(/\/api\/v1$/, "")}${isDev ? " ws: http://127.0.0.1:5000 http://localhost:5000" : ""}`,
+  // Same-origin API via the rewrite below, plus the API host directly. The
+  // Cloudflare beacon posts its measurement back to cloudflareinsights.com, so
+  // allowing the script without this would only move the error.
+  `connect-src 'self' https://cloudflareinsights.com ${API_PROXY_TARGET.replace(/\/api\/v1$/, "")}${isDev ? " ws: http://127.0.0.1:5000 http://localhost:5000" : ""}`,
   "manifest-src 'self'",
   "worker-src 'self' blob:",
   "upgrade-insecure-requests",

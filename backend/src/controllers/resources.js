@@ -345,25 +345,34 @@ export const doctors = createCrud({
     await syncDoctorSpecializations(row.id, data.specializations);
   },
   afterFetch: async (rows) => {
-    const ids = [...new Set(rows.map((r) => r.department_id).filter(Boolean))];
-    if (ids.length) {
-      const placeholders = ids.map((_, i) => `:d${i}`).join(', ');
-      const params = Object.fromEntries(ids.map((id, i) => [`d${i}`, id]));
-      const depts = await query(
-        `SELECT id, name, slug FROM departments WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
-        params
-      );
-      const byId = Object.fromEntries(depts.map((d) => [d.id, d]));
-      for (const row of rows) {
-        row.department = row.department_id ? byId[row.department_id] || null : null;
-      }
-    }
+    // Was a hand-rolled copy of attachLookup. Besides the duplication, it
+    // skipped the assignment when no row had a department, so `department` was
+    // absent on some responses and null on others.
+    await attachLookup(rows, {
+      idField: 'department_id',
+      table: 'departments',
+      as: 'department',
+      softDelete: true,
+    });
     await attachDoctorSpecializations(rows);
   },
 });
 
 export const services = createCrud({
   publicListExcerpt: ['description'],
+  /**
+   * A service belongs to a department, and that is what identifies it on a
+   * card. The API published `department_id` and nothing else, so the listing
+   * had no name to show and labelled all twenty "Clinical service".
+   */
+  afterFetch: async (rows) => {
+    await attachLookup(rows, {
+      idField: 'department_id',
+      table: 'departments',
+      as: 'department',
+      softDelete: true,
+    });
+  },
   table: 'services',
   slugFrom: 'name',
   mediaField: 'featured_image_id',

@@ -22,10 +22,27 @@ function normalizeBrokenUrl(url: string): string {
     return next;
   }
 
-  // Rewrite legacy storage domains (deder/loke/gambo/horooinnovations/onrender) to current STORAGE_HOST
+  /**
+   * A storage path on someone else's host is a stale reference. Re-point it.
+   *
+   * This matched a hand-written list of hostnames — deder, loke, gambo — which
+   * covered the sibling projects and missed this site's own former home. The
+   * media table still holds rows like
+   * `https://melkaoda-hospital-eb7x.onrender.com/storage/leadership/<file>`
+   * from the Render deployment, so those URLs were used unchanged: pointing at
+   * an app that no longer exists, and blocked by the site's own image policy
+   * before they could even fail.
+   *
+   * Media lives on this deployment's own disk, so any absolute URL whose path
+   * is a `/storage/` or `/uploads/` path belongs here whichever host it names —
+   * including the web host, which does not serve those paths. Matching on the
+   * path rather than the hostname also survives the next rename.
+   *
+   * Cloudinary returned above; its URLs are not storage paths.
+   */
   next = next.replace(
-    /^https?:\/\/(?:[a-z0-9-]+\.)*(?:deder|loke|gambo)[-a-z0-9]*\.(?:onrender\.com|horooinnovations\.com)\/(storage|uploads)\//gi,
-    `${STORAGE_HOST}/$1/`
+    /^https?:\/\/[^/]+(\/(?:storage|uploads)\/[^\s]*)$/i,
+    (_match, path) => `${STORAGE_HOST}${path}`
   );
 
   // Absolute remote storage — keep host.
