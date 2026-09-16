@@ -90,8 +90,27 @@ export function useInView<T extends HTMLElement>(
       return;
     }
 
+    /**
+     * Failsafe for an observer that never reports at all.
+     *
+     * Everything using this starts at opacity 0 and is revealed by script, so
+     * if the observer never runs the page is simply blank — an unacceptable
+     * failure mode for a hospital's opening hours and emergency number.
+     *
+     * A working observer always invokes its callback once when it begins
+     * observing, whether or not the element is on screen. So "the callback has
+     * not run at all" is a reliable signal that it is broken, and is different
+     * from "the element is below the fold", which must keep waiting. Only the
+     * former reveals early.
+     */
+    let reported = false;
+    const failsafe = window.setTimeout(() => {
+      if (!reported) setShown(true);
+    }, 2000);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
+        reported = true;
         if (entry.isIntersecting) {
           setShown(true);
           if (options?.once !== false) observer.disconnect();
@@ -100,13 +119,36 @@ export function useInView<T extends HTMLElement>(
         }
       },
       {
-        threshold: options?.threshold ?? 0.16,
+        /**
+         * Zero, not a fraction.
+         *
+         * This asked for 16% of the element to be visible before revealing it.
+         * `intersectionRatio` is the visible fraction of the ELEMENT, so it can
+         * never exceed viewportHeight / elementHeight — an element taller than
+         * about six viewports cannot reach 0.16 no matter where the reader
+         * scrolls, and it stays at opacity 0 for ever.
+         *
+         * That is what hid long pages. A department or service article runs to
+         * several thousand pixels, and on a phone, where the viewport is
+         * shorter, the ceiling is lower still, so the more an editor wrote the
+         * more certainly it vanished. The listings showed it too: the cards
+         * were all in the DOM and nine of twelve were invisible.
+         *
+         * A threshold of 0 fires as soon as any part of the element crosses the
+         * boundary, which is what a scroll-in animation wants and is the one
+         * value that cannot be unreachable. The negative bottom margin still
+         * holds the reveal until the element is properly on screen.
+         */
+        threshold: options?.threshold ?? 0,
         rootMargin: options?.rootMargin ?? "0px 0px -8% 0px",
       }
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      window.clearTimeout(failsafe);
+      observer.disconnect();
+    };
   }, [options?.threshold, options?.rootMargin, options?.once]);
 
   return { ref, shown };
