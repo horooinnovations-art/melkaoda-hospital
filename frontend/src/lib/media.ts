@@ -154,11 +154,36 @@ export function isFastCdnUrl(url?: string | null): boolean {
   return /res\.cloudinary\.com/i.test(url);
 }
 
-const CLOUDINARY_BASE = "https://res.cloudinary.com/dz0zqwhyd/image/upload";
+/**
+ * Cloudinary fallback, off unless a cloud name is configured.
+ *
+ * This used to be hard-coded to `dz0zqwhyd` with a `deder-hospital/` folder —
+ * another project's account, left behind when this site moved to media on its
+ * own cPanel disk. Every image therefore produced THREE requests: the real one,
+ * a guess at `deder-hospital/<path>`, and a guess at `<path>`, with the last two
+ * guaranteed to 404 because the assets were never in that account.
+ *
+ * On a page whose records point at uploads that were not migrated, that is
+ * dozens of failed round-trips before the browser gives up and draws the
+ * placeholder, which is a large part of why listings felt slow. It also sent
+ * this hospital's file paths to a third party on every page view.
+ *
+ * Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to turn the fallback back on, and
+ * NEXT_PUBLIC_CLOUDINARY_FOLDER if the assets sit under a folder.
+ */
+const CLOUDINARY_CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
+const CLOUDINARY_FOLDER = (process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "")
+  .replace(/^\/+|\/+$/g, "");
+const CLOUDINARY_BASE = CLOUDINARY_CLOUD
+  ? `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`
+  : "";
 
 /**
- * Build a list of storage URL candidates. Primary is local/configured API,
- * fallback is Cloudinary CDN where assets are stored.
+ * Storage URL candidates, tried in order until one loads.
+ *
+ * Normally exactly one: the configured media host. A second is added only when
+ * a Cloudinary account is configured, because a candidate that cannot succeed
+ * costs a real request and a real wait.
  */
 export function storageImageCandidates(source?: string | null): string[] {
   if (!source) return [];
@@ -166,25 +191,23 @@ export function storageImageCandidates(source?: string | null): string[] {
   if (!primary) return [];
   const out: string[] = [primary];
 
-  if (/res\.cloudinary\.com/i.test(primary)) {
-    return out;
+  if (!CLOUDINARY_BASE) return out;
+  if (/res\.cloudinary\.com/i.test(primary)) return out;
+
+  const prefix = CLOUDINARY_FOLDER ? `${CLOUDINARY_FOLDER}/` : "";
+  let cleanPath = "";
+  try {
+    cleanPath = new URL(primary).pathname.replace(
+      /^\/(?:public\/)?(?:storage\/)?/,
+      ""
+    );
+  } catch {
+    cleanPath = String(source).replace(/^\/(?:public\/)?(?:storage\/)?/, "");
   }
 
-  try {
-    const url = new URL(primary);
-    const cleanPath = url.pathname.replace(/^\/(?:public\/)?(?:storage\/)?/, "");
-    if (cleanPath) {
-      const c1 = `${CLOUDINARY_BASE}/deder-hospital/${cleanPath}`;
-      const c2 = `${CLOUDINARY_BASE}/${cleanPath}`;
-      if (!out.includes(c1)) out.push(c1);
-      if (!out.includes(c2)) out.push(c2);
-    }
-  } catch {
-    const cleanPath = String(source).replace(/^\/(?:public\/)?(?:storage\/)?/, "");
-    if (cleanPath) {
-      out.push(`${CLOUDINARY_BASE}/deder-hospital/${cleanPath}`);
-      out.push(`${CLOUDINARY_BASE}/${cleanPath}`);
-    }
+  if (cleanPath) {
+    const candidate = `${CLOUDINARY_BASE}/${prefix}${cleanPath}`;
+    if (!out.includes(candidate)) out.push(candidate);
   }
 
   return out;

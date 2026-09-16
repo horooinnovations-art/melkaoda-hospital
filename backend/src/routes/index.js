@@ -29,6 +29,7 @@ import { ok, fail, message, serverError } from '../utils/helpers.js';
 import { normalizeSettings } from '../utils/settings.js';
 import { normalizeMediaUrl, nestMedia, isFastCdnUrl } from '../utils/mediaUrl.js';
 import { query, queryOne } from '../config/db.js';
+import { excerptRows } from '../utils/excerpt.js';
 
 const router = safeRouter();
 
@@ -424,6 +425,22 @@ router.get('/public/home', async (_req, res) => {
       nestMedia(row, 'photo_url', 'photo');
       return row;
     });
+
+    /**
+     * The home page shows two lines of each card. It was being sent every
+     * record's complete body to do it — 141 KB for roughly twenty-five records,
+     * nearly all of it rich text no card renders. These queries are the home
+     * page's own, so they do not go through the CRUD factory's list excerpting
+     * and have to say it here.
+     *
+     * The detail pages each fetch their own record and are unaffected.
+     */
+    excerptRows(departments, ['description']);
+    excerptRows(services, ['description']);
+    excerptRows(doctors, ['bio']);
+    excerptRows(leadership, ['bio']);
+    excerptRows(news, ['content']);
+    excerptRows(announcements, ['content']);
 
     // Hero slides — prefer Cloudinary (fast), cap at 5 for page weight.
     const HERO_CAP = 5;

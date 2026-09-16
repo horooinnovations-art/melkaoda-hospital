@@ -4,6 +4,7 @@ import { attachPhoto, attachPhotos, saveMedia } from '../services/media.js';
 import { slugLookupCandidates } from '../utils/settings.js';
 import { logAudit } from '../services/audit.js';
 import { assertSafeIdent, getWritableColumns, pickAllowedFields } from '../utils/sqlSafe.js';
+import { excerptRows } from '../utils/excerpt.js';
 
 /**
  * Generic CRUD factory for soft-deletable CMS tables sharing common patterns.
@@ -36,6 +37,24 @@ export function createCrud(config) {
      * fetched, so filters and media joins still see the full row.
      */
     publicHidden = [],
+    /**
+     * Body fields reduced to a plain-text excerpt on public LIST responses.
+     *
+     * A list endpoint is read to build cards: a name, a thumbnail, a sentence.
+     * It was returning every record's complete article as well. /departments
+     * answered with 221 KB across 21 records, of which 196 KB was `description`
+     * — the full rich text of every department, fetched to render a grid that
+     * shows two lines of each. The browser then parsed all of it, which is what
+     * made the listings and the home page feel slow on a real connection.
+     *
+     * Excerpting rather than dropping the field: the cards fall back to
+     * `description` when `short_description` is empty, which on the live data is
+     * most of them, so removing it outright would empty the cards.
+     *
+     * The DETAIL endpoint is untouched and still returns the whole body.
+     */
+    publicListExcerpt = [],
+    publicListExcerptLength = 320,
   } = config;
 
   /**
@@ -59,6 +78,13 @@ export function createCrud(config) {
   function stripForPublic(row) {
     if (!row) return row;
     for (const key of publicHiddenSet) delete row[key];
+    return row;
+  }
+
+  /** Shorten the configured body fields on a public list row. */
+  function excerptForPublicList(row) {
+    if (!row || !publicListExcerpt.length) return row;
+    excerptRows([row], publicListExcerpt, publicListExcerptLength);
     return row;
   }
 
@@ -127,7 +153,10 @@ export function createCrud(config) {
       }
       if (mediaField) await attachPhotos(rows, mediaField, mediaAs);
       if (afterFetch) await afterFetch(rows, req);
-      if (isPublic) rows.forEach(stripForPublic);
+      if (isPublic) {
+        rows.forEach(stripForPublic);
+        rows.forEach(excerptForPublicList);
+      }
 
       return ok(res, { data: rows, meta: { total: totalRow.total, page, perPage } });
     } catch (err) {

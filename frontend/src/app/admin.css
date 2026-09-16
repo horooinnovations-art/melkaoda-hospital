@@ -1264,14 +1264,45 @@
   box-shadow: 0 0 0 3px rgba(240, 177, 64, 0.16) !important;
 }
 
-/* A <select>'s dropdown list is painted by the platform, which takes no notice
-   of the control's own colours. Without this the options are dark text on a
-   dark sheet on Windows and Linux. */
+/* A <select>'s dropdown list is painted by the platform, not by the page.
+   Chrome takes the popup's background from the CONTROL's computed background,
+   and the control's was rgba(255,255,255,0.05) — translucent white, which over
+   the popup's own white base resolves to near-white. The options then inherited
+   the control's near-white text, so the open list was white on white and only
+   the row under the cursor, which the browser repaints itself, could be read.
+
+   The control therefore needs an opaque dark background, and the options need
+   their colours stated outright: several platforms ignore an option's
+   background unless it is set explicitly, and none of them inherit reliably. */
+.admin-shell select,
+.admin-portal select,
+.admin-login select {
+  background-color: #141d31 !important;
+}
+
 .admin-shell select option,
 .admin-portal select option,
-.admin-login select option {
-  background-color: var(--ld-panel-solid);
-  color: var(--ld-ink);
+.admin-login select option,
+.admin-shell select optgroup,
+.admin-portal select optgroup,
+.admin-login select optgroup {
+  background-color: #141d31 !important;
+  color: var(--ld-ink) !important;
+}
+
+/* A disabled or placeholder option should still be legible, just quieter. */
+.admin-shell select option:disabled,
+.admin-portal select option:disabled,
+.admin-login select option:disabled {
+  color: var(--ld-faint) !important;
+}
+
+/* Chrome honours this for the highlighted row in the open list. */
+.admin-shell select option:checked,
+.admin-portal select option:checked,
+.admin-login select option:checked {
+  background-color: rgba(240, 177, 64, 0.22) !important;
+  color: var(--ld-ink) !important;
 }
 
 /* The button inside a file input is a separate pseudo-element and otherwise

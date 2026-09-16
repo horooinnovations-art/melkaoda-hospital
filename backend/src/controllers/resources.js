@@ -165,6 +165,7 @@ async function safeOptions(res, loader) {
 }
 
 export const departments = createCrud({
+  publicListExcerpt: ['description'],
   table: 'departments',
   slugFrom: 'name',
   mediaField: 'featured_image_id',
@@ -212,6 +213,7 @@ export const partnershipCategories = createCrud({
  * for it was already built; only the storage and the route were missing.
  */
 export const partnerships = createCrud({
+  publicListExcerpt: ['description'],
   table: 'partnerships',
   slugFrom: 'name',
   mediaField: 'logo_id',
@@ -302,6 +304,7 @@ export async function listCategoryOptions(_req, res) {
 }
 
 export const doctors = createCrud({
+  publicListExcerpt: ['bio'],
   table: 'doctors',
   slugFrom: 'last_name',
   mediaField: 'photo_id',
@@ -346,6 +349,7 @@ export const doctors = createCrud({
 });
 
 export const services = createCrud({
+  publicListExcerpt: ['description'],
   table: 'services',
   slugFrom: 'name',
   mediaField: 'featured_image_id',
@@ -375,6 +379,7 @@ export const specializations = createCrud({
 });
 
 export const leadership = createCrud({
+  publicListExcerpt: ['bio'],
   table: 'leadership',
   slugFrom: 'name',
   mediaField: 'photo_id',
@@ -392,6 +397,7 @@ export const leadership = createCrud({
 });
 
 export const leadershipHistory = createCrud({
+  publicListExcerpt: ['bio'],
   table: 'leadership_history',
   slugFrom: 'name',
   mediaField: 'photo_id',
@@ -407,6 +413,7 @@ export const leadershipHistory = createCrud({
 });
 
 export const news = createCrud({
+  publicListExcerpt: ['content'],
   table: 'news',
   slugFrom: 'title',
   mediaField: 'featured_image_id',
@@ -429,6 +436,7 @@ export const news = createCrud({
 });
 
 export const announcements = createCrud({
+  publicListExcerpt: ['content'],
   table: 'announcements',
   slugFrom: 'title',
   mediaField: 'featured_image_id',
@@ -492,6 +500,7 @@ export const pages = createCrud({
 });
 
 export const events = createCrud({
+  publicListExcerpt: ['description'],
   table: 'events',
   softDelete: false,
   slugFrom: 'title',
@@ -515,6 +524,7 @@ export const events = createCrud({
 });
 
 export const careers = createCrud({
+  publicListExcerpt: ['description'],
   table: 'careers',
   slugFrom: 'title',
   publicFilter: "status = 'open'",
@@ -638,6 +648,7 @@ export const downloads = createCrud({
 });
 
 export const insurance = createCrud({
+  publicListExcerpt: ['description'],
   table: 'insurance',
   softDelete: false,
   slugFrom: 'name',
@@ -654,6 +665,7 @@ export const insurance = createCrud({
 });
 
 export const emergencyServices = createCrud({
+  publicListExcerpt: ['description'],
   table: 'emergency_services',
   slugFrom: 'title',
   mediaField: 'featured_image_id',
@@ -672,6 +684,7 @@ export const emergencyServices = createCrud({
 });
 
 export const healthEducation = createCrud({
+  publicListExcerpt: ['content'],
   table: 'health_education',
   slugFrom: 'title',
   mediaField: 'featured_image_id',

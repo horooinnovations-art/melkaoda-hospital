@@ -29,8 +29,12 @@ const CSP = [
   "form-action 'self'",
   // Next's hydration bootstrap is inline; eval is needed by the dev overlay only.
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
+  // Fontshare serves Clash Display and Satoshi, which the whole design is set
+  // in: the stylesheet comes from api.fontshare.com and the font files from
+  // cdn.fontshare.com. Both were blocked, so every page fell back to the
+  // system stack and re-laid itself out once that was noticed.
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com",
+  "font-src 'self' data: https://fonts.gstatic.com https://cdn.fontshare.com",
   // Cloudinary and the media host serve images; data:/blob: cover previews.
   // The API origin serves legacy /storage assets and must be listed, or those
   // images are silently blocked in production; the localhost entries are
