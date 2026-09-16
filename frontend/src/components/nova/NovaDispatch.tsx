@@ -5,6 +5,7 @@ import type { ComponentType, CSSProperties } from "react";
 import { ArrowUpRight, Inbox } from "lucide-react";
 import { toRoman } from "@/lib/utils";
 import { useInView, useSpotlight } from "./hooks";
+import SmartImage from "@/components/shared/SmartImage";
 
 export type DispatchEntry = {
   id: string;
@@ -13,6 +14,8 @@ export type DispatchEntry = {
   date?: string;
   title: string;
   excerpt?: string;
+  /** The story's own picture. Announcements usually have none. */
+  image?: string | null;
 };
 
 export type DispatchNote = {
@@ -119,6 +122,18 @@ export default function NovaDispatch({
                       paragraph, which are flow content. `<a>` is transparent, so
                       wrapping them in the link is valid — nesting them inside a
                       span would not be. */}
+                  {entry.image ? (
+                    <span className="nv-disp__media" aria-hidden>
+                      <SmartImage
+                        src={entry.image}
+                        alt=""
+                        width={420}
+                        height={280}
+                        className="nv-disp__img"
+                      />
+                    </span>
+                  ) : null}
+
                   <div className="nv-disp__body">
                     <span className="nv-disp__ord" aria-hidden>
                       {toRoman(i + 1)}

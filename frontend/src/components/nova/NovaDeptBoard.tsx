@@ -7,12 +7,15 @@ import { ArrowUpRight } from "lucide-react";
 import { iconForText } from "@/lib/healthIcons";
 import { cleanPublicText, toRoman, truncate } from "@/lib/utils";
 import { useInView, useSpotlight } from "./hooks";
+import SmartImage from "@/components/shared/SmartImage";
 
 export type BoardUnit = {
   key: string;
   href: string;
   title: string;
   description?: string;
+  /** The unit's own photograph. The glyph is used when there is none. */
+  image?: string | null;
 };
 
 /**
@@ -94,8 +97,21 @@ export default function NovaDeptBoard({ units }: { units: BoardUnit[] }) {
                 <span className="nv-dbd__rail" aria-hidden />
                 <span className="nv-dbd__node" aria-hidden />
 
+                {/* The unit's photograph, falling back to the glyph. The
+                    seal keeps its size either way, so a feed mixing records
+                    with and without a picture still rules straight. */}
                 <span className="nv-dbd__seal" aria-hidden>
-                  <Glyph />
+                  {unit.image ? (
+                    <SmartImage
+                      src={unit.image}
+                      alt=""
+                      width={96}
+                      height={96}
+                      className="nv-dbd__thumb"
+                    />
+                  ) : (
+                    <Glyph />
+                  )}
                 </span>
 
                 <span className="nv-dbd__ord" aria-hidden>

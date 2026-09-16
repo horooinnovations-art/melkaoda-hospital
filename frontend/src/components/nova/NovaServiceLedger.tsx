@@ -6,12 +6,15 @@ import { ArrowUpRight } from "lucide-react";
 import { iconForText } from "@/lib/healthIcons";
 import { toRoman } from "@/lib/utils";
 import { useInView, useSpotlight } from "./hooks";
+import SmartImage from "@/components/shared/SmartImage";
 
 export type ServiceEntry = {
   id: string;
   href: string;
   title: string;
   description?: string;
+  /** The service's own photograph. The glyph is used when there is none. */
+  image?: string | null;
 };
 
 /**
@@ -78,6 +81,18 @@ export default function NovaServiceLedger({
                 <span className="nv-svl__wm" aria-hidden>
                   <Glyph />
                 </span>
+
+                {item.image ? (
+                  <span className="nv-svl__media" aria-hidden>
+                    <SmartImage
+                      src={item.image}
+                      alt=""
+                      width={640}
+                      height={360}
+                      className="nv-svl__img"
+                    />
+                  </span>
+                ) : null}
 
                 <span className="nv-svl__head">
                   <span className="nv-svl__seal" aria-hidden>

@@ -189,6 +189,7 @@ export default function HomeClient({
     href: `/departments/${dept.slug}`,
     title: dept.name,
     description: dept.short_description || dept.description || undefined,
+    image: getImageFromItem(dept as unknown as Record<string, unknown>),
   }));
 
   // Cells for the service ledger. The description is trimmed here and clamped
@@ -203,6 +204,7 @@ export default function HomeClient({
         cleanPublicText(service.short_description || service.description || ""),
         240
       ) || undefined,
+    image: getImageFromItem(service as unknown as Record<string, unknown>),
   }));
 
   // Subjects for the clinical staff board. The title is part of the name here —
@@ -238,6 +240,7 @@ export default function HomeClient({
         ),
         190
       ) || undefined,
+    image: getImageFromItem(post as unknown as Record<string, unknown>),
   }));
 
   // The two standing notes in the foot of that sheet. The emergency one carries
