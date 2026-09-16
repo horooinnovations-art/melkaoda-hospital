@@ -4,6 +4,7 @@ import { ok, fail, toBool, paginate, parseJsonField, serverError } from '../util
 import { slugLookupCandidates } from '../utils/settings.js';
 import { validator } from '../utils/validate.js';
 import { sendApplicationReceipt, sendEventRegistrationReceipt } from '../services/mail.js';
+import { attachLookup } from '../utils/lookup.js';
 
 const WEEK_DAYS = [
   'monday',
@@ -166,6 +167,19 @@ async function safeOptions(res, loader) {
 
 export const departments = createCrud({
   publicListExcerpt: ['description'],
+  /**
+   * Departments carry a category_id and the API published that integer alone,
+   * so no consumer could say what a department was. The listing filled the gap
+   * with a constant, labelling all twenty-one cards "Clinical unit" while the
+   * database held ten real categories.
+   */
+  afterFetch: async (rows) => {
+    await attachLookup(rows, {
+      idField: 'category_id',
+      table: 'department_categories',
+      as: 'category',
+    });
+  },
   table: 'departments',
   slugFrom: 'name',
   mediaField: 'featured_image_id',

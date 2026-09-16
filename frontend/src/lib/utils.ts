@@ -91,6 +91,60 @@ export function cleanPublicText(text?: string | null) {
   return value;
 }
 
+/**
+ * The category a record actually belongs to, if it names one.
+ *
+ * Lists label each card with a kicker. That kicker was a constant per resource,
+ * so every department on the listing read "Clinical unit" — all twenty-one of
+ * them — while the database held ten real categories: Medical Department,
+ * Pharmacy, Laboratory, Maintenance and the rest. A label identical on every
+ * card tells the reader nothing and takes up the one line that could have.
+ *
+ * Resources store this differently, which is why the order below exists rather
+ * than one field name: departments and news join a category record, partnership
+ * and health-education hold a plain string, careers name a department, doctors
+ * join one. Returns an empty string when a record genuinely has no category,
+ * and the caller falls back to its generic label.
+ *
+ * `type` is last and deliberately narrow: on gallery it holds "image", which is
+ * a storage detail and not a category, so it is only used when it reads like a
+ * word rather than a file kind.
+ */
+const NON_CATEGORY_TYPES = /^(image|video|file|document|pdf|link|other|default)$/i;
+
+export function recordCategoryLabel(item: unknown): string {
+  if (!item || typeof item !== "object") return "";
+  const row = item as Record<string, unknown>;
+
+  const fromObject = (value: unknown): string => {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "object") {
+      const name = (value as Record<string, unknown>).name;
+      return typeof name === "string" ? name : "";
+    }
+    return "";
+  };
+
+  const candidates = [
+    fromObject(row.category),
+    typeof row.category_name === "string" ? row.category_name : "",
+    fromObject(row.partnership_type),
+    fromObject(row.department),
+    typeof row.department_name === "string" ? row.department_name : "",
+  ];
+
+  for (const candidate of candidates) {
+    const text = cleanPublicText(candidate);
+    if (text) return text;
+  }
+
+  const type = cleanPublicText(fromObject(row.type));
+  if (type && !NON_CATEGORY_TYPES.test(type)) return type;
+
+  return "";
+}
+
 export type HoursRow = { day: string; hours: string };
 
 /** Parse "Monday: 24 hrs Tuesday: 24 hrs…" into structured rows. */

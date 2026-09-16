@@ -13,7 +13,7 @@ import DetailShell, {
   type DetailBadge,
 } from "@/components/shared/DetailShell";
 import { Calendar, Clock, FileText, MapPin, Tag } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, recordCategoryLabel } from "@/lib/utils";
 
 /**
  * What kind of record this page is showing.
@@ -137,11 +137,13 @@ export default function ResourceDetail({
     (item.created_at as string) ||
     null;
   const location = (item.location as string) || null;
+  /**
+   * `category` is a joined record on some resources and a plain string on
+   * others, so it cannot be cast. Casting it printed "[object Object]" in the
+   * badge the moment departments began joining their category.
+   */
   const category =
-    (item.category as string) ||
-    (item.department as string) ||
-    (item.employment_type as string) ||
-    null;
+    recordCategoryLabel(item) || (item.employment_type as string) || null;
   const shortDesc =
     (item.short_description as string) ||
     (item.excerpt as string) ||
@@ -180,8 +182,11 @@ export default function ResourceDetail({
               <FileText className="h-4 w-4" />
             </span>
             <div>
+              {/* The record's own category when it has one, so a department
+                  reads "Medical Department" rather than the word "Department"
+                  repeated on every page. */}
               <p className="nv-dpanel__kicker">
-                {RESOURCE_NOUN[resource] ?? "Narrative"}
+                {category || RESOURCE_NOUN[resource] || "Narrative"}
               </p>
               {/* "About Pediatrics Ward", not "About this page". Falls back to
                   the generic wording only when the record has no title yet. */}

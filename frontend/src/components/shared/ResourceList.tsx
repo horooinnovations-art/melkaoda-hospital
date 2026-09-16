@@ -2,7 +2,13 @@ import { unstable_noStore } from "next/cache";
 import { fetchResourceList } from "@/lib/api";
 import type { PublicResource } from "@/lib/types";
 import { getImageFromItem } from "@/lib/media";
-import { cleanPublicText, isPublicItemActive, stripHtml, truncate } from "@/lib/utils";
+import {
+  cleanPublicText,
+  isPublicItemActive,
+  recordCategoryLabel,
+  stripHtml,
+  truncate,
+} from "@/lib/utils";
 import NovaReveal from "@/components/nova/NovaReveal";
 import EmptyState from "@/components/shared/EmptyState";
 import {
@@ -194,7 +200,7 @@ export default async function ResourceList({
                   title={title}
                   description={desc}
                   image={getImageFromItem(item)}
-                  kicker={voice.kicker}
+                  kicker={recordCategoryLabel(item) || voice.kicker}
                   cta={voice.cta}
                   index={(page - 1) * perPage + i}
                   compact={layout === "ribbon"}

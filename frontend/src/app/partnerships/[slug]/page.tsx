@@ -27,6 +27,7 @@ import { getImageFromItem } from "@/lib/media";
 import type { Partner } from "@/lib/types";
 import { stripHtml } from "@/lib/utils";
 import Prose from "@/components/shared/Prose";
+import { recordCategoryLabel } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/api";
 
 export default function PartnerDetailPage({
@@ -164,8 +165,11 @@ export default function PartnerDetailPage({
                       )}
                     </span>
                     <div>
+                      {/* The live records carry this in `category`, not in
+                          `partnership_type`, so reading only the latter fell back
+                          to the generic wording on every partner. */}
                       <p className="nv-dpanel__kicker">
-                        {partner.partnership_type || "Institutional partner"}
+                        {recordCategoryLabel(partner) || "Institutional partner"}
                       </p>
                       <h2 className="nv-dpanel__title">
                         {partnerName
