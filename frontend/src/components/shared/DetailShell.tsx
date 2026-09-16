@@ -102,7 +102,6 @@ export function DetailFeaturedImageCard({
           alt={title || "Featured image"}
           width={1920}
           height={1440}
-          unoptimized
           className="h-auto max-h-[85vh] w-auto max-w-[88vw] object-contain"
         />
       </div>
@@ -119,7 +118,6 @@ export function DetailFeaturedImageCard({
               src={src}
               alt=""
               fill
-              unoptimized
               optimizeWidth={120}
               className="object-cover blur-3xl scale-125 select-none"
               aria-hidden
@@ -147,7 +145,6 @@ export function DetailFeaturedImageCard({
               width={1600}
               height={1200}
               priority
-              unoptimized
               className="h-auto max-h-[70vh] w-auto max-w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.025]"
             />
           </button>

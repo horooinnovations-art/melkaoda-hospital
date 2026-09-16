@@ -255,10 +255,56 @@ export function optimizeImageUrl(
 }
 
 /**
- * Bypass Next's optimizer for remote hosts. The local `/_next/image` proxy
- * often 500s on Cloudinary/Render from this environment; CDN URL transforms
- * via `optimizeImageUrl` already shrink Cloudinary assets.
+ * Hosts `next.config.mjs` lists in `images.remotePatterns`.
+ *
+ * The optimizer refuses a host it has not been told about, so anything outside
+ * this list has to be served as-is rather than through `/_next/image`. Keep the
+ * two in step: adding a host here without adding it there turns its images into
+ * 400s.
+ */
+const OPTIMIZABLE_HOSTS = [
+  "images.unsplash.com",
+  "res.cloudinary.com",
+  "localhost",
+  "127.0.0.1",
+  "melkaoda.horooinnovations.com",
+  "melkaodaapi.horooinnovations.com",
+];
+
+/**
+ * Whether to serve an image as-is instead of through Next's optimizer.
+ *
+ * This returned `true` for every image, so the optimizer was off site-wide and
+ * every card downloaded the full-size original. The uploads are roughly 2 MB
+ * PNGs, and measured against the live server the same image comes back at
+ * 44 KB as WebP or 24 KB as AVIF once resized to the width a card actually
+ * uses — better than 98% smaller. Nine of them on a listing is the difference
+ * between 18 MB and a few hundred kilobytes.
+ *
+ * The comment it carried said `/_next/image` "often 500s on Cloudinary/Render
+ * from this environment". Whatever was true of Render, it is not true here:
+ * the endpoint was checked against production and returns optimized AVIF and
+ * WebP correctly.
+ *
+ * What genuinely cannot go through the optimizer still bypasses it: inline
+ * data and blob URIs, SVG (which Next refuses unless explicitly allowed), and
+ * any host not declared in `remotePatterns`.
  */
 export function shouldBypassImageOptimizer(src: string): boolean {
-  return Boolean(src);
+  if (!src) return false;
+
+  if (/^(data|blob):/i.test(src)) return true;
+  // Query strings are common on CDN URLs; test the path only.
+  if (/\.svg(?:[?#]|$)/i.test(src)) return true;
+
+  // Relative paths are same-origin and always optimizable.
+  if (!/^https?:\/\//i.test(src)) return false;
+
+  try {
+    const { hostname } = new URL(src);
+    return !OPTIMIZABLE_HOSTS.includes(hostname);
+  } catch {
+    // Unparseable: leave it alone rather than hand the optimizer something odd.
+    return true;
+  }
 }

@@ -335,7 +335,6 @@ export default function NovaHeader({
             src={logo}
             alt=""
             fill
-            unoptimized
             optimizeWidth={96}
             className="object-cover"
             sizes="36px"
