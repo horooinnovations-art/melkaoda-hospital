@@ -428,7 +428,11 @@ export const leadershipHistory = createCrud({
   publicFilter: 'is_active = 1',
   searchable: ['name', 'position'],
   jsonFields: ['education', 'achievements'],
-  orderBy: 'tenure_start ASC, `order` ASC, id ASC',
+  // Serving leader first (no tenure end), then most recent tenure down to
+  // the earliest; undated records last. Mirrors compareTenureNewestFirst in
+  // the frontend, which the admin table and public timeline both use.
+  orderBy:
+    '(tenure_end IS NULL) DESC, (tenure_start IS NULL) ASC, tenure_start DESC, `order` ASC, id DESC',
   mapIncoming: async (data) => {
     normalizeLineJsonFields(data, ['education', 'achievements']);
     return data;

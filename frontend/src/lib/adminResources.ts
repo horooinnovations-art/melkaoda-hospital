@@ -1189,7 +1189,19 @@ export function buildFormData(
       }
       continue;
     }
-    if (val === undefined || val === null || val === "") continue;
+    /**
+     * An emptied field is sent empty, not left out.
+     *
+     * It used to be skipped, and the server only updates the fields it
+     * receives, so clearing a value (a leader's tenure end, a doctor's
+     * department, a phone number) left the old one in place with no error.
+     * The server decides what empty means for each column: NULL where the
+     * column allows it, and on create it is ignored so defaults apply.
+     */
+    if (val === undefined || val === null || val === "") {
+      fd.append(field.name, "");
+      continue;
+    }
     fd.append(field.name, String(val));
   }
   if (fileField && values[fileField] instanceof File) {

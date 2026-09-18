@@ -3,7 +3,13 @@ import { ok, fail, created, message, slugify, toBool, paginate, parseJsonField, 
 import { attachPhoto, attachPhotos, saveMedia } from '../services/media.js';
 import { slugLookupCandidates } from '../utils/settings.js';
 import { logAudit } from '../services/audit.js';
-import { assertSafeIdent, getWritableColumns, pickAllowedFields } from '../utils/sqlSafe.js';
+import {
+  assertSafeIdent,
+  getColumnInfo,
+  getWritableColumns,
+  normalizeEmptyValues,
+  pickAllowedFields,
+} from '../utils/sqlSafe.js';
 import { excerptRows } from '../utils/excerpt.js';
 
 /**
@@ -100,9 +106,15 @@ export function createCrud(config) {
     return copy;
   }
 
-  async function sanitizeIncoming(raw) {
+  /**
+   * Keep only writable schema columns, then resolve emptied fields.
+   * `mode` matters: an empty field on update means "clear this", on create
+   * it means "not given" — see normalizeEmptyValues.
+   */
+  async function sanitizeIncoming(raw, mode = 'create') {
     const schemaCols = await getWritableColumns(table);
-    return pickAllowedFields(raw, schemaCols, allowedColumns);
+    const picked = pickAllowedFields(raw, schemaCols, allowedColumns);
+    return normalizeEmptyValues(picked, await getColumnInfo(table), mode);
   }
 
   async function list(req, res, { isPublic = false } = {}) {
@@ -281,7 +293,7 @@ export function createCrud(config) {
         }
       }
 
-      data = await sanitizeIncoming(data);
+      data = await sanitizeIncoming(data, 'update');
 
       const cols = Object.keys(data).filter((k) => data[k] !== undefined);
       if (!cols.length && !req.file && !afterSave) return fail(res, 'No data provided', 422);

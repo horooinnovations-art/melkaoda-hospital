@@ -389,3 +389,46 @@ export function formatFileSize(bytes?: number | string | null): string {
   const rounded = unit <= 1 ? Math.round(value) : Math.round(value * 10) / 10;
   return `${rounded} ${units[unit]}`;
 }
+
+/**
+ * A tenure date as a timestamp. Accepts a full date or a bare year, since both
+ * appear in the records. Null when there is nothing usable.
+ */
+function tenureTime(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  if (/^\d{4}$/.test(text)) return Date.UTC(Number(text), 0, 1);
+  const time = Date.parse(text);
+  return Number.isNaN(time) ? null : time;
+}
+
+/**
+ * Leadership history order: the serving leader first, then most recent tenure
+ * down to the earliest.
+ *
+ * Shared by the public timeline and the admin table so the two cannot disagree.
+ * "Serving" means no tenure end, which is also how both pages mark it. Records
+ * with no start date go last rather than being treated as the oldest, and ties
+ * fall back to the editor's display order.
+ */
+export function compareTenureNewestFirst(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>
+): number {
+  const aServing = !a.tenure_end;
+  const bServing = !b.tenure_end;
+  if (aServing !== bServing) return aServing ? -1 : 1;
+
+  const aStart = tenureTime(a.tenure_start);
+  const bStart = tenureTime(b.tenure_start);
+  if (aStart !== bStart) {
+    if (aStart === null) return 1;
+    if (bStart === null) return -1;
+    return bStart - aStart;
+  }
+
+  const orderDiff = Number(a.order ?? 0) - Number(b.order ?? 0);
+  if (orderDiff) return orderDiff;
+  return Number(b.id ?? 0) - Number(a.id ?? 0);
+}

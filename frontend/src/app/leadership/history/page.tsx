@@ -24,7 +24,7 @@ import PageTransition from "@/components/motion/PageTransition";
 import SmartImage from "@/components/shared/SmartImage";
 import { getImageFromItem } from "@/lib/media";
 import type { Leader, LeadershipHistory } from "@/lib/types";
-import { formatYear, stripHtml } from "@/lib/utils";
+import { compareTenureNewestFirst, formatYear, stripHtml } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/api";
 
 type TimelineLeader = {
@@ -77,16 +77,15 @@ export default function LeadershipHistoryPage() {
           ...(leader as unknown as Record<string, unknown>),
         }));
 
-  // Sort chronologically: oldest tenure_start first; null dates go to the end
+  // Serving leader first, then most recent tenure back to the earliest. The
+  // same comparator orders the admin table, so the two always agree.
   const chronological = useMemo(() => {
-    return [...rawLeaders].sort((a, b) => {
-      const ay = parseYear(a.tenure_start);
-      const by = parseYear(b.tenure_start);
-      if (ay === 0 && by === 0) return 0;
-      if (ay === 0) return 1;
-      if (by === 0) return -1;
-      return ay - by;
-    });
+    return [...rawLeaders].sort((a, b) =>
+      compareTenureNewestFirst(
+        a as unknown as Record<string, unknown>,
+        b as unknown as Record<string, unknown>
+      )
+    );
   }, [rawLeaders]);
 
   const filteredLeaders = useMemo(() => {
@@ -157,7 +156,7 @@ export default function LeadershipHistoryPage() {
 
           <p className="nv-pill nv-pill--plain mb-7">
             <Calendar aria-hidden />
-            Listed from earliest to most recent tenure
+            Serving leader first, then most recent to earliest
           </p>
 
           {isLoading ? (
