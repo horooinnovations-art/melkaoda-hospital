@@ -145,6 +145,7 @@ export function NovaPartnerCard({ partner }: { partner: Partner }) {
               src={logoUrl}
               alt=""
               fill
+              sizes="(max-width: 640px) 70vw, 260px"
               optimizeWidth={480}
               className="nv-partner__logo p-7"
               fallback={<span className="nv-partner__mono">{initials}</span>}

@@ -104,6 +104,7 @@ export default function NovaFooter() {
                     src={logoUrl}
                     alt=""
                     fill
+                    sizes="48px"
                     optimizeWidth={96}
                     className="object-contain p-1"
                   />

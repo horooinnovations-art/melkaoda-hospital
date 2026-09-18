@@ -604,9 +604,16 @@ const STAT_ICONS: LucideIcon[] = [Shield, Users, Star, Award];
 /* ─── Main Component ─── */
 export default function AboutPage() {
   const { data: settings, isLoading: settingsLoading } = useGetSettingsQuery();
+  /**
+   * Enough rows to find the featured leaders among them. This fetched three
+   * and then counted them for the "Leaders" figure, so the figure could never
+   * read higher than 3 whatever the hospital actually had, and it counted
+   * whoever happened to sort first rather than the leaders an editor chose to
+   * feature. The leadership table is a few dozen rows at most.
+   */
   const { data: leadership, isLoading: leadersLoading } = useGetResourceListQuery({
     resource: "leadership",
-    perPage: 3,
+    perPage: 100,
   });
 
   if (settingsLoading) {
@@ -644,7 +651,19 @@ export default function AboutPage() {
   const parsedValues = parseValuesContent(values);
   const parsedHistory = parseHistoryContent(history);
   const parsedAwards = parseAwardsContent(awards);
-  const leaders = (leadership?.data ?? []) as Leader[];
+  const allLeaders = (leadership?.data ?? []) as Leader[];
+  /**
+   * Featured leaders are the ones an editor ticked "Featured" on. If nobody is
+   * ticked yet, show the active leaders rather than an empty section — but
+   * label them plainly, so the page never calls someone featured who was not.
+   */
+  const featuredLeaders = allLeaders.filter((leader) => {
+    const flag = (leader as unknown as Record<string, unknown>).is_featured;
+    return flag === true || flag === 1 || flag === "1";
+  });
+  const showingFeatured = featuredLeaders.length > 0;
+  const leaders = showingFeatured ? featuredLeaders : allLeaders;
+  const leadersLabel = showingFeatured ? "Featured Leaders" : "Leaders";
   const aboutIsHtml = !!about && about.includes("<");
   const aboutPlain = about ? stripHtml(about) : "";
   const aboutSentences =
@@ -698,7 +717,7 @@ export default function AboutPage() {
     yearsOfService !== null
       ? { value: yearsOfService, suffix: "+", label: "Years of Service" }
       : null,
-    leaders.length ? { value: leaders.length, suffix: "", label: "Leaders" } : null,
+    leaders.length ? { value: leaders.length, suffix: "", label: leadersLabel } : null,
     parsedValues.items.length
       ? { value: parsedValues.items.length, suffix: "", label: "Core Values" }
       : null,
@@ -1085,7 +1104,7 @@ export default function AboutPage() {
           <section className="nv-asec">
             <div className="nv-lead-head">
               <DetailSectionHeader
-                eyebrow="08 · Leadership"
+                eyebrow={`08 · ${leadersLabel}`}
                 title="Guided by experienced visionaries"
                 description="Meet the people shaping clinical excellence and hospital strategy."
               />

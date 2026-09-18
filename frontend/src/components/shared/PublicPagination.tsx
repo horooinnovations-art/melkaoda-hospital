@@ -7,6 +7,11 @@ interface PublicPaginationProps {
   totalItems: number;
   perPage: number;
   basePath: string;
+  /**
+   * Query parameters every page link must keep — an active search or filter.
+   * Without them, "next page" of a search result is page two of everything.
+   */
+  query?: Record<string, string | undefined>;
   className?: string;
 }
 
@@ -23,6 +28,7 @@ export default function PublicPagination({
   totalItems,
   perPage,
   basePath,
+  query,
   className,
 }: PublicPaginationProps) {
   const totalPages = Math.ceil(totalItems / perPage);
@@ -58,8 +64,15 @@ export default function PublicPagination({
     return pages;
   };
 
-  const createPageUrl = (page: number) =>
-    page === 1 ? basePath : `${basePath}?page=${page}`;
+  const createPageUrl = (page: number) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query ?? {})) {
+      if (value) params.set(key, value);
+    }
+    if (page > 1) params.set("page", String(page));
+    const qs = params.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
 
   return (
     <div className={cn("nv-pager", className)}>

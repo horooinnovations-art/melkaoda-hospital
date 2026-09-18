@@ -1,7 +1,10 @@
 import { unstable_noStore } from "next/cache";
 import PageHero from "@/components/layout/PageHero";
 import PageBody from "@/components/layout/PageBody";
+import { Suspense } from "react";
 import ResourceList from "@/components/shared/ResourceList";
+import ResourceSearchBar from "@/components/shared/ResourceSearchBar";
+import { buildFilterOptions, param } from "@/lib/listFilters";
 
 export const metadata = { title: "Services" };
 export const dynamic = "force-dynamic";
@@ -9,11 +12,14 @@ export const dynamic = "force-dynamic";
 export default async function ServicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; department?: string }>;
 }) {
   unstable_noStore();
   const resolvedParams = await searchParams;
   const page = Math.max(1, Number(resolvedParams?.page) || 1);
+  const q = param(resolvedParams?.q);
+  const department = param(resolvedParams?.department);
+  const { options, total } = await buildFilterOptions("services", "department");
 
   return (
     <>
@@ -26,6 +32,15 @@ export default async function ServicesPage({
         breadcrumbs={[{ label: "Services" }]}
       />
       <PageBody>
+        <Suspense fallback={null}>
+          <ResourceSearchBar
+            placeholder="Search services by name or what they cover..."
+            filterLabel="Department"
+            filterParam="department"
+            options={options}
+            total={total}
+          />
+        </Suspense>
         <ResourceList
           resource="services"
           basePath="/services"
@@ -33,6 +48,14 @@ export default async function ServicesPage({
           layout="services"
           page={page}
           perPage={12}
+          filters={{ search: q, department_id: department }}
+          query={{ q, department }}
+          emptyTitle={q || department ? "No services match" : undefined}
+          emptyDescription={
+            q || department
+              ? "Try a shorter search, or choose All to see every service."
+              : undefined
+          }
         />
       </PageBody>
     </>

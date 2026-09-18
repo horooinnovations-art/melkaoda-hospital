@@ -87,7 +87,7 @@ function FileField({
       >
         {isImagePreview && preview ? (
           <div className="relative mb-3 h-28 w-28 overflow-hidden rounded-md ring-1 ring-[var(--ld-line-strong)]">
-            <Image src={preview} alt="Preview" fill className="object-cover" unoptimized />
+            <Image src={preview} alt="Preview" fill sizes="200px" className="object-cover" unoptimized />
           </div>
         ) : (
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-[var(--ld-accent-soft)] text-[var(--ld-accent)] shadow-sm ring-1 ring-[var(--ld-line-strong)]">

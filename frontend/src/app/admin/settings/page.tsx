@@ -838,7 +838,7 @@ export default function AdminSettingsPage() {
                               <div className="flex items-center gap-4">
                                 {currentMedia ? (
                                   <div className="relative h-16 w-16 overflow-hidden rounded-md bg-stone/40 ring-1 ring-slate-200">
-                                    <Image src={currentMedia} alt={field.label} fill className="object-contain p-2" unoptimized />
+                                    <Image src={currentMedia} alt={field.label} fill sizes="160px" className="object-contain p-2" unoptimized />
                                   </div>
                                 ) : (
                                   <div className="flex h-16 w-16 flex-col items-center justify-center rounded-md bg-stone/40 text-ink-muted/50 ring-1 ring-slate-200">

@@ -27,6 +27,15 @@ interface ResourceListProps {
   layout?: "grid" | "editorial" | "ribbon" | "services" | "departments";
   emptyTitle?: string;
   emptyDescription?: string;
+  /**
+   * Passed straight to the API: `search`, `category_id`, `department_id`.
+   * The search runs on the server across every record, not on the twelve
+   * already on screen — which is how the Doctors page does it, and why a
+   * match on its second page is never found.
+   */
+  filters?: Record<string, string | number | undefined>;
+  /** URL parameters the pager must preserve, keyed as they appear in the URL. */
+  query?: Record<string, string | undefined>;
 }
 
 /** Long-form dates, formatted once so every layout agrees. */
@@ -76,6 +85,8 @@ export default async function ResourceList({
   layout = "grid",
   emptyTitle,
   emptyDescription,
+  filters,
+  query,
 }: ResourceListProps) {
   unstable_noStore();
   let items: Record<string, unknown>[] = [];
@@ -84,9 +95,16 @@ export default async function ResourceList({
   let errorMessage = "";
 
   try {
+    const extra = Object.fromEntries(
+      Object.entries(filters ?? {}).filter(
+        (entry): entry is [string, string | number] =>
+          entry[1] !== undefined && entry[1] !== ""
+      )
+    );
     const data = await fetchResourceList<Record<string, unknown>>(resource, {
       page,
       perPage,
+      ...extra,
     });
     const rawItems = (data?.data ?? []) as Record<string, unknown>[];
     items = rawItems.filter((item) => isPublicItemActive(item));
@@ -216,6 +234,7 @@ export default async function ResourceList({
         totalItems={totalItems}
         perPage={perPage}
         basePath={basePath}
+        query={query}
       />
     </div>
   );

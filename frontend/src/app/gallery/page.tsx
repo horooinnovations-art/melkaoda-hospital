@@ -320,6 +320,7 @@ export default function GalleryPage() {
                     // directly below the frame.
                     alt=""
                     fill
+                    sizes="(max-width: 1024px) 100vw, 1200px"
                     optimizeWidth={1400}
                     className="nv-lb__img"
                   />

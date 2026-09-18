@@ -81,8 +81,15 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100dvh;
-  max-height: 100dvh;
+  /*
+   * No explicit height. `position: fixed; inset: 0` already pins all four
+   * edges to the window and tracks it exactly on every resize. The
+   * `height: 100dvh` that sat here overrode the bottom edge, and dvh can lag
+   * the real viewport — after DevTools is docked and undocked, a window is
+   * resized, or a mobile toolbar collapses. When it did, the shell stopped
+   * short of the window: the footer rose into the middle of the screen,
+   * cut the page off above it, and left an empty band below.
+   */
   overflow: hidden;
   background: #080d18;
 }
@@ -1450,4 +1457,55 @@
 .admin-login .bg-\[\#111\] {
   background-color: var(--ld-accent) !important;
   color: #17130c !important;
+}
+
+/* ─── Select option list ──────────────────────────────────────────────────
+   Styled to match the header's dropdown menu (.ld-menu__panel / __link), so
+   the two kinds of list in the admin look like one system. Declared without a
+   scope prefix because the list is portalled into <body>; the element carries
+   `admin-portal` itself, which is what makes the --ld-* tokens resolve.
+
+   `!important` because the callers still pass their own Tailwind colours
+   (`bg-[#0d1424]`, `text-[var(--ld-ink)]`), and those must not win.
+   ------------------------------------------------------------------------ */
+.ld-select-panel {
+  background: rgba(10, 16, 30, 0.97) !important;
+  color: var(--ld-ink) !important;
+  border: 1px solid var(--ld-line-strong) !important;
+  border-radius: var(--ld-radius) !important;
+  box-shadow: var(--ld-shadow), 0 0 0 1px rgba(240, 177, 64, 0.08) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.ld-select-item {
+  border-radius: var(--ld-radius-sm);
+  color: var(--ld-muted) !important;
+  transition: background 150ms ease, color 150ms ease, padding-left 150ms ease;
+}
+
+.ld-select-item[data-highlighted],
+.ld-select-item:focus {
+  background: rgba(240, 177, 64, 0.1) !important;
+  color: var(--ld-ink) !important;
+}
+
+.ld-select-item[data-state="checked"] {
+  background: rgba(240, 177, 64, 0.15) !important;
+  color: var(--ld-accent) !important;
+}
+
+/* The trigger lives inside the admin shell, so it can use the scoped tokens. */
+.admin-shell button[role="combobox"],
+.admin-portal button[role="combobox"] {
+  background-color: #141d31 !important;
+  color: var(--ld-ink) !important;
+  border-color: var(--ld-line-strong) !important;
+}
+
+.admin-shell button[role="combobox"] [data-placeholder],
+.admin-portal button[role="combobox"] [data-placeholder],
+.admin-shell button[role="combobox"][data-placeholder],
+.admin-portal button[role="combobox"][data-placeholder] {
+  color: var(--ld-faint) !important;
 }

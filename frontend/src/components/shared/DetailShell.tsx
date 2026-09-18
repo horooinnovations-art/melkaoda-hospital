@@ -118,6 +118,7 @@ export function DetailFeaturedImageCard({
               src={src}
               alt=""
               fill
+              sizes="96px"
               optimizeWidth={120}
               className="object-cover blur-3xl scale-125 select-none"
               aria-hidden

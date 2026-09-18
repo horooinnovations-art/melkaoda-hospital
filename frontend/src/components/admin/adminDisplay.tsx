@@ -103,6 +103,7 @@ export function EntityAvatar({
           src={resolved}
           alt={name}
           fill
+          sizes="44px"
           className="object-cover"
           optimizeWidth={120}
           fallback={

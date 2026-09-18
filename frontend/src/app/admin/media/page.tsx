@@ -141,6 +141,7 @@ export default function AdminMediaPage() {
                           src={url}
                           alt={item.filename}
                           fill
+                          sizes="(max-width: 640px) 50vw, 220px"
                           className="object-cover"
                           unoptimized
                         />
